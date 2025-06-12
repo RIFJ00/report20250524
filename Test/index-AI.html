@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI法案インタラクティブページ</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+            color: white;
+            padding: 2rem 0;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #e5e7eb;
+            font-size: 1.1rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .tab-navigation {
+            margin-top: 1.5rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0.25rem;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+        
+        .tab-button {
+            flex: 1;
+            min-width: 120px;
+            padding: 0.75rem 1rem;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            cursor: pointer;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .tab-button:hover {
+            background: #f3f4f6;
+        }
+        
+        .tab-button.active {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .tab-content {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .content-section {
+            display: none;
+        }
+        
+        .content-section.active {
+            display: block;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card h2 {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 1rem;
+        }
+        
+        h3 {
+            font-size: 1.25rem;
+            color: #374151;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        h4 {
+            font-size: 1.1rem;
+            color: #4b5563;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+            
+            .tab-button span {
+                display: none;
+            }
+        }
+        
+        .box {
+            background: #f3f4f6;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            border-left: 4px solid #2563eb;
+        }
+        
+        .bullet-point {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+            line-height: 1.5;
+        }
+        
+        .bullet {
+            width: 6px;
+            height: 6px;
+            background: #2563eb;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+            margin-top: 0.5rem;
+            flex-shrink: 0;
+        }
+        
+        .highlight-box {
+            background: #fef3c7;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 2px solid #f59e0b;
+            margin: 1rem 0;
+        }
+        
+        .responsibility-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .resp-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            border-left: 4px solid;
+        }
+        
+        .resp-card:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .resp-nation { border-left-color: #3b82f6; }
+        .resp-local { border-left-color: #10b981; }
+        .resp-research { border-left-color: #8b5cf6; }
+        .resp-business { border-left-color: #f97316; }
+        .resp-citizen { border-left-color: #ec4899; }
+        
+        .icon-circle {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .nation-icon { background: #3b82f6; }
+        .local-icon { background: #10b981; }
+        .research-icon { background: #8b5cf6; }
+        .business-icon { background: #f97316; }
+        .citizen-icon { background: #ec4899; }
+        
+        .policies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .policy-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .policy-card:hover {
+            background: #f9fafb;
+        }
+        
+        .policy-header {
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 0.75rem;
+        }
+        
+        .policy-icon {
+            width: 3rem;
+            height: 3rem;
+            background: #dbeafe;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+        }
+        
+        .policy-content {
+            display: none;
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-top: 0.75rem;
+            padding-left: 3.75rem;
+        }
+        
+        .policy-content.expanded {
+            display: block;
+        }
+        
+        .org-chart {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .org-box {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .org-boss {
+            background: #fee2e2;
+            border: 2px solid #dc2626;
+        }
+        
+        .org-vice {
+            background: #dbeafe;
+            border: 2px solid #2563eb;
+        }
+        
+        .org-member {
+            background: #dcfce7;
+            border: 2px solid #16a34a;
+        }
+        
+        .org-icon {
+            width: 5rem;
+            height: 5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.2;
+        }
+        
+        .org-boss .org-icon { background: #dc2626; }
+        .org-vice .org-icon { background: #2563eb; }
+        .org-member .org-icon { background: #16a34a; }
+        
+        .vice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .graph-container {
+            margin-top: 1.5rem;
+        }
+        
+        .bar-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .country-info {
+            width: 120px;
+            text-align: center;
+        }
+        
+        .flag {
+            font-size: 3rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .country-name {
+            font-weight: bold;
+            font-size: 1rem;
+        }
+        
+        .country-rank {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .bar-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin: 0 1rem;
+        }
+        
+        .bar-bg {
+            flex: 1;
+            height: 3rem;
+            background: #e5e7eb;
+            border-radius: 0.5rem;
+            position: relative;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+            border-radius: 0.5rem;
+            transition: width 1s ease-out;
+        }
+        
+        .bar-fill.japan {
+            background: linear-gradient(90deg, #dc2626 0%, #ef4444 100%);
+        }
+        
+        .amount-label {
+            width: 150px;
+            text-align: right;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .amount-japan {
+            color: #dc2626;
+        }
+        
+        .law-text {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 3rem;
+        }
+        
+        .law-title {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+            color: #1f2937;
+        }
+        
+        .chapter {
+            margin-bottom: 2rem;
+        }
+        
+        .chapter-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid;
+            display: inline-block;
+        }
+        
+        .chapter-1 { color: #2563eb; border-color: #2563eb; }
+        .chapter-2 { color: #10b981; border-color: #10b981; }
+        .chapter-3 { color: #8b5cf6; border-color: #8b5cf6; }
+        .chapter-4 { color: #f97316; border-color: #f97316; }
+        .chapter-5 { color: #6366f1; border-color: #6366f1; }
+        .chapter-6 { color: #dc2626; border-color: #dc2626; }
+        .chapter-7 { color: #6b7280; border-color: #6b7280; }
+        .chapter-8 { color: #eab308; border-color: #eab308; }
+        
+        .article {
+            margin-bottom: 1.5rem;
+        }
+        
+        .article-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #374151;
+        }
+        
+        .article-content {
+            background: #f9fafb;
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+        
+        .article-number {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 0.5rem;
+        }
+        
+        .article-text {
+            line-height: 1.6;
+            color: #374151;
+        }
+        
+        .connection-box {
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+            color: white;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .connection-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .connection-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .balance-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-top: 1rem;
+        }
+        
+        .balance-item {
+            text-align: center;
+        }
+        
+        .balance-icon {
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 0.5rem;
+            font-size: 2rem;
+        }
+        
+        .innovation-icon {
+            background: #10b981;
+        }
+        
+        .risk-icon {
+            background: #3b82f6;
+        }
+        
+        .balance-arrow {
+            font-size: 2rem;
+            color: white;
+        }
+        
+        .tab-header {
+            background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem 0.75rem 0 0;
+            margin-bottom: 0;
+        }
+        
+        .tab-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .tab-footer {
+            background: #f8fafc;
+            padding: 1rem;
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+            border-top: 1px solid #e5e7eb;
+            border-radius: 0 0 0.75rem 0.75rem;
+            margin-top: 1.5rem;
+        }
+        
+        .content-wrapper {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <div class="header">
+        <div class="header-content">
+            <h1>人工知能関連技術の研究開発及び活用の推進に関する法律案</h1>
+            <p>AI技術の総合的・計画的な推進による国民生活の向上</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- タブナビゲーション -->
+        <div class="tab-navigation">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="showTab('overview')">
+                    📄 <span>概要</span>
+                </button>
+                <button class="tab-button" onclick="showTab('principles')">
+                    🎯 <span>基本理念</span>
+                </button>
+                <button class="tab-button" onclick="showTab('responsibilities')">
+                    👥 <span>責務</span>
+                </button>
+                <button class="tab-button" onclick="showTab('policies')">
+                    🧠 <span>基本施策</span>
+                </button>
+                <button class="tab-button" onclick="showTab('organization')">
+                    🏢 <span>推進体制</span>
+                </button>
+                <button class="tab-button" onclick="showTab('status')">
+                    📊 <span>現状分析</span>
+                </button>
+                <button class="tab-button" onclick="showTab('bill')">
+                    📜 <span>法案条文</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- タブコンテンツ -->
+        <div class="tab-content">
+            <!-- 概要タブ -->
+            <div id="overview" class="content-section active">
+                <div class="content-wrapper">
+                    <div class="tab-header">
+                        <h2>📄 法案の概要</h2>
+                    </div>
+                    <div style="padding: 2rem;">
+                        <div style="margin-bottom: 2rem;">
+                            <h3 style="font-size: 1.25rem; margin-bottom: 1rem;">目的と関連法律</h3>
+                            <div class="two-column">
+                                <div class="box">
+                                    <h4>目的</h4>
+                                    <div class="bullet-point">
+                                        <div class="bullet"></div>
+                                        <div>AI関連技術に関する施策を総合的・計画的に推進</div>
+                                    </div>
+                                    <div class="bullet-point">
+                                        <div class="bullet"></div>
+                                        <div>国民生活の向上と国民経済の健全な発展に貢献</div>
+                                    </div>
+                                </div>
+                                <div class="box">
+                                    <h4>関連法律との連携</h4>
+                                    <div class="bullet-point">
+                                        <div class="bullet"></div>
+                                        <div>科学技術・イノベーション基本法</div>
+                                    </div>
+                                    <div class="bullet-point">
+                                        <div class="bullet"></div>
+                                        <div>デジタル社会形成基本法</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 style="font-size: 1.25rem; margin-bottom: 1rem;">AI関連技術の定義</h3>
+                            <div class="two-column">
+                                <div style="background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%); padding: 1.5rem; border-radius: 0.5rem;">
+                                    <div style="font-size: 3rem; margin-bottom: 1rem;">🧠</div>
+                                    <h4>人間の知的能力を代替する技術</h4>
+                                    <p style="color: #4b5563;">認識、推論、判断に係る能力</p>
+                                </div>
+                                <div style="background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); padding: 1.5rem; border-radius: 0.5rem;">
+                                    <div style="font-size: 3rem; margin-bottom: 1rem;">💻</div>
+                                    <h4>情報処理システム技術</h4>
+                                    <p style="color: #4b5563;">入力された情報をAI技術で処理し、結果を出力する機能</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-footer">
+                        一般社団法人日本みらい研作成
+                    </div>
+                </div>
+            </div>
+
+            <!-- 基本理念タブ -->
+            <div id="principles" class="content-section">
+                <div class="content-wrapper">
+                    <div class="tab-header">
+                        <h2>🎯 基本理念</h2>
+                    </div>
+                    <div style="padding: 2rem;">
+                        <h3>経済社会発展の基盤</h3>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                            <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 1rem; border-radius: 0.5rem;">
+                                <h4 style="color: #2563eb; margin-bottom: 0.5rem;">行政・民間の効率化</h4>
+                                <p style="color: #6b7280; font-size: 0.875rem;">行政事務・民間事業の効率化・高度化</p>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 1rem; border-radius: 0.5rem;">
+                                <h4 style="color: #2563eb; margin-bottom: 0.5rem;">新産業創出</h4>
+                                <p style="color: #6b7280; font-size: 0.875rem;">新しい産業の創出と発展</p>
+                            </div>
+                            <div style="background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); padding: 1rem; border-radius: 0.5rem;">
+                                <h4 style="color: #2563eb; margin-bottom: 0.5rem;">安全保障</h4>
+                                <p style="color: #6b7280; font-size: 0.875rem;">安全保障の観点からも重要な技術</p>
+                            </div>
+                        </div>
+
+                        <div class="two-column">
+                            <div style="background: #dcfce7; padding: 1.5rem; border-radius: 0.5rem;">
+                                <h3 style="color: #16a34a; margin-bottom: 1rem;">🎯 主要目標</h3>
+                                <div class="bullet-point">
+                                    <div style="background: #16a34a;" class="bullet"></div>
+                                    <div>研究開発能力の保持</div>
+                                </div>
+                                <div class="bullet-point">
+                                    <div style="background: #16a34a;" class="bullet"></div>
+                                    <div>国際競争力の向上</div>
+                                </div>
+                                <div class="bullet-point">
+                                    <div style="background: #16a34a;" class="bullet"></div>
+                                    <div>総合的・計画的な推進</div>
+                                </div>
+                                <div class="bullet-point">
+                                    <div style="background: #16a34a;" class="bullet"></div>
+                                    <div>国際協力での主導的役割</div>
+                                </div>
+                            </div>
+                            <div class="highlight-box">
+                                <h3 style="color: #dc2626; margin-bottom: 1rem;">⚠️ 注意事項</h3>
+                                <p>不正目的・不適切な活用は犯罪につながる可能性</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-footer">
+                        一般社団法人日本みらい研作成
+                    </div>
+                </div>
+            </div>
+
+            <!-- 責務タブ -->
+            <div id="responsibilities" class="content-section">
+                <div class="content-wrapper">
+                    <div class="tab-header">
+                        <h2>👥 各主体の責務</h2>
+                    </div>
+                    <div style="padding: 2rem;">
+                        <div class="responsibility-grid">
+                            <div class="resp-card resp-nation">
+                                <div class="icon-circle nation-icon">🏛️</div>
+                                <h3>国</h3>
+                                <ul style="list-style: none; padding-left: 0;">
+                                    <li style="margin-bottom: 0.5rem;">• 施策の総合的・計画的な策定・実施</li>
+                                    <li>• 行政機関でのAI技術の積極活用</li>
+                                </ul>
+                            </div>
+                            <div class="resp-card resp-local">
+                                <div class="icon-circle local-icon">🏘️</div>
+                                <h3>地方公共団体</h3>
+                                <ul style="list-style: none; padding-left: 0;">
+                                    <li style="margin-bottom: 0.5rem;">• 地域特性を活かした自主的施策</li>
+                                    <li>• 国との適切な役割分担</li>
+                                </ul>
+                            </div>
+                            <div class="resp-card resp-research">
+                                <div class="icon-circle research-icon">🎓</div>
+                                <h3>研究開発機関</h3>
+                                <ul style="list-style: none; padding-left: 0;">
+                                    <li style="margin-bottom: 0.5rem;">• 研究開発・成果普及・人材育成</li>
+                                    <li>• 人文科学と自然科学の学際的研究</li>
+                                </ul>
+                            </div>
+                            <div class="resp-card resp-business">
+                                <div class="icon-circle business-icon">💼</div>
+                                <h3>活用事業者</h3>
+                                <ul style="list-style: none; padding-left: 0;">
+                                    <li style="margin-bottom: 0.5rem;">• 事業活動の効率化・高度化</li>
+                                    <li>• 新産業創出への努力</li>
+                                </ul>
+                            </div>
+                            <div class="resp-card resp-citizen">
+                                <div class="icon-circle citizen-icon">👨‍👩‍👧‍👦</div>
+                                <h3>国民</h3>
+                                <ul style="list-style: none; padding-left: 0;">
+                                    <li style="margin-bottom: 0.5rem;">• AI技術への理解と関心</li>
+                                    <li>• 国・地方公共団体の施策への協力</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="connection-box">
+                            <h3 style="font-size: 1.25rem; margin-bottom: 1rem;">🤝 相互連携の重要性</h3>
+                            <div class="connection-grid">
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">連携強化</h4>
+                                    <p style="margin-bottom: 0.5rem;">関係者間の相互連携・協力が不可欠</p>
+                                    <ul style="margin-top: 0.5rem; color: #bfdbfe; list-style: none; padding-left: 0;">
+                                        <li>• 国・地方公共団体</li>
+                                        <li>• 研究開発機関</li>
+                                        <li>• 活用事業者</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">国の支援</h4>
+                                    <ul style="color: #bfdbfe; list-style: none; padding-left: 0;">
+                                        <li style="margin-bottom: 0.5rem;">• 連携強化に必要な施策の実施</li>
+                                        <li>• 法制上・財政上の措置</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-footer">
+                        一般社団法人日本みらい研作成
+                    </div>
+                </div>
+            </div>
+
+            <!-- 基本施策タブ -->
+            <div id="policies" class="content-section">
+                <div class="content-wrapper">
+                    <div class="tab-header">
+                        <h2>🧠 基本的施策</h2>
+                    </div>
+                    <div style="padding: 2rem;">
+                        <div class="policies-grid">
+                            <div class="policy-card" onclick="togglePolicy('research')">
+                                <div class="policy-header">
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="policy-icon">🔬</div>
+                                        <h3>研究開発の推進</h3>
+                                    </div>
+                                    <span style="color: #6b7280;">▼</span>
+                                </div>
+                                <div id="research-content" class="policy-content">
+                                    基礎研究から実用化まで一貫した研究開発の推進、研究開発機関における成果移転体制の整備、成果に係る情報の提供など。
+                                </div>
+                            </div>
+                            
+                            <div class="policy-card" onclick="togglePolicy('facilities')">
+                                <div class="policy-header">
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="policy-icon">🏗️</div>
+                                        <h3>施設・設備等の整備</h3>
+                                    </div>
+                                    <span style="color: #6b7280;">▼</span>
+                                </div>
+                                <div id="facilities-content" class="policy-content">
+                                    大規模情報処理施設、情報通信インフラ、データセット等の知的基盤、共用利用の促進。
+                                </div>
+                            </div>
+                            
+                            <div class="policy-card" onclick="togglePolicy('compliance')">
+                                <div class="policy-header">
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="policy-icon">🛡️</div>
+                                        <h3>適正性の確保</h3>
+                                    </div>
+                                    <span style="color: #6b7280;">▼</span>
+                                </div>
+                                <div id="compliance-content" class="policy-content">
+                                    国際的規範に即した指針整備、適正な実施のための施策。
+                                </div>
+                            </div>
+                            
+                            <div class="policy-card" onclick="togglePolicy('talent')">
+                                <div class="policy-header">
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="policy-icon">🎓</div>
+                                        <h3>人材の確保</h3>
+                                    </div>
+                                    <span style="color: #6b7280;">▼</span>
+                                </div>
+                                <div id="talent-content" class="policy-content">
+                                    専門的かつ幅広い知識を持つ人材、多様な分野の人材育成、資質向上の施策。
+                                </div>
+                            </div>
+                            
+                            <div class="policy-card" onclick="togglePolicy('education')">
+                                <div class="policy-header">
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="policy-icon">📚</div>
+                                        <h3>教育の振興</h3>
+                                    </div>
+                                    <span style="color: #6b7280;">▼</span>
+                                </div>
+                                <div id="education-content" class="policy-content">
+                                    AI技術への理解促進、関連教育・学習の振興、広報活動の充実。
+                                </div>
+                            </div>
+                            
+                            <div class="policy-card" onclick="togglePolicy('research-study')">
+                                <div class="policy-header">
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="policy-icon">🔍</div>
+                                        <h3>調査研究</h3>
+                                    </div>
+                                    <span style="color: #6b7280;">▼</span>
+                                </div>
+                                <div id="research-study-content" class="policy-content">
+                                    国内外動向の情報収集、不適切利用事案の分析・対策検討、研究開発機関への指導・助言。
+                                </div>
+                            </div>
+                            
+                            <div class="policy-card" onclick="togglePolicy('international')">
+                                <div class="policy-header">
+                                    <div style="display: flex; align-items: center;">
+                                        <div class="policy-icon">🌐</div>
+                                        <h3>国際協力</h3>
+                                    </div>
+                                    <span style="color: #6b7280;">▼</span>
+                                </div>
+                                <div id="international-content" class="policy-content">
+                                    国際協力の推進、国際的規範策定への積極的参画。
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-footer">
+                        一般社団法人日本みらい研作成
+                    </div>
+                </div>
+            </div>
+
+            <!-- 推進体制タブ -->
+            <div id="organization" class="content-section">
+                <div class="content-wrapper">
+                    <div class="tab-header">
+                        <h2>🏢 人工知能戦略本部</h2>
+                    </div>
+                    <div style="padding: 2rem;">
+                        <div style="background: #dbeafe; padding: 1.5rem; border-radius: 0.5rem; margin-bottom: 2rem;">
+                            <h3 style="margin-bottom: 1rem;">設置・役割</h3>
+                            <div class="two-column">
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">設置場所</h4>
+                                    <p style="color: #374151;">内閣</p>
+                                </div>
+                                <div>
+                                    <h4 style="margin-bottom: 0.5rem;">主な役割</h4>
+                                    <ul style="color: #374151; list-style: none; padding-left: 0;">
+                                        <li>• 人工知能基本計画案の作成</li>
+                                        <li>• 実施の推進</li>
+                                        <li>• 重要施策の企画立案・総合調整</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 style="margin-bottom: 1rem;">組織構成</h3>
+                        <div class="org-chart">
+                            <div class="org-box org-boss">
+                                <div class="org-icon">本部長</div>
+                                <div>
+                                    <h4 style="font-size: 1.1rem;">内閣総理大臣</h4>
+                                    <p style="font-size: 0.875rem; color: #6b7280;">本部の事務を総括し職員を指揮監督</p>
+                                </div>
+                            </div>
+                            
+                            <div class="vice-grid">
+                                <div class="org-box org-vice">
+                                    <div class="org-icon">副<br>本部長</div>
+                                    <div>
+                                        <h4>内閣官房長官</h4>
+                                        <p style="font-size: 0.875rem; color: #6b7280;">本部長の職務を助ける</p>
+                                    </div>
+                                </div>
+                                <div class="org-box org-vice">
+                                    <div class="org-icon">副<br>本部長</div>
+                                    <div>
+                                        <h4>AI戦略担当大臣</h4>
+                                        <p style="font-size: 0.875rem; color: #6b7280;">本部長の職務を助ける</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="org-box org-member">
+                                <div class="org-icon">本部員</div>
+                                <div>
+                                    <h4>他の全ての国務大臣</h4>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 2rem; background: #f3f4f6; padding: 1.5rem; border-radius: 0.5rem;">
+                            <h3 style="margin-bottom: 1rem;">権限</h3>
+                            <div class="bullet-point">
+                                <div class="bullet"></div>
+                                <div>関係機関への資料提出要求</div>
+                            </div>
+                            <div class="bullet-point">
+                                <div class="bullet"></div>
+                                <div>意見表明・説明の要求</div>
+                            </div>
+                            <div class="bullet-point">
+                                <div class="bullet"></div>
+                                <div>必要な協力の要請</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-footer">
+                        一般社団法人日本みらい研作成
+                    </div>
+                </div>
+            </div>
+
+            <!-- 現状分析タブ -->
+            <div id="status" class="content-section">
+                <div class="content-wrapper">
+                    <div class="tab-header">
+                        <h2>📊 日本の現状と課題</h2>
+                    </div>
+                    <div style="padding: 2rem;">
+                        <div style="margin-bottom: 2rem;">
+                            <h3>AIへの民間投資額（2023年）</h3>
+                            <div class="graph-container">
+                                <div class="bar-item">
+                                    <div class="country-info">
+                                        <div class="flag">🇺🇸</div>
+                                        <div class="country-name">米国</div>
+                                        <div class="country-rank">1位</div>
+                                    </div>
+                                    <div class="bar-container">
+                                        <div class="bar-bg">
+                                            <div class="bar-fill" style="width: 85%;"></div>
+                                        </div>
+                                        <div class="amount-label">$672億ドル</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bar-item">
+                                    <div class="country-info">
+                                        <div class="flag">🇨🇳</div>
+                                        <div class="country-name">中国</div>
+                                        <div class="country-rank">2位</div>
+                                    </div>
+                                    <div class="bar-container">
+                                        <div class="bar-bg">
+                                            <div class="bar-fill" style="width: 11.6%;"></div>
+                                        </div>
+                                        <div class="amount-label">$78億ドル</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bar-item">
+                                    <div class="country-info">
+                                        <div class="flag">🇯🇵</div>
+                                        <div class="country-name">日本</div>
+                                        <div class="country-rank">12位</div>
+                                    </div>
+                                    <div class="bar-container">
+                                        <div class="bar-bg">
+                                            <div class="bar-fill japan" style="width: 3%;"></div>
+                                        </div>
+                                        <div class="amount-label amount-japan">$20億ドル</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="highlight-box" style="margin-top: 2rem;">
+                                <p><strong>注目:</strong> 日本の投資額は米国の約3%、中国の約26%に留まっており、大幅な遅れが明確です。</p>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 2rem;">
+                            <h3>課題と国民の意識</h3>
+                            <div class="two-column">
+                                <div style="background: #fef3c7; padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid #f59e0b;">
+                                    <h3 style="color: #92400e;">AI利用率の課題</h3>
+                                    <div class="bullet-point">
+                                        <div style="background: #f59e0b;" class="bullet"></div>
+                                        <div>生成AIの個人利用率：他国より低い</div>
+                                    </div>
+                                    <div class="bullet-point">
+                                        <div style="background: #f59e0b;" class="bullet"></div>
+                                        <div>企業での業務利用率：他国より低い</div>
+                                    </div>
+                                </div>
+                                <div style="background: #f3e8ff; padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid #7c3aed;">
+                                    <h3 style="color: #6b21a8;">国民の意識</h3>
+                                    <div class="bullet-point">
+                                        <div style="background: #7c3aed;" class="bullet"></div>
+                                        <div>AIへの不安感が高い</div>
+                                    </div>
+                                    <div class="bullet-point">
+                                        <div style="background: #7c3aed;" class="bullet"></div>
+                                        <div>安全利用への信頼が低い</div>
+                                    </div>
+                                    <div class="bullet-point">
+                                        <div style="background: #7c3aed;" class="bullet"></div>
+                                        <div>規制必要性の認識が高い</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3>今後の展開</h3>
+                            <div class="connection-box">
+                                <h4 style="font-size: 1.25rem; margin-bottom: 1rem; color: white;">🔮 両立の実現を目指して</h4>
+                                <div class="connection-grid">
+                                    <div>
+                                        <h3 style="margin-bottom: 0.75rem;">継続的な検討</h3>
+                                        <div class="bullet-point">
+                                            <div style="background: #bfdbfe;" class="bullet"></div>
+                                            <div>国際的動向の考慮</div>
+                                        </div>
+                                        <div class="bullet-point">
+                                            <div style="background: #bfdbfe;" class="bullet"></div>
+                                            <div>社会経済情勢の変化への対応</div>
+                                        </div>
+                                        <div class="bullet-point">
+                                            <div style="background: #bfdbfe;" class="bullet"></div>
+                                            <div>施行状況の検証</div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 style="margin-bottom: 0.75rem;">両立の実現</h3>
+                                        <div class="balance-container">
+                                            <div class="balance-item">
+                                                <div class="balance-icon innovation-icon">⚡</div>
+                                                <p style="font-weight: bold; font-size: 0.875rem;">イノベーション<br>促進</p>
+                                            </div>
+                                            <div class="balance-arrow">⇄</div>
+                                            <div class="balance-item">
+                                                <div class="balance-icon risk-icon">🛡️</div>
+                                                <p style="font-weight: bold; font-size: 0.875rem;">リスク<br>対応</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-footer">
+                        一般社団法人日本みらい研作成
+                    </div>
+                </div>
+            </div>
+
+            <!-- 法案条文タブ -->
+            <div id="bill" class="content-section">
+                <div class="content-wrapper">
+                    <div class="tab-header">
+                        <h2>📜 法案条文（全文）</h2>
+                    </div>
+                    <div style="padding: 2rem;">
+                        <div class="law-text" style="box-shadow: none;">
+                            <h1 class="law-title">人工知能関連技術の研究開発及び活用の推進に関する法律案</h1>
+                            
+                            <!-- 第1章 総則 -->
+                            <div class="chapter">
+                                <h2 class="chapter-title chapter-1">第1章　総則</h2>
+                                
+                                <div class="article">
+                                    <h3 class="article-title">（目的）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第1条</div>
+                                        <div class="article-text">
+                                            この法律は、人工知能関連技術が、その適切な活用により、行政事務の効率化及び高度化、民間の事業活動の効率化及び高度化並びに新産業の創出をもたらす、経済社会の発展の基盤となる技術であるとともに、安全保障の観点からも重要な技術であることに鑑み、人工知能関連技術に関する施策を総合的かつ計画的に推進し、もって国民生活の向上及び国民経済の健全な発展に寄与することを目的とする。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（定義）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第2条</div>
+                                        <div class="article-text">
+                                            この法律において「人工知能関連技術」とは、次に掲げる技術をいう。<br />
+                                            一　人工的な方法により人間の認識、推論、判断に係る知的な能力を代替する機能を実現するために必要な技術<br />
+                                            二　前号に掲げる技術を利用して、入力された情報を処理し、その結果を出力する機能を実現するための情報処理システムに関する技術
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 第2章 基本理念 -->
+                            <div class="chapter">
+                                <h2 class="chapter-title chapter-2">第2章　基本理念</h2>
+                                
+                                <div class="article">
+                                    <h3 class="article-title">（基本理念）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第3条</div>
+                                        <div class="article-text">
+                                            人工知能関連技術の研究開発及び活用の推進は、次に掲げる事項を基本として行われるものとする。<br />
+                                            一　我が国において人工知能関連技術の研究開発を行う能力を保持し、関連産業の国際競争力を向上させること。<br />
+                                            二　人工知能関連技術の推進は、基礎研究から国民生活及び経済活動における活用に至るまで、各段階の関係者による取組が密接に関連していることに鑑み、これらの取組を総合的かつ計画的に推進すること。<br />
+                                            三　人工知能関連技術は、不正な目的又は不適切な方法で活用された場合には、犯罪につながるおそれがあることに留意すること。<br />
+                                            四　人工知能関連技術に関する国際協力においては、主導的な役割を果たすよう努めること。
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 第3章 責務 -->
+                            <div class="chapter">
+                                <h2 class="chapter-title chapter-3">第3章　責務</h2>
+                                
+                                <div class="article">
+                                    <h3 class="article-title">（国の責務）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第4条</div>
+                                        <div class="article-text">
+                                            国は、第3条の基本理念にのっとり、人工知能関連技術の研究開発及び活用の推進に関する施策を総合的かつ計画的に策定し、及び実施する責務を有する。<br />
+                                            2　国は、行政機関における人工知能関連技術の積極的な活用を推進するものとする。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（地方公共団体の責務）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第5条</div>
+                                        <div class="article-text">
+                                            地方公共団体は、第3条の基本理念にのっとり、国との適切な役割分担を踏まえて、その地域の特性を生かした自主的な施策を策定し、及び実施する責務を有する。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（研究開発機関の責務）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第6条</div>
+                                        <div class="article-text">
+                                            大学及び研究開発法人その他の研究開発機関は、第3条の基本理念にのっとり、人工知能関連技術の研究開発、その成果の普及及び人材の育成に積極的に努めるとともに、国及び地方公共団体が実施する人工知能関連技術の研究開発及び活用の推進に関する施策に協力するよう努めるものとする。<br />
+                                            2　研究開発機関における人工知能関連技術の研究開発の推進に当たっては、人文科学と自然科学との多様な知見を総合的に活用する学際的又は総合的な研究開発に努めるものとする。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（活用事業者の責務）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第7条</div>
+                                        <div class="article-text">
+                                            人工知能関連技術を利用した製品若しくはサービスの開発若しくは提供を行う者又は事業活動において人工知能関連技術を活用する者は、第3条の基本理念にのっとり、自ら積極的に人工知能関連技術を活用して事業活動の効率化及び高度化並びに新産業の創出に努めるとともに、国及び地方公共団体が実施する人工知能関連技術の研究開発及び活用の推進に関する施策に協力しなければならない。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（国民の責務）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第8条</div>
+                                        <div class="article-text">
+                                            国民は、第3条の基本理念にのっとり、人工知能関連技術に対する理解と関心を深めるよう努めるとともに、国及び地方公共団体が実施する人工知能関連技術の研究開発及び活用の推進に関する施策に協力するよう努めるものとする。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（連携の強化）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第9条</div>
+                                        <div class="article-text">
+                                            国は、人工知能関連技術の研究開発及び活用の推進が、国、地方公共団体、研究開発機関及び活用事業者の相互の密接な連携の下に行われることによって効果的に推進されることに鑑み、これらの者の間の連携の強化に必要な施策を講ずるものとする。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（法制上の措置等）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第10条</div>
+                                        <div class="article-text">
+                                            政府は、人工知能関連技術の研究開発及び活用の推進に関する施策を実施するため必要な法制上又は財政上の措置その他の措置を講じなければならない。
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 第4章 基本的施策 -->
+                            <div class="chapter">
+                                <h2 class="chapter-title chapter-4">第4章　基本的施策</h2>
+                                
+                                <div class="article">
+                                    <h3 class="article-title">（研究開発の推進等）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第11条</div>
+                                        <div class="article-text">
+                                            国は、人工知能関連技術の研究開発の推進を図るため、基礎研究から実用化に至るまでの一貫した研究開発の推進、研究開発機関における研究開発の成果の移転に関する体制の整備、研究開発の成果に係る情報の提供その他の必要な施策を講ずるものとする。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（施設及び設備等の整備及び共用の促進）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第12条</div>
+                                        <div class="article-text">
+                                            国は、人工知能関連技術の研究開発及び活用の推進を図るため、大規模な情報の処理、情報の通信及び電磁的記録の保管等に係る施設及び設備、データセットその他の知的基盤を研究開発機関及び活用事業者が広く利用することができるよう、その整備及び共用の促進に必要な施策を講ずるものとする。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（適正性の確保）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第13条</div>
+                                        <div class="article-text">
+                                            国は、人工知能関連技術の研究開発及び活用の適正な実施を図るため、国際的な規範の趣旨に即した指針の整備その他の必要な施策を講ずるものとする。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（人材の確保等）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第14条</div>
+                                        <div class="article-text">
+                                            国は、人工知能関連技術の研究開発及び活用の推進に必要な、専門的かつ幅広い知識を有する多様な分野の人材の確保、養成及び資質の向上に必要な施策を講ずるものとする。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（教育の振興等）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第15条</div>
+                                        <div class="article-text">
+                                            国は、国民が人工知能関連技術に対する理解と関心を深めることができるよう、人工知能関連技術に関する教育及び学習の振興、広報活動の充実その他の必要な施策を講ずるものとする。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（調査研究等）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第16条</div>
+                                        <div class="article-text">
+                                            国は、人工知能関連技術の研究開発及び活用の推進に資するため、国内外における人工知能関連技術の動向に関する情報の収集、人工知能関連技術の不正な目的又は不適切な方法での活用による国民の権利利益の侵害に関する事案の分析及びその対策の検討その他の調査研究を行い、その結果に基づき、研究開発機関等に対する指導、助言及び情報の提供その他の措置を講ずるものとする。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（国際協力）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第17条</div>
+                                        <div class="article-text">
+                                            国は、人工知能関連技術の研究開発及び活用に関する国際協力を推進するとともに、人工知能関連技術に関する国際的な規範の策定に積極的に参画するものとする。
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 第5章 人工知能基本計画 -->
+                            <div class="chapter">
+                                <h2 class="chapter-title chapter-5">第5章　人工知能基本計画</h2>
+                                
+                                <div class="article">
+                                    <h3 class="article-title">（人工知能基本計画）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第18条</div>
+                                        <div class="article-text">
+                                            政府は、第3条の基本理念及び第4章に定める基本的施策にのっとり、人工知能関連技術の研究開発及び活用の推進に関する基本的な計画（以下「人工知能基本計画」という。）を定めなければならない。<br />
+                                            2　人工知能基本計画は、次に掲げる事項について定めるものとする。<br />
+                                            一　人工知能関連技術の研究開発及び活用の推進に関する基本的な方針<br />
+                                            二　政府が総合的かつ計画的に講ずべき施策その他人工知能関連技術の研究開発及び活用の推進に関し必要な事項<br />
+                                            3　内閣総理大臣は、人工知能戦略本部が作成した人工知能基本計画の案について閣議の決定を求めなければならない。<br />
+                                            4　内閣総理大臣は、前項の規定による閣議の決定があったときは、遅滞なく、人工知能基本計画を公表しなければならない。<br />
+                                            5　前2項の規定は、人工知能基本計画の変更について準用する。
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 第6章 人工知能戦略本部 -->
+                            <div class="chapter">
+                                <h2 class="chapter-title chapter-6">第6章　人工知能戦略本部</h2>
+                                
+                                <div class="article">
+                                    <h3 class="article-title">（設置）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第19条</div>
+                                        <div class="article-text">
+                                            人工知能関連技術の研究開発及び活用の推進に関する施策を総合的かつ計画的に推進するため、内閣に、人工知能戦略本部（以下「本部」という。）を置く。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（所掌事務）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第20条</div>
+                                        <div class="article-text">
+                                            本部は、次に掲げる事務をつかさどる。<br />
+                                            一　人工知能基本計画の案の作成及びその実施の推進に関すること。<br />
+                                            二　人工知能関連技術の研究開発及び活用の推進に関する重要な施策の企画及び立案並びに総合調整に関すること。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（組織）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第21条</div>
+                                        <div class="article-text">
+                                            本部は、人工知能戦略本部長、人工知能戦略副本部長及び人工知能戦略本部員をもって組織する。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（人工知能戦略本部長）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第22条</div>
+                                        <div class="article-text">
+                                            人工知能戦略本部長は、内閣総理大臣をもって充てる。<br />
+                                            2　人工知能戦略本部長は、本部の事務を総括し、所部の職員を指揮監督する。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（人工知能戦略副本部長）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第23条</div>
+                                        <div class="article-text">
+                                            人工知能戦略副本部長は、内閣官房長官及び人工知能戦略担当大臣をもって充てる。<br />
+                                            2　人工知能戦略副本部長は、人工知能戦略本部長の職務を助ける。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（人工知能戦略本部員）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第24条</div>
+                                        <div class="article-text">
+                                            人工知能戦略本部員は、人工知能戦略本部長及び人工知能戦略副本部長以外の全ての国務大臣をもって充てる。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（資料提出の要求等）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第25条</div>
+                                        <div class="article-text">
+                                            本部は、その所掌事務を遂行するために必要があると認めるときは、関係行政機関、地方公共団体、独立行政法人、地方独立行政法人、特殊法人その他の関係者に対し、資料の提出、意見の開陳、説明その他必要な協力を求めることができる。<br />
+                                            2　本部は、その所掌事務を遂行するために特に必要があると認めるときは、前項に規定する者以外の者に対しても、必要な協力を依頼することができる。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（政令への委任）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第26条</div>
+                                        <div class="article-text">
+                                            この章に定めるもののほか、本部の組織及び運営に関し必要な事項は、政令で定める。
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 第7章 雑則 -->
+                            <div class="chapter">
+                                <h2 class="chapter-title chapter-7">第7章　雑則</h2>
+                                
+                                <div class="article">
+                                    <h3 class="article-title">（内閣府の事務）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第27条</div>
+                                        <div class="article-text">
+                                            第6章に規定する本部に関する事務は、内閣府において処理し、同章に規定する事項についての内閣総理大臣の権限に属する事務は、内閣官房長官に委任することができる。
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 附則 -->
+                            <div class="chapter">
+                                <h2 class="chapter-title chapter-8">附則</h2>
+                                
+                                <div class="article">
+                                    <h3 class="article-title">（施行期日）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第1条</div>
+                                        <div class="article-text">
+                                            この法律は、公布の日から起算して3月を超えない範囲内において政令で定める日から施行する。
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="article">
+                                    <h3 class="article-title">（検討）</h3>
+                                    <div class="article-content">
+                                        <div class="article-number">第2条</div>
+                                        <div class="article-text">
+                                            政府は、人工知能関連技術に関する諸施策について、国際的な動向及び社会経済情勢の変化を勘案し、この法律の施行の状況について検討を加え、必要があると認めるときは、その結果に基づいて所要の措置を講ずるものとする。
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-footer">
+                        一般社団法人日本みらい研作成
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // タブ切り替え機能
+        function showTab(tabId) {
+            // 全てのタブボタンを非アクティブにする
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            
+            // 全てのコンテンツセクションを非表示にする
+            const sections = document.querySelectorAll('.content-section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // 選択されたタブボタンをアクティブにする
+            const activeButton = Array.from(buttons).find(button => 
+                button.getAttribute('onclick').includes(tabId)
+            );
+            if (activeButton) {
+                activeButton.classList.add('active');
+            }
+            
+            // 選択されたコンテンツセクションを表示する
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // 施策のアコーディオン機能
+        function togglePolicy(policyId) {
+            const content = document.getElementById(policyId + '-content');
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+            } else {
+                content.classList.add('expanded');
+            }
+        }
+
+        // 投資額グラフのアニメーション
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                const bars = document.querySelectorAll('.bar-fill');
+                bars.forEach(bar => {
+                    const width = bar.style.width;
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = width;
+                    }, 100);
+                });
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

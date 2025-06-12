@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>国民関心課題インタラクティブレポート (2025年3–5月)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Application Structure Plan: 
+        - Header: Title and brief introduction.
+        - Main Content: 
+            - Filters: Buttons to filter issues by category.
+            - Chart Section: Bar chart showing scores of all issues (Chart.js).
+            - Issue List Section: Cards for each issue, clickable for details.
+        - Modal: Displays detailed information for a selected issue.
+        - Footer/Info Section: Explanation of scoring and key takeaways from the report.
+        This structure is chosen for usability, allowing users to get an overview (chart), browse summaries (cards), filter by interest, and dive into details (modal), making complex data easily digestible.
+    -->
+    <!-- Visualization & Content Choices: 
+        - Overall Ranking Chart (Bar Chart, Chart.js): 
+            Goal: Compare overall interest levels at a glance. 
+            Interaction: Hover for tooltips, potentially click to scroll to issue card.
+            Justification: Bar charts are effective for comparing magnitudes.
+        - Issue Cards (HTML/Tailwind + JS): 
+            Goal: Provide a scannable summary of each issue.
+            Interaction: Click to open detailed modal.
+            Justification: Cards offer a structured and visually appealing way to present itemized information.
+        - Detailed Modal (HTML/Tailwind + JS):
+            Goal: Offer in-depth information for interested users without cluttering the main view.
+            Interaction: Close button.
+            Justification: Modals are good for contextual detail display.
+        - Category Filters (Buttons, JS):
+            Goal: Allow users to focus on specific areas of interest.
+            Interaction: Click to re-render the issue list and update the chart.
+            Justification: Improves navigation and relevance for users.
+        - Textual Information (HTML/Tailwind):
+            Goal: Provide context like scoring methodology and report insights.
+            Justification: Essential for understanding the data presented.
+        Library/Method: Chart.js for charts, Vanilla JS for interactions and DOM manipulation. Tailwind CSS for styling.
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+                max-height: 60vh;
+            }
+        }
+        .modal {
+            transition: opacity 0.25s ease;
+        }
+        .modal-content {
+            transition: transform 0.25s ease;
+        }
+        .card-enter {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+        .card-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-sky-700 mb-2">国民関心課題トップ20</h1>
+            <p class="text-slate-600 text-sm sm:text-base">2025年3–5月世論調査46本の統合分析に基づくインタラクティブレポートである。</p>
+        </header>
+
+        <section id="introduction" class="mb-8 p-6 bg-white rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold text-sky-600 mb-3">はじめに</h2>
+            <p class="text-slate-600 leading-relaxed">
+                このインタラクティブレポートは、2025年3月から5月にかけて実施された46本の世論調査結果を統合し、国民がどのような課題に高い関心を寄せているかを分析したものである。各課題には、関心の度合いを示す「関心度スコア」（最高回答率×設問出現頻度で算出）が付与されており、主な関心理由や経済への影響も併記されている。このページを通じて、現代日本の国民意識の動向を理解の一助となれば幸いである。チャートやカードをクリックして、詳細情報を参照されたい。
+            </p>
+        </section>
+
+        <section id="filters" class="mb-6 text-center">
+            <h2 class="text-xl font-semibold text-sky-600 mb-3">カテゴリで絞り込む</h2>
+            <div id="category-filters" class="flex flex-wrap justify-center gap-2 sm:gap-3">
+                <button data-category="all" class="filter-btn active bg-sky-600 text-white px-4 py-2 rounded-md hover:bg-sky-700 transition-colors text-sm sm:text-base">全課題</button>
+            </div>
+        </section>
+
+        <section id="chart-section" class="mb-8 p-4 sm:p-6 bg-white rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold text-sky-600 mb-4 text-center">関心度スコアランキング</h2>
+            <div class="chart-container">
+                <canvas id="issuesChart"></canvas>
+            </div>
+            <p class="text-xs text-slate-500 mt-2 text-center">グラフの項目にマウスオーバー（またはタップ）すると詳細が表示される。</p>
+        </section>
+
+        <section id="issues-list" class="mb-8">
+            <h2 class="text-2xl font-semibold text-sky-600 mb-4 text-center">課題一覧</h2>
+            <div id="issues-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            </div>
+        </section>
+
+        <section id="report-insights" class="p-6 bg-white rounded-lg shadow-md mb-8">
+            <h2 class="text-2xl font-semibold text-sky-600 mb-3">読み取りポイント</h2>
+            <ul class="list-disc list-inside text-slate-600 space-y-2 leading-relaxed">
+                <li>上位３位は“家計３点セット”が独占。可処分所得と物価が共通キードライバーである。</li>
+                <li>サリエンス係数を導入したことで、賛成率は高いが設問頻度が低い夫婦別姓などは11位に位置する。</li>
+                <li>経済面では、物価・消費税・米関税の帰趨が2025年度のGDP成長と家計マインドを大きく左右する。</li>
+                <li>最新（6月）調査公表後に係数を更新すると、選挙直前の民意変化がより精緻に追跡可能である。</li>
+            </ul>
+        </section>
+
+        <section id="scoring-methodology" class="p-6 bg-white rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold text-sky-600 mb-3">関心度スコア算出式</h2>
+            <div class="text-slate-600 leading-relaxed">
+                <p>スコア = (肯定回答率 × サリエンス係数 / 0.87) × 100</p>
+                <p class="text-sm mt-1">（物価対策 87 % × 係数1.00を100点基準に線形換算）</p>
+                <p class="mt-2">このスコアは、世論調査における課題への肯定的な回答の割合と、その課題が調査で取り上げられる頻度（サリエンス係数）を組み合わせて算出されている。これにより、単に賛成者が多いだけでなく、国民にとってどれだけ「身近で重要な」問題と認識されているかを総合的に評価することを目指している。</p>
+            </div>
+        </section>
+    </div>
+
+    <div id="modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 opacity-0 pointer-events-none z-50">
+        <div class="modal-content bg-white rounded-lg shadow-xl p-6 sm:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto transform scale-95">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modal-title" class="text-2xl font-bold text-sky-700"></h3>
+                <button id="close-modal" class="text-slate-500 hover:text-slate-700 text-2xl">&times;</button>
+            </div>
+            <div class="space-y-3 text-slate-600">
+                <p><strong class="text-slate-700">関心度スコア:</strong> <span id="modal-score" class="font-semibold text-sky-600"></span></p>
+                <p><strong class="text-slate-700">主な関心理由〈世論面〉:</strong> <span id="modal-reason"></span></p>
+                <p><strong class="text-slate-700">経済への影響・強化経路〈要点〉:</strong> <span id="modal-impact"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const nationalIssuesData = [
+            { rank: 1, title: "物価高・コメ価格急騰対策", score: 100, reason: "主食価格２倍・「対策不十分」87 %", economicImpact: "実質賃金↓→民間消費▲0.2～0.3 pt 中小飲食業打撃", category: "経済・生活" },
+            { rank: 2, title: "消費税減税・廃止", score: 91, reason: "減税希望73 %", economicImpact: "1 %減税＝家計負担▲2.8兆円→消費＋0.2兆円　地方財政マイナス", category: "経済・税制" },
+            { rank: 3, title: "対米高関税交渉不信", score: 85, reason: "「期待できず」74 %", economicImpact: "関税維持で輸入インフレ継続／妥結なら輸出産業＋0.6兆円", category: "経済・外交" },
+            { rank: 4, title: "社会保障サービス低下不安", score: 84, reason: "将来不安73 %", economicImpact: "予防的貯蓄↑→消費圧迫　医療・介護費圧力継続", category: "社会保障" },
+            { rank: 5, title: "雇用・実質賃上げ", score: 74, reason: "賃上げ実感なし57 %", economicImpact: "可処分所得停滞→個人消費鈍化　賃金主導物価上昇なら投資刺激", category: "経済・労働" },
+            { rank: 6, title: "少子化・子育て支援", score: 71, reason: "18–39歳で最重視", economicImpact: "出生率1.2割れで就業者▲900万人　子育て予算増＝中期需要下支え", category: "社会保障" },
+            { rank: 7, title: "防衛力強化", score: 64, reason: "「必要」64 %", economicImpact: "防衛費＋1兆円→装備産業需要↑　財源次第で民需抑制／金利上昇", category: "安全保障・財政" },
+            { rank: 8, title: "年金制度改革是非", score: 61, reason: "政府案反対53 %", economicImpact: "持続性確保で長期国債利回り↓　短期は保険料↑で消費抑制", category: "社会保障" },
+            { rank: 9, title: "政治とカネ（献金禁止）", score: 60, reason: "禁止53 %", economicImpact: "ガバナンス改善で対外イメージ向上→資金調達コスト↓", category: "政治・行政" },
+            { rank: 10, title: "エネルギー・環境（補助金）", score: 56, reason: "補助延長支持49 %", economicImpact: "補助切れでCPI＋0.3 pt　GX投資150兆円計画→重電需要↑", category: "エネルギー・環境" },
+            { rank: 11, title: "選択的夫婦別姓制度", score: 41, reason: "賛成71 %（若年女性85 %）", economicImpact: "改姓コスト↓＆就業継続↑→労働参加率＋0.3 pt", category: "社会・制度" },
+            { rank: 12, title: "防災・災害対策", score: 36, reason: "地震後「関心上昇」72 %", economicImpact: "インフラ補強投資３兆円　建設需要押上げ", category: "社会基盤" },
+            { rank: 13, title: "外国人労働者受入拡大", score: 33, reason: "受入賛成62 %", economicImpact: "労働供給＋40万人→潜在成長率＋0.2 pt　社会統合コスト↑", category: "経済・労働" },
+            { rank: 14, title: "デジタル行政サービス向上", score: 32, reason: "手続き遅延不満51 %", economicImpact: "行政コスト▲１兆円　生産性＋0.1 pt", category: "政治・行政" },
+            { rank: 15, title: "住宅価格・金利対策", score: 32, reason: "「不安」55 %", economicImpact: "住宅投資減でGDP▲0.1 pt　中古市場活性化効果", category: "経済・生活" },
+            { rank: 16, title: "地方創生・人口減少", score: 28, reason: "地方危機感71 %", economicImpact: "地方GDP・税収減　移住促進でサテライト投資↑", category: "社会・地域" },
+            { rank: 17, title: "原発再稼働是非", score: 27, reason: "賛成41 %／反対29 %", economicImpact: "10基再稼働でLNG輸入▲1兆円　電価抑制7 %", category: "エネルギー・環境" },
+            { rank: 18, title: "交通インフラ老朽化更新", score: 26, reason: "更新財源不足40 %", economicImpact: "更新費10兆円　公共投資↑／通行料↑で物流コスト↑", category: "社会基盤" },
+            { rank: 19, title: "SNS偽情報規制", score: 25, reason: "規制必要58 %", economicImpact: "プラットフォーム規制コスト↑　広告市場信頼性↑", category: "情報・社会" },
+            { rank: 20, title: "文化・芸術振興支援", score: 15, reason: "予算不足51 %", economicImpact: "文化GDP2.5兆円維持　観光・地域ブランド効果", category: "文化・社会" }
+        ];
+
+        const issuesGrid = document.getElementById('issues-grid');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalScore = document.getElementById('modal-score');
+        const modalReason = document.getElementById('modal-reason');
+        const modalImpact = document.getElementById('modal-impact');
+        const closeModalBtn = document.getElementById('close-modal');
+        const categoryFiltersContainer = document.getElementById('category-filters');
+
+        let chartInstance = null;
+        let currentFilter = 'all';
+
+        function createIssueCard(issue) {
+            const card = document.createElement('div');
+            card.className = 'bg-white p-5 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer card-enter';
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-lg font-semibold text-sky-700">${issue.rank}. ${issue.title}</h3>
+                    <span class="text-xl font-bold text-amber-500">${issue.score}</span>
+                </div>
+                <p class="text-sm text-slate-600 mb-1 truncate"><strong>理由:</strong> ${issue.reason}</p>
+                <p class="text-xs text-slate-500">カテゴリ: ${issue.category}</p>
+            `;
+            card.addEventListener('click', () => openModal(issue));
+            return card;
+        }
+        
+        function openModal(issue) {
+            modalTitle.textContent = issue.title;
+            modalScore.textContent = issue.score;
+            modalReason.textContent = issue.reason;
+            modalImpact.textContent = issue.economicImpact;
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.querySelector('.modal-content').classList.remove('scale-95');
+            modal.querySelector('.modal-content').classList.add('scale-100');
+        }
+
+        closeModalBtn.addEventListener('click', () => {
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('.modal-content').classList.add('scale-95');
+            modal.querySelector('.modal-content').classList.remove('scale-100');
+        });
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeModalBtn.click();
+            }
+        });
+        
+        function renderIssues(filter = 'all') {
+            currentFilter = filter;
+            issuesGrid.innerHTML = '';
+            const filteredIssues = filter === 'all' ? nationalIssuesData : nationalIssuesData.filter(issue => issue.category === filter);
+            
+            filteredIssues.forEach((issue, index) => {
+                const card = createIssueCard(issue);
+                issuesGrid.appendChild(card);
+                setTimeout(() => card.classList.add('card-enter-active'), index * 50);
+            });
+            updateChart(filteredIssues);
+            updateActiveFilterButton();
+        }
+
+        function getUniqueCategories() {
+            const categories = new Set(nationalIssuesData.map(issue => issue.category));
+            return Array.from(categories).sort();
+        }
+
+        function renderCategoryFilters() {
+            const categories = getUniqueCategories();
+            categories.forEach(category => {
+                const button = document.createElement('button');
+                button.dataset.category = category;
+                button.className = 'filter-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-md hover:bg-slate-300 transition-colors text-sm sm:text-base';
+                button.textContent = category;
+                button.addEventListener('click', () => renderIssues(category));
+                categoryFiltersContainer.appendChild(button);
+            });
+            document.querySelector('[data-category="all"]').addEventListener('click', () => renderIssues('all'));
+        }
+        
+        function updateActiveFilterButton() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.category === currentFilter) {
+                    btn.classList.add('bg-sky-600', 'text-white');
+                    btn.classList.remove('bg-slate-200', 'text-slate-700');
+                } else {
+                    btn.classList.remove('bg-sky-600', 'text-white');
+                    btn.classList.add('bg-slate-200', 'text-slate-700');
+                }
+            });
+        }
+
+        function updateChart(data) {
+            const ctx = document.getElementById('issuesChart').getContext('2d');
+            const chartData = {
+                labels: data.map(issue => `${issue.rank}. ${issue.title.length > 16 ? issue.title.substring(0, 15) + '…' : issue.title}`),
+                datasets: [{
+                    label: '関心度スコア',
+                    data: data.map(issue => issue.score),
+                    backgroundColor: 'rgba(2, 132, 199, 0.7)', // sky-600 with opacity
+                    borderColor: 'rgba(2, 132, 199, 1)', // sky-600
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    hoverBackgroundColor: 'rgba(2, 132, 199, 0.9)',
+                }]
+            };
+
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(203, 213, 225, 0.5)' // slate-300 with opacity
+                        },
+                        ticks: {
+                            color: '#475569' // slate-600
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#475569', // slate-600
+                            font: {
+                                size: 10
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.7)',
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 12 },
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.x !== null) {
+                                    label += context.parsed.x;
+                                }
+                                return label;
+                            },
+                            title: function(context) {
+                                // data is the full array of issues used for the chart
+                                // context[0].dataIndex is the index of the hovered bar
+                                return data[context[0].dataIndex].title;
+                            }
+                        }
+                    }
+                },
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const chartElement = elements[0];
+                        const issue = data[chartElement.index];
+                        openModal(issue);
+                    }
+                }
+            };
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: chartData,
+                options: chartOptions
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCategoryFilters();
+            renderIssues();
+        });
+    </script>
+</body>
+</html>
+

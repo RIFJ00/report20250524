@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>年金制度改正2025〜概要解説とシミュレーション</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans JP', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f7fa;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .main-title {
+            text-align: center;
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #e0e6ed;
+            margin-bottom: 20px;
+        }
+        
+        .tab {
+            padding: 12px 20px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #3b82f6;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 8px 8px 0 0;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .tab:hover:not(.active) {
+            background: #eff6ff;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .section {
+            margin-bottom: 20px;
+            border: 1px solid #e0e6ed;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: #eff6ff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .section-header:hover {
+            background: #dbeafe;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e40af;
+        }
+        
+        .section-arrow {
+            color: #3b82f6;
+            font-size: 18px;
+            transition: transform 0.3s ease;
+        }
+        
+        .section-content {
+            padding: 20px;
+            background: white;
+        }
+        
+        .section.collapsed .section-content {
+            display: none;
+        }
+        
+        .section.collapsed .section-arrow {
+            transform: rotate(-90deg);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1e40af;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        h2 {
+            text-align: center;
+            color: #1e40af;
+            margin-bottom: 20px;
+            font-size: 22px;
+            font-weight: 600;
+        }
+        
+        h3 {
+            color: #1e40af;
+            margin-bottom: 15px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .card {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .card h4 {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #1e40af;
+        }
+        
+        .highlight-box {
+            background: #eff6ff;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            margin: 15px 0;
+        }
+        
+        .alert-box {
+            background: #fef3cd;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+            margin: 15px 0;
+        }
+        
+        .success-box {
+            background: #d1fae5;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+            margin: 15px 0;
+        }
+        
+        .critical-box {
+            background: #fee2e2;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #ef4444;
+            margin: 15px 0;
+        }
+        
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #cbd5e1;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+            padding-left: 20px;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -25px;
+            top: 8px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #3b82f6;
+        }
+        
+        .timeline-date {
+            font-weight: 600;
+            color: #1e40af;
+            font-size: 16px;
+        }
+        
+        .timeline-content {
+            color: #374151;
+            margin-top: 5px;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e6ed;
+        }
+        
+        .comparison-table th {
+            background: #f1f5f9;
+            font-weight: 600;
+            color: #1e40af;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f8fafc;
+        }
+        
+        .scenario-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .scenario-btn {
+            padding: 10px 16px;
+            border: 2px solid #3b82f6;
+            background: white;
+            color: #3b82f6;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .scenario-btn.active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .scenario-btn:hover:not(.active) {
+            background: #eff6ff;
+        }
+        
+        .simulation-result {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .chart {
+            width: 100%;
+            height: 300px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e0e6ed;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e6ed;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+            transition: width 0.3s ease;
+        }
+        
+        .amount-display {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e40af;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .footer-note {
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e6ed;
+        }
+        
+        ul {
+            padding-left: 20px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .breaking-news {
+            background: linear-gradient(135deg, #fef3cd, #fbbf24);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .breaking-news h3 {
+            color: #92400e;
+            margin-bottom: 8px;
+        }
+        
+        .negotiation-status {
+            background: linear-gradient(135deg, #d1fae5, #34d399);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #10b981;
+        }
+        
+        .law-article {
+            background: #f8fafc;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+        
+        .law-title {
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+        
+        .issue-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .issue-card {
+            background: #fef3cd;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+            position: relative;
+        }
+        
+        .issue-card.critical {
+            background: #fee2e2;
+            border-left-color: #ef4444;
+        }
+        
+        .issue-card.moderate {
+            background: #fef3cd;
+            border-left-color: #f59e0b;
+        }
+        
+        .issue-card.minor {
+            background: #e0f2fe;
+            border-left-color: #0ea5e9;
+        }
+        
+        .issue-priority {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .priority-critical {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .priority-moderate {
+            background: #f59e0b;
+            color: white;
+        }
+        
+        .priority-minor {
+            background: #0ea5e9;
+            color: white;
+        }
+        
+        .law-title a {
+            color: #1e40af;
+            text-decoration: none;
+            border-bottom: 1px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .law-title a:hover {
+            color: #1d4ed8;
+            border-bottom: 1px solid #1d4ed8;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+                margin: 10px;
+            }
+            
+            .main-title {
+                font-size: 28px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                margin-right: 0;
+                border-radius: 6px;
+            }
+            
+            .grid, .issue-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .scenario-buttons {
+                flex-direction: column;
+            }
+            
+            .scenario-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="main-title">年金制度改正2025〜概要解説とシミュレーション</h1>
+        <p class="subtitle">一般社団法人日本みらい研（作成日:2025年5月27日、更新日:2025年5月31日）</p>
+        
+        <div class="breaking-news">
+            <h3>📋 最新情報（2025年5月31日9:00更新）</h3>
+            <p><strong>衆院で可決・参院へ送付：</strong> 5月27日の3党首正式合意を受け、5月28日から審議が行われていた3党共同提出の修正案が5月30日に衆院厚生労働委員会で可決、5月31日に衆院本会議で可決され、参院に送付された。基礎年金底上げ策を復活させた修正案により、「あんこのないあんぱん」と批判された政府原案の課題が解決された。今後は参院での審議を経て、6月22日会期末までの成立を目指す。</p>
+        </div>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="openTab(event, 'overview')">改正の概要</button>
+            <button class="tab" onclick="openTab(event, 'details')">詳細内容</button>
+            <button class="tab" onclick="openTab(event, 'negotiations')">与野党協議</button>
+            <button class="tab" onclick="openTab(event, 'simulation')">シミュレーション</button>
+            <button class="tab" onclick="openTab(event, 'issues')">未解決の課題と論点</button>
+            <button class="tab" onclick="openTab(event, 'timeline')">施行スケジュール</button>
+            <button class="tab" onclick="openTab(event, 'law')">法案</button>
+        </div>
+        
+        <!-- 概要タブ -->
+        <div id="overview" class="tab-content active">
+            <h2>年金制度改正の主要ポイント</h2>
+            <p>本改正は、社会経済の変化を踏まえた年金制度の機能強化を図ることを目的としている。</p>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">改正の目的</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <ul>
+                        <li>働き方やライフスタイルの多様化への対応</li>
+                        <li>少子高齢化社会における年金制度の持続可能性確保</li>
+                        <li>給付と負担のバランス調整</li>
+                        <li>世代間・世代内の公平性確保</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">主な改正内容</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="grid">
+                        <div class="card">
+                            <h4>1. 被用者保険の適用拡大</h4>
+                            <p>短時間労働者への適用拡大、事業所要件の緩和</p>
+                        </div>
+                        <div class="card">
+                            <h4>2. 年金額の改定ルール見直し</h4>
+                            <p>マクロ経済スライドの調整、財政均衡期間の設定</p>
+                        </div>
+                        <div class="card">
+                            <h4>3. 国民年金保険料の免除特例延長</h4>
+                            <p>30歳未満の低所得者向け特例の5年延長</p>
+                        </div>
+                        <div class="card">
+                            <h4>4. 老齢年金制度の見直し</h4>
+                            <p>支給繰下げ制度の柔軟化、在職老齢年金の調整額引上げ</p>
+                        </div>
+                        <div class="card">
+                            <h4>5. 遺族年金制度の見直し</h4>
+                            <p>遺族範囲の拡大、中高齢寡婦加算の段階的廃止</p>
+                        </div>
+                        <div class="card">
+                            <h4>6. 基礎年金の底上げ（復活決定）</h4>
+                            <p>厚生年金積立金を活用した基礎年金給付水準の底上げ（3党修正案で復活）</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 詳細内容タブ -->
+        <div id="details" class="tab-content">
+            <h2>改正の詳細内容</h2>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">1. 被用者保険の適用拡大</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="grid">
+                        <div>
+                            <ul>
+                                <li><strong>適用事業所の拡大：</strong>常時5人以上の従業員を使用する事業所が適用事業所となる</li>
+                                <li><strong>短時間労働者への適用拡大：</strong>「報酬が月額8万8千円未満」という要件が削除される</li>
+                                <li><strong>段階的な適用拡大：</strong>
+                                    <ul style="margin-top: 5px;">
+                                        <li>特定労働者の総数が常時50人を超える事業所が対象</li>
+                                        <li>令和14年10月1日(2032年)から令和17年9月30日(2035年)までの期間は、当該総数が常時10人を超える事業所も対象</li>
+                                    </ul>
+                                </li>
+                                <li><strong>事業主負担の調整：</strong>短時間被保険者に係る事業主負担の健康保険料の割合を、申し出があった日から36ヶ月間に限り増加させることができる経過措置あり</li>
+                            </ul>
+                        </div>
+                        <div class="highlight-box">
+                            <h4>適用拡大のイメージ</h4>
+                            <p><strong>現行：</strong> 常時従業員数が一定規模以上</p>
+                            <p style="margin: 10px 0;">↓</p>
+                            <p><strong>改正後：</strong> 常時5人以上の従業員</p>
+                            <p style="margin-top: 10px; font-size: 14px;">
+                                ✓ 企業規模要件の段階的な緩和<br>
+                                ✓ 短時間労働者の収入要件撤廃<br>
+                                ✓ 社会保険の適用対象者の拡大
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">2. 在職老齢年金制度の見直し</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="highlight-box">
+                        <h4>支給停止調整額の引上げ</h4>
+                        <div class="amount-display">50万円 → 62万円</div>
+                        <p>高齢者の就労と年金受給の両立支援を目的として、在職老齢年金の支給停止調整額を50万円から62万円に引き上げる。</p>
+                    </div>
+                    <ul>
+                        <li><strong>施行日：</strong> 令和8年4月1日（2026年4月1日）</li>
+                        <li><strong>効果：</strong> 月収62万円までは年金減額なしで受け取り可能</li>
+                        <li><strong>対象：</strong> 65歳以上の厚生年金受給者</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">3. 標準報酬月額の段階的引上げ</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-date">2027年9月1日（令和9年9月1日）</div>
+                            <div class="timeline-content">標準報酬月額上限を68万円に引上げ</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-date">2028年9月1日（令和10年9月1日）</div>
+                            <div class="timeline-content">標準報酬月額上限を71万円に引上げ</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-date">2029年9月1日（令和11年9月1日）</div>
+                            <div class="timeline-content">標準報酬月額上限を75万円に引上げ</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 与野党協議タブ -->
+        <div id="negotiations" class="tab-content">
+            <h2>与野党協議の最新状況</h2>
+            
+            <div class="negotiation-status">
+                <h3>📋 協議の進捗状況（2025年5月現在）</h3>
+                <p><strong>5月16日：</strong> 政府が基礎年金底上げ策を削除した法案を閣議決定・国会提出</p>
+                <p><strong>5月22日：</strong> 自民・公明党と立憲民主党による修正協議が開始</p>
+                <p><strong>5月27日：</strong> 3党首による基礎年金底上げ策復活の正式合意達成</p>
+                <p><strong>5月30日：</strong> 衆院厚生労働委員会で3党共同修正案が可決</p>
+                <p><strong>5月31日：</strong> 衆院本会議で可決、参院に送付</p>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">基礎年金底上げ策の復活</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="success-box">
+                        <h4>✅ 正式合意達成（5月27日）</h4>
+                        <p>政府が5月16日の閣議決定時に削除した「基礎年金底上げ策」について、立憲民主党の強い要求により修正協議が行われ、3党首による正式合意が達成された。石破茂首相（自民党総裁）、公明党の斉藤鉄夫代表、立憲民主党の野田佳彦代表が修正合意書に署名し、基礎年金の底上げ策が法案付則に復活することが正式に決定した。これにより「あんこのないあんぱん」と批判された法案の核心部分が確保された。</p>
+                    </div>
+                    
+                    <h4>正式合意の具体的内容（5月27日確定）</h4>
+                    <ul>
+                        <li><strong>実施条件：</strong> 2029年の財政検証の結果、基礎年金の給付水準の大幅低下が見込まれる場合</li>
+                        <li><strong>実施方法：</strong> 厚生年金の積立金と国費を活用して基礎年金の底上げを実施</li>
+                        <li><strong>影響緩和：</strong> 底上げ策により厚生年金額が一時的に減ることへの影響を緩和する措置を講じる</li>
+                        <li><strong>法的位置付け：</strong> これらの措置を法案の付則に明記</li>
+                        <li><strong>正式合意：</strong> 5月27日に3党首が修正合意書に署名し正式決定</li>
+                        <li><strong>審議開始：</strong> 5月28日の衆院厚生労働委員会で審議入り</li>
+                    </ul>
+                    
+                    <h4>各党首のコメント（5月27日）</h4>
+                    <ul>
+                        <li><strong>石破茂首相（自民党総裁）：</strong>「非常に意義深い。法案審議に真摯に対応し、早期成立に努力したい」</li>
+                        <li><strong>野田佳彦代表（立憲民主党）：</strong>「課題を先送りしないで手当てすることは大事で、まさに年金改革の一里塚だ」</li>
+                        <li><strong>斉藤鉄夫代表（公明党）：</strong>3党修正案の共同提出に合意</li>
+                    </ul>
+                    
+                    <h4>制度変更による影響試算</h4>
+                    <div class="grid">
+                        <div class="card">
+                            <h4>短期的影響（2026-2045年度）</h4>
+                            <p>厚生年金受給者：月最大約7,000円減少</p>
+                        </div>
+                        <div class="card">
+                            <h4>長期的影響（2046年度以降）</h4>
+                            <p>基礎年金増額分が厚生年金減額分を上回る</p>
+                        </div>
+                        <div class="card">
+                            <h4>2060年度頃の見込み</h4>
+                            <p>現在の制度より月約8,000円増加</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">政党別の立場</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="comparison-table">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>政党</th>
+                                    <th>基礎年金底上げ</th>
+                                    <th>主な主張</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>自民党</strong></td>
+                                    <td>修正案受け入れ（正式合意）</td>
+                                    <td>石破茂首相「非常に意義深い。法案審議に真摯に対応し、早期成立に努力したい」</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>立憲民主党</strong></td>
+                                    <td>修正案提示・正式合意</td>
+                                    <td>野田佳彦代表「年金改革の一里塚だ。課題を先送りしないことは大事」</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>公明党</strong></td>
+                                    <td>協議参加・正式合意</td>
+                                    <td>斉藤鉄夫代表が修正合意書に署名、3党共同修正案に合意</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">協議の背景と課題</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <h4>政治的背景</h4>
+                    <ul>
+                        <li><strong>衆院での与党少数：</strong> 与党が衆院で過半数を割り、野党との協調が不可欠</li>
+                        <li><strong>政府案の問題：</strong> 5月16日閣議決定の政府案では基礎年金底上げ策が削除され、「あんこのないあんぱん」と批判</li>
+                        <li><strong>人手不足対策：</strong> 高齢者の就労促進と年金制度改革の両立が必要</li>
+                        <li><strong>世代間対立：</strong> 現役世代と退職世代の利害調整が困難</li>
+                    </ul>
+                    
+                    <h4>修正協議の成果と意義</h4>
+                    <ul>
+                        <li><strong>政治的成果：</strong> 少数与党下での野党との建設的協議が実現し、3党首による歴史的合意を達成</li>
+                        <li><strong>制度的意義：</strong> 「あんこのないあんぱん」と批判された法案に核心部分が復活</li>
+                        <li><strong>世代間配慮：</strong> 就職氷河期世代の低年金問題に対する具体的解決策を確保</li>
+                        <li><strong>政策継続性：</strong> 2029年財政検証を踏まえた確実な実施体制を構築</li>
+                        <li><strong>与野党協調：</strong> 政府・与党が立憲民主党の修正案を「丸のみ」する異例の展開</li>
+                        <li><strong>衆院可決：</strong> 5月31日に衆院本会議で3党修正案が可決され、参院審議入り</li>
+                    </ul>
+                    
+                    <h4>今後のスケジュール（5月31日現在）</h4>
+                    <ul>
+                        <li><strong>5月30日：</strong> 衆院厚生労働委員会で3党共同修正案が可決</li>
+                        <li><strong>5月31日：</strong> 衆院本会議で可決、参院に送付</li>
+                        <li><strong>6月上旬〜中旬：</strong> 参院厚生労働委員会での審議</li>
+                        <li><strong>6月中旬〜下旬：</strong> 参院本会議での審議・採決</li>
+                        <li><strong>6月22日まで：</strong> 今国会会期末までに法案成立</li>
+                        <li><strong>2029年：</strong> 次回財政検証で底上げ策実施の最終判断</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- シミュレーションタブ -->
+        <div id="simulation" class="tab-content">
+            <h2>年金受取額シミュレーション - 3つのシナリオ比較</h2>
+            
+            <div class="scenario-buttons">
+                <button class="scenario-btn active" onclick="showScenario('standard')">標準的な会社員</button>
+                <button class="scenario-btn" onclick="showScenario('parttime')">パート労働者</button>
+                <button class="scenario-btn" onclick="showScenario('highincome')">高所得者</button>
+                <button class="scenario-btn" onclick="showScenario('survivor')">遺族年金</button>
+            </div>
+            
+            <!-- 標準的な会社員のシミュレーション -->
+            <div id="standard" class="simulation-result">
+                <h3>標準的な会社員のケース</h3>
+                <p><strong>条件：</strong> 男性・40年間厚生年金加入・平均月収30万円</p>
+                
+                <div class="comparison-table">
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>シナリオ</th>
+                                <th>65歳からの月額年金</th>
+                                <th>主な変更点</th>
+                                <th>影響度</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>現行制度</strong></td>
+                                <td class="amount-display" style="font-size: 18px;">16.5万円</td>
+                                <td>変更なし</td>
+                                <td style="color: #6b7280;">基準</td>
+                            </tr>
+                            <tr>
+                                <td><strong>政府改正案</strong></td>
+                                <td class="amount-display" style="font-size: 18px;">16.3万円</td>
+                                <td>マクロ経済スライド調整</td>
+                                <td style="color: #ef4444;">-2,000円</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3党修正案（衆院可決）</strong></td>
+                                <td class="amount-display" style="font-size: 18px;">16.8万円</td>
+                                <td>基礎年金底上げ（2029年以降実施）</td>
+                                <td style="color: #10b981;">+3,000円</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="highlight-box">
+                    <h4>💡 アドバイス</h4>
+                    <p>3党修正案が衆院で可決されたことにより、長期的には基礎年金の底上げ効果で受給額が増加する見込みが確実となった。在職老齢年金の調整額引上げにより、65歳以降の就労時も年金を多く受け取れるようになる。</p>
+                </div>
+            </div>
+            
+            <!-- パート労働者のシミュレーション -->
+            <div id="parttime" class="simulation-result" style="display: none;">
+                <h3>パート労働者のケース</h3>
+                <p><strong>条件：</strong> 女性・週20時間勤務・月収8万円・小規模事業所勤務</p>
+                
+                <div class="comparison-table">
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>シナリオ</th>
+                                <th>社会保険加入</th>
+                                <th>65歳からの月額年金</th>
+                                <th>変化</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>現行制度</strong></td>
+                                <td>国民年金のみ</td>
+                                <td class="amount-display" style="font-size: 18px;">6.9万円</td>
+                                <td style="color: #6b7280;">基準</td>
+                            </tr>
+                            <tr>
+                                <td><strong>政府改正案</strong></td>
+                                <td>厚生年金加入</td>
+                                <td class="amount-display" style="font-size: 18px;">9.5万円</td>
+                                <td style="color: #10b981;">+2.6万円</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3党修正案（衆院可決）</strong></td>
+                                <td>厚生年金加入+底上げ</td>
+                                <td class="amount-display" style="font-size: 18px;">10.2万円</td>
+                                <td style="color: #10b981;">+3.3万円</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="alert-box">
+                    <h4>⚠️ 注意点</h4>
+                    <p>社会保険加入により保険料負担（月約7,660円）が発生するが、将来の年金受給額が大幅に増加し、医療保障も充実する。</p>
+                </div>
+            </div>
+            
+            <!-- 高所得者のシミュレーション -->
+            <div id="highincome" class="simulation-result" style="display: none;">
+                <h3>高所得者のケース</h3>
+                <p><strong>条件：</strong> 男性・40年間厚生年金加入・月収70万円</p>
+                
+                <div class="comparison-table">
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>シナリオ</th>
+                                <th>月額保険料</th>
+                                <th>65歳からの月額年金</th>
+                                <th>影響</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>現行制度</strong></td>
+                                <td>約12万円</td>
+                                <td class="amount-display" style="font-size: 18px;">22.0万円</td>
+                                <td style="color: #6b7280;">基準</td>
+                            </tr>
+                            <tr>
+                                <td><strong>政府改正案</strong></td>
+                                <td>約14万円</td>
+                                <td class="amount-display" style="font-size: 18px;">23.0万円</td>
+                                <td style="color: #10b981;">+1.0万円</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3党修正案（衆院可決）</strong></td>
+                                <td>約14万円</td>
+                                <td class="amount-display" style="font-size: 18px;">22.5万円</td>
+                                <td style="color: #10b981;">+0.5万円</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="success-box">
+                    <h4>📈 メリット</h4>
+                    <p>標準報酬月額上限の引上げにより保険料負担は増えるが、将来の年金額も増加する。在職老齢年金の調整額引上げにより、高収入での就労時も年金を多く受け取れる。</p>
+                </div>
+            </div>
+            
+            <!-- 遺族年金のシミュレーション -->
+            <div id="survivor" class="simulation-result" style="display: none;">
+                <h3>遺族年金のケース</h3>
+                <p><strong>条件：</strong> 50歳の妻・夫は厚生年金加入30年で死亡</p>
+                
+                <div class="comparison-table">
+                    <table style="width: 100%;">
+                        <thead>
+                            <tr>
+                                <th>シナリオ</th>
+                                <th>遺族年金月額</th>
+                                <th>中高齢寡婦加算</th>
+                                <th>変化</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>現行制度</strong></td>
+                                <td class="amount-display" style="font-size: 18px;">15.0万円</td>
+                                <td>満額支給</td>
+                                <td style="color: #6b7280;">基準</td>
+                            </tr>
+                            <tr>
+                                <td><strong>政府改正案</strong></td>
+                                <td class="amount-display" style="font-size: 18px;">13.0万円</td>
+                                <td>段階的減額</td>
+                                <td style="color: #ef4444;">-2.0万円</td>
+                            </tr>
+                            <tr>
+                                <td><strong>3党修正案（衆院可決）</strong></td>
+                                <td class="amount-display" style="font-size: 18px;">13.5万円</td>
+                                <td>段階的減額+底上げ</td>
+                                <td style="color: #ef4444;">-1.5万円</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="alert-box">
+                    <h4>⚠️ 重要な変更</h4>
+                    <p>中高齢寡婦加算の段階的減額により遺族年金は減少するが、遺族の範囲拡大により、より多様な家族形態に対応した制度となる。個人年金等の準備も検討することを推奨する。</p>
+                </div>
+            </div>
+            
+            <div class="highlight-box" style="margin-top: 30px;">
+                <h4>📊 シミュレーション結果のまとめ</h4>
+                <ul>
+                    <li><strong>パート労働者：</strong> 被用者保険適用拡大により大幅な給付増</li>
+                    <li><strong>標準的会社員：</strong> 3党修正案（衆院可決）で長期的にはプラス</li>
+                    <li><strong>高所得者：</strong> 保険料負担増だが給付も増加</li>
+                    <li><strong>遺族年金：</strong> 中高齢寡婦加算減額で給付減少</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 未解決の課題と論点タブ -->
+        <div id="issues" class="tab-content">
+            <h2>今回の改正で解決されない課題と論点</h2>
+            
+            <div class="critical-box">
+                <h3>⚠️ 重要な留意事項</h3>
+                <p>今回の年金制度改正は重要な前進であるが、年金制度が抱える根本的な課題の多くは解決されていない。以下に示す未解決の課題は、将来の年金制度改正において継続的な検討が必要である。</p>
+            </div>
+            
+            <div class="issue-grid">
+                <div class="issue-card critical">
+                    <div class="issue-priority priority-critical">最重要</div>
+                    <h4>第3号被保険者制度の廃止</h4>
+                    <p><strong>現状：</strong> 今回の改正では完全に見送られた</p>
+                    <p><strong>問題点：</strong> 専業主婦世帯を優遇し、働き控えの要因となっている。第3号被保険者の98%を女性が占め、男女間賃金格差を生む原因の一つである。</p>
+                    <p><strong>影響：</strong> 約870万人の第3号被保険者が存在し、単身世帯や共働き世帯との不公平感が継続する。</p>
+                </div>
+                
+                <div class="issue-card critical">
+                    <div class="issue-priority priority-critical">最重要</div>
+                    <h4>支給開始年齢の引き上げ</h4>
+                    <p><strong>現状：</strong> 議論すらされていない</p>
+                    <p><strong>問題点：</strong> 平均寿命の延伸（男性81.05歳、女性87.09歳）に対し、年金支給開始年齢65歳は据え置かれている。</p>
+                    <p><strong>影響：</strong> 給付期間の長期化により、年金財政への圧迫が継続する。欧米諸国では67-68歳への引き上げが進んでいる。</p>
+                </div>
+                
+                <div class="issue-card critical">
+                    <div class="issue-priority priority-critical">最重要</div>
+                    <h4>マクロ経済スライドの名目下限措置</h4>
+                    <p><strong>現状：</strong> 撤廃されていない</p>
+                    <p><strong>問題点：</strong> デフレ時に年金額の調整が発動されず、将来世代への負担先送りが継続している。</p>
+                    <p><strong>影響：</strong> 基礎年金の調整期間が約40年に延長され、世代間格差が拡大する可能性がある。</p>
+                </div>
+                
+                <div class="issue-card moderate">
+                    <div class="issue-priority priority-moderate">重要</div>
+                    <h4>財政の持続可能性の根本的解決</h4>
+                    <p><strong>現状：</strong> 部分的対応にとどまる</p>
+                    <p><strong>問題点：</strong> 2019年財政検証では、経済前提によっては所得代替率50%を下回る可能性が示されている。</p>
+                    <p><strong>影響：</strong> 基礎年金の給付水準低下により、高齢期の貧困率上昇が懸念される。</p>
+                </div>
+                
+                <div class="issue-card moderate">
+                    <div class="issue-priority priority-moderate">重要</div>
+                    <h4>世代間格差の拡大</h4>
+                    <p><strong>現状：</strong> 根本的解決に至らない</p>
+                    <p><strong>問題点：</strong> 現在の高齢者は保険料負担に対し給付が手厚いが、若年世代は負担増・給付減の傾向にある。</p>
+                    <p><strong>影響：</strong> 20歳代の年金制度への不信が高まり、未納率上昇の要因となっている。</p>
+                </div>
+                
+                <div class="issue-card moderate">
+                    <div class="issue-priority priority-moderate">重要</div>
+                    <h4>非正規雇用者の年金格差</h4>
+                    <p><strong>現状：</strong> 適用拡大により部分的改善</p>
+                    <p><strong>問題点：</strong> 正規雇用者と非正規雇用者の年金格差は依然として大きい。</p>
+                    <p><strong>影響：</strong> 非正規雇用者の高齢期の所得保障が不十分で、生活保護受給者増加の要因となる可能性がある。</p>
+                </div>
+                
+                <div class="issue-card minor">
+                    <div class="issue-priority priority-minor">検討課題</div>
+                    <h4>積立方式への移行議論</h4>
+                    <p><strong>現状：</strong> 検討されていない</p>
+                    <p><strong>問題点：</strong> 賦課方式では少子高齢化の影響を直接受ける構造的問題がある。</p>
+                    <p><strong>影響：</strong> 抜本的制度改革の選択肢が限定され、問題の先送りが継続する。</p>
+                </div>
+                
+                <div class="issue-card minor">
+                    <div class="issue-priority priority-minor">検討課題</div>
+                    <h4>女性の年金格差問題</h4>
+                    <p><strong>現状：</strong> 部分的改善にとどまる</p>
+                    <p><strong>問題点：</strong> 女性の年金受給額は男性の約6割にとどまる。離婚時の年金分割制度はあるが、十分ではない。</p>
+                    <p><strong>影響：</strong> 高齢女性の貧困率（22.9%）が高く、社会問題化している。</p>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">各課題の詳細分析</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <h4>1. 第3号被保険者制度廃止の必要性</h4>
+                    <div class="comparison-table">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>観点</th>
+                                    <th>現行制度の問題</th>
+                                    <th>廃止による効果</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>公平性</strong></td>
+                                    <td>保険料負担なしで給付を受ける</td>
+                                    <td>負担と給付の対応関係が明確化</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>女性活躍</strong></td>
+                                    <td>年収130万円以下での就業調整</td>
+                                    <td>女性の労働参加促進</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>財政影響</strong></td>
+                                    <td>第2号被保険者全体で負担</td>
+                                    <td>保険料収入の増加</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h4>2. 支給開始年齢引き上げの国際比較</h4>
+                    <div class="comparison-table">
+                        <table style="width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>国名</th>
+                                    <th>現在の支給開始年齢</th>
+                                    <th>予定される引き上げ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>日本</strong></td>
+                                    <td>65歳</td>
+                                    <td>検討されていない</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>ドイツ</strong></td>
+                                    <td>段階的に67歳へ</td>
+                                    <td>2029年までに完了予定</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>アメリカ</strong></td>
+                                    <td>段階的に67歳へ</td>
+                                    <td>2027年までに完了予定</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>フランス</strong></td>
+                                    <td>段階的に67歳へ</td>
+                                    <td>2030年代に完了予定</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h4>3. 今後の改革に向けた論点</h4>
+                    <ul>
+                        <li><strong>政治的実現可能性：</strong> 給付削減や負担増を伴う改革は政治的に困難</li>
+                        <li><strong>世代間対立：</strong> 高齢者と現役世代の利害対立が制約要因</li>
+                        <li><strong>経済情勢：</strong> 低成長下での制度改革は選択肢が限定的</li>
+                        <li><strong>社会保障全体：</strong> 医療・介護制度との整合性確保が必要</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="alert-box">
+                <h4>📋 今後の展望</h4>
+                <p>これらの未解決課題は、2030年の次回年金制度改正において重要な検討テーマとなる。特に第3号被保険者制度の廃止と支給開始年齢の引き上げは、年金制度の持続可能性確保のために避けて通れない課題である。社会経済情勢の変化を踏まえ、中長期的な制度設計が求められる。</p>
+            </div>
+        </div>
+        
+        <!-- スケジュールタブ -->
+        <div id="timeline" class="tab-content">
+            <h2>施行スケジュール</h2>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-date">2025年5月16日（令和7年5月16日）</div>
+                    <div class="timeline-content">年金制度改正法案の閣議決定・国会提出</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">2025年5月30日（令和7年5月30日）</div>
+                    <div class="timeline-content">衆院厚生労働委員会で3党共同修正案が可決</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">2025年5月31日（令和7年5月31日）</div>
+                    <div class="timeline-content">衆院本会議で可決、参院に送付</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">2025年6月中旬予定（令和7年6月中旬予定）</div>
+                    <div class="timeline-content">参院厚生労働委員会・本会議での審議・可決予定</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">2025年6月22日まで（令和7年6月22日まで）</div>
+                    <div class="timeline-content">今国会会期末までに法案成立予定</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">2026年4月1日（令和8年4月1日）</div>
+                    <div class="timeline-content">在職老齢年金制度の見直し施行（支給停止調整額62万円に引上げ）</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">2026年10月1日（令和8年10月1日）</div>
+                    <div class="timeline-content">被用者保険の適用拡大（企業規模要件）</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">2027年9月1日（令和9年9月1日）</div>
+                    <div class="timeline-content">標準報酬月額の等級改定（68万円への引上げ）</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">2027年10月1日（令和9年10月1日）</div>
+                    <div class="timeline-content">被用者保険の適用拡大（賃金要件撤廃）</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">2028年4月1日（令和10年4月1日）</div>
+                    <div class="timeline-content">遺族年金の見直し施行</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">2029年4月1日（令和11年4月1日）</div>
+                    <div class="timeline-content">年金額改定ルール見直し関連規定の施行</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">2029年9月1日（令和11年9月1日）</div>
+                    <div class="timeline-content">標準報酬月額の等級改定（75万円への引上げ）</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">2032年10月1日〜2035年9月30日（令和14年10月1日〜令和17年9月30日）</div>
+                    <div class="timeline-content">被用者保険の適用拡大第2段階（労働者10人超の事業所も対象）</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">2035年6月（令和17年6月）</div>
+                    <div class="timeline-content">国民年金保険料の免除特例終了</div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-date">2053年4月2日以降（令和35年4月2日以降）</div>
+                    <div class="timeline-content">中高齢寡婦加算の廃止（新規取得者）</div>
+                </div>
+            </div>
+            
+            <div class="success-box">
+                <h4>🎯 今後の注目ポイント</h4>
+                <ul>
+                    <li><strong>✅ 衆院可決完了：</strong> 5月31日に衆院本会議で可決、参院に送付済み</li>
+                    <li><strong>6月上旬〜中旬：</strong> 参院厚生労働委員会での審議</li>
+                    <li><strong>6月22日：</strong> 今国会会期末までの成立可否</li>
+                    <li><strong>2029年：</strong> 次回財政検証と底上げ策実施の最終判断</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 法案タブ -->
+        <div id="law" class="tab-content">
+            <h2>法案の概要と主要条文</h2>
+            
+            <div class="law-article">
+                <div class="law-title">
+                    <a href="https://www.mhlw.go.jp/stf/topics/bukyoku/soumu/houritu/217.html" target="_blank">
+                        社会経済の変化を踏まえた年金制度の機能強化のための国民年金法等の一部を改正する等の法律案
+                    </a>
+                    <span style="font-size: 12px; color: #6b7280; margin-left: 8px;">（厚生労働省公式サイト）</span>
+                </div>
+                <p><strong>（法案番号：第217回国会閣法第59号）</strong></p>
+                <p><strong>提出日：</strong> 令和7年5月16日</p>
+                <p><strong>提出者：</strong> 内閣</p>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">第1章　総則（目的・基本理念）</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="law-article">
+                        <strong>（目的）</strong><br>
+                        この法律は、社会経済の変化を踏まえた年金制度の機能強化を図る観点から、働き方や男女の差等に中立的で、ライフスタイルや家族構成の多様化を踏まえた年金制度を構築するとともに、所得再配分の強化や私的年金制度の拡充等により、高齢期における生活の安定を図ることを目的とする。
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">第2章　被用者保険の適用拡大</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="law-article">
+                        <strong>（厚生年金保険法の一部改正）</strong><br>
+                        厚生年金保険法（昭和二十九年法律第百十五号）の一部を次のように改正する。<br><br>
+                        
+                        一　第六条第一項中「常時五人以上の従業員を使用する事業所」を「常時五人以上の従業員を使用する事業所（政令で定める事業を除く。）」に改める。<br><br>
+                        
+                        二　第九条の二に次の一項を加える。<br>
+                        ３　第一項第四号に規定する報酬の額については、厚生労働省令で定めるところにより、段階的に適用することができる。<br><br>
+                        
+                        三　附則に次の条を加える。<br>
+                        （被用者保険の適用拡大に関する経過措置）<br>
+                        令和十四年十月一日から令和十七年九月三十日までの間は、特定労働者の総数が常時十人を超える事業所についても、第六条第一項の規定を適用する。
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">第3章　在職老齢年金制度の見直し</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="law-article">
+                        <strong>（在職老齢年金の支給停止基準額の改定）</strong><br>
+                        厚生年金保険法第四十六条第三項中「五十万円」を「六十二万円」に改める。<br><br>
+                        
+                        附則<br>
+                        （在職老齢年金制度の見直しに関する施行期日）<br>
+                        この規定は、令和八年四月一日から施行する。
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">第4章　標準報酬月額の上限引上げ</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="law-article">
+                        <strong>（標準報酬月額等級の改定）</strong><br>
+                        厚生年金保険法第二十条第一項の表の改正は、次に掲げる日から段階的に施行する。<br><br>
+                        
+                        一　令和九年九月一日　最高等級を六十八万円とする改正<br>
+                        二　令和十年九月一日　最高等級を七十一万円とする改正<br>
+                        三　令和十一年九月一日　最高等級を七十五万円とする改正<br><br>
+                        
+                        附則<br>
+                        （標準賞与額の上限設定）<br>
+                        健康保険法における標準賞与額の上限は五百七十三万円とし、厚生年金保険法における標準賞与額の上限は百五十万円とする。
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">第5章　年金額改定ルールの見直し</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="law-article">
+                        <strong>（マクロ経済スライドの調整）</strong><br>
+                        国民年金法第二十七条の三及び厚生年金保険法第四十三条の三の規定による年金額の改定については、財政均衡期間における給付と負担の均衡を図るため、調整率及び特別調整率を設ける。<br><br>
+                        
+                        ２　調整率は、物価変動率又は名目手取り賃金変動率が一を下回る場合は、当該変動率を基準として算定する。<br><br>
+                        
+                        ３　特別調整率は、調整期間中において、調整率を三分の一に軽減する措置を含むことができる。
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">第6章　遺族年金制度の見直し</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="law-article">
+                        <strong>（遺族厚生年金の受給要件の拡大）</strong><br>
+                        厚生年金保険法第五十八条第一項第四号中「生計を維持していた」を「生計を同じくしていた」に改め、同号に次のただし書を加える。<br><br>
+                        
+                        ただし、六十歳未満の配偶者については、被保険者又は被保険者であった者と生計を同じくしていた場合に限る。<br><br>
+                        
+                        <strong>（中高齢寡婦加算の段階的廃止）</strong><br>
+                        厚生年金保険法第六十二条に規定する中高齢寡婦加算については、令和三十五年四月二日以降に遺族厚生年金の受給権を取得した者については、これを支給しない。<br><br>
+                        
+                        ２　前項の規定の適用までの間は、段階的に減額する措置を講ずる。
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">第7章　国民年金保険料免除特例の延長</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="law-article">
+                        <strong>（保険料免除特例の期限延長）</strong><br>
+                        国民年金法附則第九条の三の二第一項中「令和十二年六月三十日」を「令和十七年六月三十日」に改める。<br><br>
+                        
+                        ２　本条の適用対象者は、三十歳未満の国民年金第一号被保険者等で、本人及び配偶者の所得が一定以下の者とする。
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">第8章　基礎年金の底上げ（衆院可決）</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="success-box">
+                        <h4>📋 3党修正案として衆院可決（5月31日）</h4>
+                        <p>以下の条項は、立憲民主党の修正要求により、5月27日の3党首会談で正式合意し、修正合意書への署名により法案への追加が正式決定した。5月30日に衆院厚生労働委員会、5月31日に衆院本会議で3党共同提出の修正案として可決され、参院に送付された。</p>
+                    </div>
+                    
+                    <div class="law-article">
+                        <strong>（基礎年金の給付水準の底上げ）</strong><br>
+                        厚生年金保険の積立金と国費の一部を活用し、基礎年金の給付水準を底上げするための措置を講ずる。<br><br>
+                        
+                        ２　前項の措置は、令和十一年（2029年）の財政検証の結果、基礎年金の給付水準の大幅低下が見込まれる場合に実施する。<br><br>
+                        
+                        ３　底上げの対象は、国民年金の被保険者期間を有する者の基礎年金とし、就職氷河期世代を含む低年金者の所得保障の改善を図る。<br><br>
+                        
+                        附則<br>
+                        （基礎年金底上げに関する経過措置）<br>
+                        基礎年金の底上げ実施により厚生年金の給付水準が一時的に減ることへの影響を緩和する措置を講ずる。
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h3 class="section-title">附則（施行期日等）</h3>
+                    <span class="section-arrow">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="law-article">
+                        <strong>（施行期日）</strong><br>
+                        この法律は、令和八年四月一日から施行する。ただし、次の各号に掲げる規定は、当該各号に定める日から施行する。<br><br>
+                        
+                        一　被用者保険の適用拡大に関する規定　令和八年十月一日<br>
+                        二　標準報酬月額の等級改定に関する規定　令和九年九月一日（段階的施行）<br>
+                        三　年金額改定ルールの見直しに関する規定　令和十一年四月一日<br>
+                        四　遺族年金制度の見直しに関する規定　令和十年四月一日<br><br>
+                        
+                        <strong>（検討条項）</strong><br>
+                        政府は、この法律の施行後五年を経過した場合において、この法律の施行の状況等を勘案し、必要があると認めるときは、年金制度の在り方について検討を加え、その結果に基づいて必要な措置を講ずるものとする。
+                    </div>
+                </div>
+            </div>
+            
+            <div class="highlight-box">
+                <h4>📋 法案の特徴</h4>
+                <ul>
+                    <li><strong>段階的施行：</strong> 改正項目ごとに異なる施行日を設定し、制度変更の影響を緩和</li>
+                    <li><strong>経過措置：</strong> 各改正項目について適切な経過措置を設け、激変緩和を図る</li>
+                    <li><strong>見直し条項：</strong> 施行後5年での制度見直しを義務化</li>
+                    <li><strong>修正可決：</strong> 基礎年金底上げについて3党修正案が衆院で可決、参院審議入り</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-note">
+            <p>年金制度改正の可視化（社会経済の変化を踏まえた年金制度の機能強化のための国民年金法等の一部を改正する等の法律案）</p>
+            <p>※シミュレーション結果は一般的な傾向を示すための参考値であり、個人の状況によって異なる</p>
+            <p>※与野党協議の内容は2025年5月31日時点の情報に基づく</p>
+        </div>
+    </div>
+    
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tabs;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            tabs = document.getElementsByClassName("tab");
+            for (i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+        
+        function toggleSection(header) {
+            const section = header.parentElement;
+            section.classList.toggle('collapsed');
+        }
+        
+        function showScenario(scenarioId) {
+            // Hide all scenarios
+            const scenarios = ['standard', 'parttime', 'highincome', 'survivor'];
+            scenarios.forEach(id => {
+                document.getElementById(id).style.display = 'none';
+            });
+            
+            // Show selected scenario
+            document.getElementById(scenarioId).style.display = 'block';
+            
+            // Update button states
+            const buttons = document.querySelectorAll('.scenario-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+        
+        // Initialize: expand all sections by default
+        document.addEventListener('DOMContentLoaded', function() {
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => {
+                // sections are expanded by default, no need to toggle
+            });
+        });
+    </script>
+</body>
+</html>
