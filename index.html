@@ -62,22 +62,22 @@
                    <!-- 検索入力とボタン群のコンテナ -->
                    <div class="flex flex-col sm:flex-row items-center w-full sm:justify-between sm:space-x-4 mb-4 sm:mb-0">
                        <input type="text" id="searchInput" placeholder="検索（省庁名は略称でも可）..." class="border border-gray-300 p-2 rounded-lg mb-4 sm:mb-0 w-full sm:w-80 focus:ring-blue-500 focus:border-blue-500">
-                       <div class="flex flex-wrap justify-center sm:justify-start space-x-2">
-                           <button id="clearSearchButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center transition-colors mb-2 sm:mb-0">
+                       <div class="flex flex-wrap justify-center sm:justify-start gap-x-2">
+                           <button id="clearSearchButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors mb-2 sm:mb-0 sm:flex-grow">
                                <i class="fas fa-times mr-2"></i>
                                <span>クリア</span>
                            </button>
-                           <button id="back-button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center transition-colors mb-2 sm:mb-0">
+                           <button id="back-button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors mb-2 sm:mb-0 sm:flex-grow">
                                <i class="fas fa-arrow-left mr-2"></i>
                                <span>別ファイル</span>
                            </button>
-                           <button id="export-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg inline-flex items-center transition-colors mb-2 sm:mb-0">
+                           <button id="export-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors mb-2 sm:mb-0 sm:flex-grow">
                                <i class="fas fa-file-export mr-2"></i>
                                <span>HTML出力</span>
                            </button>
                        </div>
                    </div>
-                   <!-- 件数表示要素 -->
+                   <!-- 件数表示要素を元の配置に戻す -->
                    <div id="dataCountDisplay" class="text-gray-600 text-sm mt-4 sm:mt-2 w-full text-center sm:text-right"></div>
             </header>
             <div id="results-table-container" class="bg-white shadow-lg rounded-lg overflow-auto flex-grow">
@@ -378,7 +378,7 @@
                         }));
                 }
 
-                const exportedDataB64 = utf8ToBase4(exportedDataJsonRaw);
+                const exportedDataB64 = utf8ToBase64(exportedDataJsonRaw);
                 // JSON.stringify() to ensure the Base64 string is properly escaped for embedding in a JS string literal
                 // Then, further escape backticks to ensure it works correctly within a template literal
                 const finalEscapedDataB64 = JSON.stringify(exportedDataB64).replace(/`/g, '\\`');
@@ -680,14 +680,6 @@
                     '                <button id="clearSearchButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center transition-colors mb-2 sm:mb-0">' +
                     '                    <i class="fas fa-times mr-2"></i>' +
                     '                    <span>クリア</span>' +
-                    '                </button>' +
-                    '                <button id="back-button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center transition-colors mb-2 sm:mb-0">' +
-                    '                    <i class="fas fa-arrow-left mr-2"></i>' +
-                    '                    <span>別ファイル</span>' +
-                    '                </button>' +
-                    '                <button id="export-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg inline-flex items-center transition-colors mb-2 sm:mb-0">' +
-                    '                    <i class="fas fa-file-export mr-2"></i>' +
-                    '                    <span>HTML出力</span>' +
                     '                </button>' +
                     '            </div>' +
                     '            <div id="dataCountDisplay" class="text-gray-600 text-sm mt-4 sm:mt-2 w-full text-center sm:text-right"></div>' +
