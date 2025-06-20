@@ -61,16 +61,16 @@
             <header class="flex-shrink-0 flex flex-col sm:flex-row justify-between items-end mb-4">
                    <div class="flex flex-col sm:flex-row items-center w-full sm:w-auto mb-4 sm:mb-0">
                        <input type="text" id="searchInput" placeholder="検索（省庁名は略称でも可）..." class="border border-gray-300 p-2 rounded-lg mr-0 sm:mr-4 mb-4 sm:mb-0 w-full sm:w-80 focus:ring-blue-500 focus:border-blue-500">
-                       <div class="flex space-x-2 w-full sm:w-auto">
-                           <button id="clearSearchButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center transition-colors w-full sm:w-auto">
+                       <div class="flex flex-wrap justify-center sm:justify-start space-x-2 w-full sm:w-auto">
+                           <button id="clearSearchButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center transition-colors mb-2 sm:mb-0 sm:w-auto">
                                <i class="fas fa-times mr-2"></i>
                                <span>クリア</span>
                            </button>
-                           <button id="back-button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center transition-colors w-full sm:w-auto">
+                           <button id="back-button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center transition-colors mb-2 sm:mb-0 sm:mr-2 sm:w-auto">
                                <i class="fas fa-arrow-left mr-2"></i>
                                <span>別ファイル</span>
                            </button>
-                           <button id="export-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg inline-flex items-center transition-colors w-full sm:w-auto">
+                           <button id="export-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg inline-flex items-center transition-colors mb-2 sm:mb-0 sm:w-auto">
                                <i class="fas fa-file-export mr-2"></i>
                                <span>HTML出力</span>
                            </button>
@@ -377,7 +377,7 @@
                         }));
                 }
 
-                const exportedDataB64 = utf8ToBase64(exportedDataJsonRaw);
+                const exportedDataB64 = utf8ToBase4(exportedDataJsonRaw);
                 // JSON.stringify() to ensure the Base64 string is properly escaped for embedding in a JS string literal
                 // Then, further escape backticks to ensure it works correctly within a template literal
                 const finalEscapedDataB64 = JSON.stringify(exportedDataB64).replace(/`/g, '\\`');
@@ -698,7 +698,7 @@
                     '            <div id="loading" class="text-center p-8 text-gray-500"></div>' + // Added loading indicator for exported HTML
                     '        </div>' +
                     '        <footer class="text-center mt-8 text-gray-500">' +
-                    '            <p>&copy; 2024 政策リサーチポータル. All rights reserved.</p>' + // Removed generatedDateTimeForExport
+                    '            <p>&copy; 2024 政策リサーチポータル. All rights reserved.</p>' +
                     '        </footer>' +
                     '    </div>' +
                     '    <audio id="audioPlayer" style="display: none;"></audio>' +
