@@ -3,1238 +3,573 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>参議院選挙シミュレーション分析（2025年）</title>
-    <!-- Tailwind CSSを読み込み -->
+    <title>経済財政運営と改革の基本方針2025 分析</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.jsを読み込み -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* カスタムスタイル */
+        html {
+            scroll-behavior: smooth;
+        }
         body {
-            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            font-family: 'Noto Sans JP', 'Inter', sans-serif;
+            background-color: #f9fafb;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
-        .tab-button.active {
-            color: #2563EB; /* blue-600 */
-            border-bottom-width: 2px;
-            border-color: #2563EB; /* blue-600 */
-            font-weight: 500;
+        .main-content {
+            flex-grow: 1;
         }
-        .tab-button {
-            color: #6B7280; /* gray-500 */
+        .main-title {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-weight: 700;
         }
-        /* Chart.jsのツールチップのフォント設定 */
-        .chartjs-tooltip {
-            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+        h2, h3, h4, h5 {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-weight: 700;
         }
-        /* Sub-tab styles */
-        .sub-tab-button.active {
-            background-color: #1e40af;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        .policy-card, .kpi-card {
+            transition: all 0.3s ease-in-out;
         }
-        
-        /* ローディングスピナー */
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 4px solid #3498db;
-            width: 40px;
-            height: 40px;
-            -webkit-animation: spin 2s linear infinite; /* Safari */
-            animation: spin 2s linear infinite;
+        .policy-card:hover, .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
-
-        /* Safari */
-        @-webkit-keyframes spin {
-            0% { -webkit-transform: rotate(0deg); }
-            100% { -webkit-transform: rotate(360deg); }
+        .nav-link {
+            transition: color 0.2s, border-color 0.2s;
         }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .nav-link:hover, .nav-link.active {
+            color: #2563eb; /* blue-600 */
+            border-bottom-color: #2563eb;
         }
+        /* Style for the full report section */
+        .report-content h4 {
+            font-size: 1.5rem; /* 24px */
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #3b82f6; /* blue-500 */
+        }
+         .report-content h5 {
+            font-size: 1.25rem; /* 20px */
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: #1e3a8a; /* blue-800 */
+            border-left: 4px solid #3b82f6;
+            padding-left: 0.75rem;
+        }
+        .report-content h6 {
+            font-size: 1.125rem; /* 18px */
+            font-weight: 700;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        [x-cloak] { display: none !important; }
     </style>
-</head>
-<body class="bg-gray-100 p-4 sm:p-6 lg:p-8">
-    <div id="app" class="bg-white rounded-lg shadow-lg p-4 sm:p-6 max-w-7xl mx-auto">
-        <h2 class="text-2xl font-bold mb-6 text-gray-800">参議院選挙シミュレーション分析（2025年）</h2>
 
-        <!-- タブナビゲーション -->
-        <div class="mb-6">
-            <div class="flex flex-wrap border-b border-gray-200">
-                <button class="tab-button px-4 py-2" data-tab="baseline">基本分析</button>
-                <button class="tab-button px-4 py-2" data-tab="scenarios">シナリオ分析</button>
-                <button class="tab-button px-4 py-2" data-tab="risks">リスク要因</button>
-                <button class="tab-button px-4 py-2" data-tab="issues-risks">争点とリスク</button>
-                <button class="tab-button px-4 py-2" data-tab="politics">政治情勢</button>
-                <button class="tab-button px-4 py-2" data-tab="prediction">議席予測</button>
-                <button class="tab-button px-4 py-2" data-tab="summary">総括と提言</button>
-                <button class="tab-button px-4 py-2" data-tab="ai-analysis">AI分析</button>
-            </div>
-        </div>
-
-        <!-- タブコンテンツ -->
-        <div class="bg-gray-50 rounded-lg">
-            <!-- 基本分析タブ -->
-            <div id="baseline" class="tab-content p-4">
-                <h3 class="text-xl font-semibold mb-4 text-gray-700">参院選ベースライン予測結果（10万回シミュレーション平均）</h3>
-                <div class="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-200">
-                    <h4 class="font-medium text-blue-800 mb-3">主要ポイント</h4>
-                    <ul class="list-disc pl-5 space-y-2 text-sm text-gray-700">
-                        <li>改選過半数（63議席）まで<strong>与党-1議席</strong>の予測</li>
-                        <li>国民民主を加えると「与党系」72議席で過半数確保</li>
-                        <li>選挙区では自民党が33議席、立憲民主が9議席</li>
-                        <li>比例区では自民党が20議席、国民民主と立憲民主がそれぞれ5議席と4議席</li>
-                    </ul>
-                </div>
-                <div class="mb-8">
-                    <h4 class="font-medium mb-2 text-gray-700">政党別獲得議席予測（合計）</h4>
-                    <div class="h-96"><canvas id="baselineChart"></canvas></div>
-                </div>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    <div>
-                        <h4 class="font-medium mb-2 text-gray-700">議席構成（政党グループ別）</h4>
-                        <div class="h-80"><canvas id="partyGroupsChart"></canvas></div>
-                    </div>
-                    <div>
-                        <h4 class="font-medium mb-2 text-gray-700">選挙区/比例区の議席配分</h4>
-                        <div class="h-80"><canvas id="seatAllocationChart"></canvas></div>
-                    </div>
-                </div>
-                <div class="bg-gray-100 p-4 rounded shadow-sm">
-                    <h4 class="font-medium mb-3 text-gray-700">シミュレーション計算方法</h4>
-                    <div class="text-sm space-y-2 text-gray-600">
-                        <p>• 改選124議席（選挙区74＋比例50）</p>
-                        <p>• 各世論調査の政党支持率を①比例票配分、②32の１人区は「与党 vs 野党統一候補」の過去５回平均補正、③複数区はドント式で配当</p>
-                        <p>• 6月20日時点のデータを基準にモンテカルロ10万回シミュレーション</p>
-                        <p>• 勝敗ライン：過半数獲得には<strong>63議席</strong>必要</p>
-                    </div>
-                </div>
-
-                <!-- 現有議席数と改選対象 -->
-                <div class="mt-8 pt-8 border-t border-gray-300">
-                    <h3 class="text-xl font-semibold mb-4 text-gray-700">現有議席数と改選対象（2025年選挙）</h3>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div>
-                             <h4 class="font-medium mb-2 text-gray-700">各党議席数（参議院）</h4>
-                             <div class="overflow-x-auto">
-                                 <table class="min-w-full bg-white border border-gray-200 text-sm">
-                                     <thead class="bg-gray-100">
-                                         <tr>
-                                             <th class="py-2 px-3 border-b text-left font-semibold">会派名</th>
-                                             <th class="py-2 px-3 border-b text-center font-semibold">現有議席</th>
-                                             <th class="py-2 px-3 border-b text-center font-semibold">改選対象</th>
-                                             <th class="py-2 px-3 border-b text-center font-semibold">非改選</th>
-                                         </tr>
-                                     </thead>
-                                     <tbody id="currentSeatsTableBody">
-                                         <!-- JavaScript will populate this -->
-                                     </tbody>
-                                 </table>
-                             </div>
-                        </div>
-                        <div>
-                            <h4 class="font-medium mb-2 text-gray-700">現有議席の構成</h4>
-                             <div class="h-96"><canvas id="currentSeatsChart"></canvas></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- シナリオ分析タブ -->
-            <div id="scenarios" class="tab-content hidden p-4">
-                 <h3 class="text-xl font-semibold mb-4">選挙シナリオ分析（実現確率とインパクト）</h3>
-                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    <div>
-                        <h4 class="font-medium mb-2">シナリオ別実現確率</h4>
-                        <div class="h-80"><canvas id="scenarioPieChart"></canvas></div>
-                    </div>
-                    <div>
-                        <h4 class="font-medium mb-2">選択シナリオの詳細</h4>
-                        <div id="scenarioDetail"></div>
-                    </div>
-                 </div>
-                <div class="mb-8">
-                    <h4 class="font-medium mb-2">シナリオ実現性と政党支持率の関係</h4>
-                    <div class="h-96"><canvas id="supportRateChart"></canvas></div>
-                </div>
-                 <div class="mb-8">
-                    <h4 class="font-medium mb-2">単独選挙区（1人区）の勝敗予測</h4>
-                    <div class="h-80"><canvas id="singleDistrictChart"></canvas></div>
-                    <p class="text-sm text-gray-600 mt-1">※32の1人区における与野党の競争状況の予測</p>
-                 </div>
-                <div class="bg-blue-50 p-4 rounded-lg shadow-sm">
-                    <h4 class="font-medium text-blue-800 mb-3">シナリオ分析の結論</h4>
-                    <ul class="list-disc pl-5 space-y-2 text-sm">
-                        <li>最も可能性が高いのは「<strong>与党過半数割れ・国民民主党の閣外協力</strong>」シナリオ（確率45%）</li>
-                        <li>与党単独での過半数獲得（確率20%）の可能性も残るが、ハードルはやや上昇</li>
-                        <li>野党連携（10%）や自民惨敗（12%）の確率は低下したが、少数政党が躍進する「第3極の地殻変動」シナリオ（10%）が新たな不確定要素として浮上</li>
-                        <li>接戦区の勝敗に加え、無党派層の投票先が少数政党に流れるかが全体結果を大きく左右する</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- リスク分析タブ -->
-            <div id="risks" class="tab-content hidden p-4">
-                <h3 class="text-lg font-semibold mb-4">参院選に影響するリスク要因と注視点</h3>
-                <div class="mb-8">
-                    <h4 class="font-medium mb-2">主要リスク要因（影響度×確率）</h4>
-                    <div class="h-96"><canvas id="riskFactorChart"></canvas></div>
-                </div>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    <div>
-                        <h4 class="font-medium mb-2">リスク要因のレーダーチャート</h4>
-                        <div class="h-96"><canvas id="riskRadarChart"></canvas></div>
-                    </div>
-                    <div class="bg-gray-100 p-4 rounded-lg">
-                        <h4 class="font-medium mb-3">リスク要因の詳細分析</h4>
-                        <div id="riskFactorDetails"></div>
-                    </div>
-                </div>
-                <div class="mb-8">
-                    <h4 class="font-medium mb-2">注視すべき政治イベントタイムライン</h4>
-                    <div class="relative pt-8">
-                        <div class="bg-gray-200 h-2 absolute top-6 left-0 right-0 rounded-full"></div>
-                        <div class="grid grid-cols-4 relative text-center">
-                            <div class="p-2">
-                                <div class="w-8 h-8 rounded-full bg-white border-4 border-gray-300 mx-auto mb-2 z-10 relative"></div>
-                                <div class="font-medium text-sm">5月末</div>
-                                <div class="text-xs text-gray-600">最新世論調査</div>
-                            </div>
-                            <div class="p-2">
-                                <div class="w-8 h-8 rounded-full bg-white border-4 border-blue-300 mx-auto mb-2 z-10 relative"></div>
-                                <div class="font-medium text-sm">6月中旬</div>
-                                <div class="text-xs text-gray-600">追加経済対策</div>
-                            </div>
-                            <div class="p-2">
-                                <div class="w-8 h-8 rounded-full bg-white border-4 border-yellow-400 mx-auto mb-2 z-10 relative"></div>
-                                <div class="font-medium text-sm">6月末</div>
-                                <div class="text-xs text-gray-600">選挙公示</div>
-                            </div>
-                             <div class="p-2">
-                                <div class="w-8 h-8 rounded-full bg-white border-4 border-red-500 mx-auto mb-2 z-10 relative"></div>
-                                <div class="font-medium text-sm">7月中旬</div>
-                                <div class="text-xs text-gray-600">投開票日</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-blue-50 p-4 rounded-lg shadow-sm">
-                    <h4 class="font-medium text-blue-800 mb-3">リスク要因の総合評価</h4>
-                    <ul class="list-disc pl-5 space-y-2 text-sm">
-                        <li><strong>物価高第２波</strong>が最大のリスク要因。コメ高騰などが与党支持率に大きく影響する可能性</li>
-                        <li><strong>野党一本化交渉</strong>の成否が32選挙区の結果を左右。維新主導の予備選がカギとなる</li>
-                        <li><strong>トランプ関税再交渉</strong>の成否が夏場に顕在化し、失敗なら与党基盤に打撃となる可能性</li>
-                        <li><strong>公明党の基礎票減少</strong>（支持母体の高齢化）で比例区5議席割れの懸念も</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- 争点とリスクタブ -->
-            <div id="issues-risks" class="tab-content hidden p-4">
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-bold text-slate-900 mb-2">勝敗を分ける争点とリスク要因</h2>
-                    <p class="max-w-3xl mx-auto text-slate-600">
-                        選挙の行方を左右する主要な変動要因です。タブを選択して、各テーマの詳細な分析をご覧ください。
-                    </p>
-                </div>
-                <div>
-                    <div class="mb-4 flex flex-wrap justify-center gap-2">
-                        <button class="sub-tab-button px-4 py-2 text-sm font-bold rounded-full transition-all duration-200 bg-white shadow-sm" data-subtab="tab1">経済と物価</button>
-                        <button class="sub-tab-button px-4 py-2 text-sm font-bold rounded-full transition-all duration-200 bg-white shadow-sm" data-subtab="tab2">野党の動向</button>
-                        <button class="sub-tab-button px-4 py-2 text-sm font-bold rounded-full transition-all duration-200 bg-white shadow-sm" data-subtab="tab3">無党派層の動向</button>
-                        <button class="sub-tab-button px-4 py-2 text-sm font-bold rounded-full transition-all duration-200 bg-white shadow-sm" data-subtab="tab4">公明党の課題</button>
-                    </div>
-                    <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg min-h-[450px]">
-                        <div id="sub-tab1" class="sub-tab-content">
-                            <h3 class="text-xl font-bold mb-4">経済戦線：インフレ圧力 vs 政府の緩和策</h3>
-                            <p class="text-slate-600 mb-4">根強いインフレ、特に食料品価格の高騰は有権者の最大の不満です。一方、政府は補助金によるガソリン価格の抑制を成果として強調します。選挙戦は「日々の食費」対「ガソリン価格」という二つの経済ナラティブの戦いとなり、無党派層がどちらをより切実に感じるかが投票行動を左右します。</p>
-                            <div class="grid md:grid-cols-2 gap-4 text-center">
-                                <div class="bg-rose-50 p-4 rounded-lg">
-                                    <p class="text-sm font-bold text-rose-800">消費者物価指数 (生鮮食品除く)</p>
-                                    <p class="text-3xl font-bold text-rose-600">+3.4% ~ 3.6%</p>
-                                    <p class="text-xs text-rose-500">(4-5月 前年同月比)</p>
-                                </div>
-                                <div class="bg-green-50 p-4 rounded-lg">
-                                    <p class="text-sm font-bold text-green-800">ガソリン価格</p>
-                                    <p class="text-3xl font-bold text-green-600">7週連続下落</p>
-                                    <p class="text-xs text-green-500">(政府補助金が主因)</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="sub-tab2" class="sub-tab-content hidden">
-                            <h3 class="text-xl font-bold mb-4">野党の戦略的ジレンマ：統一戦線の約束と危険</h3>
-                            <p class="text-slate-600 mb-4">野党が一人区で勝利するには候補者一本化が不可欠ですが、その道のりは険しいです。立憲民主党が支持を伸ばす一方、維新は失速し、野党内のパワーバランスが変化。主導権争いが、全選挙区での完全な統一を困難にしています。特に共産党との連携を巡るジレンマは、野党が抱える長年の課題です。</p>
-                            <div class="relative mx-auto h-64 md:h-80 max-w-xl"><canvas id="oppositionSupportChart"></canvas></div>
-                        </div>
-                        <div id="sub-tab3" class="sub-tab-content hidden">
-                            <h3 class="text-xl font-bold mb-4">決定的要因となる無党派層</h3>
-                            <p class="text-slate-600 mb-4">「支持政党なし」と答える無党派層は、全有権者の約4割を占める最大の勢力です。彼らは与党に不満を持ちつつも、野党に政権を託す確信も持てていません。彼らの投票行動は選挙終盤の「空気」に大きく左右され、この巨大な層をどちらが惹きつけられるかが選挙結果を決定づけます。</p>
-                            <div class="relative mx-auto h-64 md:h-80 max-w-sm"><canvas id="voterSegmentsChart"></canvas></div>
-                        </div>
-                        <div id="sub-tab4" class="sub-tab-content hidden">
-                            <h3 class="text-xl font-bold mb-4">公明党の難問：連立パートナーの健全性</h3>
-                            <p class="text-slate-600">連立与党の公明党は、支持母体である創価学会の高齢化による基礎票の減少という構造的な課題に直面しています。低い支持率も相まって、比例代表での議席減が現実的なリスクとなっています。公明党が目標の7議席を大きく割り込むような事態になれば、与党の単独過半数獲得はほぼ不可能となり、国民民主党への依存度が決定的に高まります。</p>
-                             <div class="relative mx-auto h-64 md:h-80 max-w-xl"><canvas id="komeitoPerformanceChart"></canvas></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 政治情勢タブ -->
-            <div id="politics" class="tab-content hidden p-4">
-                 <h3 class="text-lg font-semibold mb-4">選挙後の政治情勢シミュレーション</h3>
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-                    <div class="bg-white p-4 rounded-lg shadow-sm border border-blue-100">
-                      <h4 class="font-medium text-blue-800 mb-3">石破続投パターン（S-1/S-2）</h4>
-                      <div class="text-sm space-y-3">
-                        <p>• 国民民主党と「物価対策・減税協議会」設置</p>
-                        <p>• ガソリン補助延長で臨時国会を乗り切る</p>
-                        <p>• 支持率が30%台前半で底打ち、党内反乱は当面沈静</p>
-                        <p>• 石破内閣は継続するが、重要法案は常に国民民主党との調整が必須に</p>
-                      </div>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg shadow-sm border border-orange-100">
-                      <h4 class="font-medium text-orange-800 mb-3">石破退陣・ポスト石破（S-4）</h4>
-                      <div class="text-sm space-y-3">
-                        <p>• 選挙区で自民が25議席以下の場合、「責任論」が噴出</p>
-                        <p>• 有力後継：小林鷹之・萩生田光一・野田佳彦（自公連立解消時）</p>
-                        <p>• 党内混乱で政策停滞のリスク</p>
-                        <p>• 次期総選挙までの「繋ぎ」政権の可能性大</p>
-                      </div>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg shadow-sm border border-red-100">
-                      <h4 class="font-medium text-red-800 mb-3">野党主導の「参院多数」（S-3）</h4>
-                      <div class="text-sm space-y-3">
-                        <p>• 予算関連法案は衆院優越で成立も、重要政策で修正圧力</p>
-                        <p>• 憲法改正は参院３分の２に遠く、議論停滞</p>
-                        <p>• 野党間の政策調整が複雑化し、一貫性を欠く可能性</p>
-                        <p>• 国民民主党が与野党の橋渡し役として存在感を高める</p>
-                      </div>
-                    </div>
-                    <div class="bg-white p-4 rounded-lg shadow-sm border border-purple-100">
-                      <h4 class="font-medium text-purple-800 mb-3">ダブル選挙・再信任（S-5）</h4>
-                      <div class="text-sm space-y-3">
-                        <p>• 衆参同日もしくは秋口の衆院解散</p>
-                        <p>• 低支持率での解散は党内抵抗大</p>
-                        <p>• 石破総理の「捨て身」の賭けとなる可能性</p>
-                        <p>• 政局の不安定化と市場の混乱リスク</p>
-                      </div>
-                    </div>
-                     <div class="bg-white p-4 rounded-lg shadow-sm border border-teal-200">
-                      <h4 class="font-medium text-teal-800 mb-3">第3極の地殻変動（S-6）</h4>
-                      <div class="text-sm space-y-3">
-                        <p>• 既存政党への不信感から、無党派層の票が少数政党・新党へ</p>
-                        <p>• 参院が細分化し、キャスティングボートを握る勢力が乱立</p>
-                        <p>• 連立協議が難航し、首班指名が困難になる可能性</p>
-                        <p>• 政策の一貫性が失われ、政局が極度に不安定化するリスク</p>
-                      </div>
-                    </div>
-                 </div>
-
-                 <div class="mb-8">
-                    <h4 class="font-medium mb-3">選挙後の政策変化予測</h4>
-                    <div class="overflow-x-auto">
-                      <table class="min-w-full bg-white border border-gray-200">
-                        <thead class="bg-gray-100">
-                          <tr>
-                            <th class="py-2 px-4 border-b text-left text-sm font-semibold">シナリオ</th>
-                            <th class="py-2 px-4 border-b text-left text-sm font-semibold">財政政策</th>
-                            <th class="py-2 px-4 border-b text-left text-sm font-semibold">経済対策</th>
-                            <th class="py-2 px-4 border-b text-left text-sm font-semibold">外交・防衛</th>
-                            <th class="py-2 px-4 border-b text-left text-sm font-semibold">憲法改正</th>
-                          </tr>
-                        </thead>
-                        <tbody class="text-sm">
-                          <tr class="hover:bg-gray-50">
-                            <td class="py-2 px-4 border-b font-medium">S-1 与党過半数維持</td>
-                            <td class="py-2 px-4 border-b">現行路線継続</td>
-                            <td class="py-2 px-4 border-b">小規模対策</td>
-                            <td class="py-2 px-4 border-b">同盟強化推進</td>
-                            <td class="py-2 px-4 border-b">積極推進</td>
-                          </tr>
-                          <tr class="hover:bg-gray-50">
-                            <td class="py-2 px-4 border-b font-medium">S-2 DPFP閣外協力</td>
-                            <td class="py-2 px-4 border-b">大型減税導入</td>
-                            <td class="py-2 px-4 border-b">物価対策強化</td>
-                            <td class="py-2 px-4 border-b">現状維持</td>
-                            <td class="py-2 px-4 border-b">議論継続</td>
-                          </tr>
-                          <tr class="hover:bg-gray-50">
-                            <td class="py-2 px-4 border-b font-medium">S-3 野党参院過半数</td>
-                            <td class="py-2 px-4 border-b">大幅修正</td>
-                            <td class="py-2 px-4 border-b">給付金拡大</td>
-                            <td class="py-2 px-4 border-b">歳出見直し</td>
-                            <td class="py-2 px-4 border-b">議論停滞</td>
-                          </tr>
-                          <tr class="hover:bg-gray-50">
-                            <td class="py-2 px-4 border-b font-medium">S-4 石破退陣</td>
-                            <td class="py-2 px-4 border-b">方針不明確化</td>
-                            <td class="py-2 px-4 border-b">大型対策</td>
-                            <td class="py-2 px-4 border-b">一時停滞</td>
-                            <td class="py-2 px-4 border-b">棚上げ</td>
-                          </tr>
-                          <tr class="hover:bg-gray-50">
-                            <td class="py-2 px-4 border-b font-medium">S-6 第3極地殻変動</td>
-                            <td class="py-2 px-4 border-b">極度に不安定化</td>
-                            <td class="py-2 px-4 border-b">ポピュリズム的</td>
-                            <td class="py-2 px-4 border-b">方針の揺らぎ</td>
-                            <td class="py-2 px-4 border-b">議論停止</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                 <div class="bg-blue-50 p-4 rounded-lg shadow-sm">
-                    <h4 class="font-medium text-blue-800 mb-3">政治情勢シミュレーションの結論</h4>
-                    <ul class="list-disc pl-5 space-y-2 text-sm">
-                        <li>最も可能性の高いシナリオは「<strong>与党過半数割れ・国民民主党による閣外協力</strong>」パターン</li>
-                        <li>この場合、石破政権は継続するが<strong>物価対策・減税が政権運営の焦点</strong>となる</li>
-                        <li>野党参院過半数となった場合でも、衆院優越で予算関連法案は成立するが、重要政策に修正圧力</li>
-                        <li>新たに加わった「第3極の地殻変動」シナリオは、<strong>政治の不安定化を極度に高める</strong>リスクとして注視が必要</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- 議席予測タブ -->
-            <div id="prediction" class="tab-content hidden p-4">
-                <h3 class="text-xl font-semibold mb-4 text-gray-700">選挙後の全体議席予測</h3>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-                    <div>
-                        <h4 class="font-medium mb-2 text-gray-700">選挙後 参議院全体勢力図（予測）</h4>
-                        <div class="h-96 relative">
-                            <canvas id="powerBalanceChart"></canvas>
-                        </div>
-                        <div class="text-xs text-center text-gray-600 mt-2 space-y-1">
-                            <p>総議席数: 248議席</p>
-                            <p>過半数: 125議席 / 憲法改正発議に必要な3分の2: 166議席</p>
-                        </div>
-                    </div>
-                    <div class="bg-gray-100 p-4 rounded-lg">
-                        <h4 class="font-medium text-gray-800 mb-3">勢力別議席数（予測）</h4>
-                        <div id="powerBalanceDetails" class="space-y-4">
-                           <!-- JSで動的に生成 -->
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-8 pt-8 border-t border-gray-300">
-                       <h3 class="text-xl font-semibold mb-4 text-gray-700">現有議席と予測議席の比較</h3>
-                       <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                           <div class="lg:col-span-3">
-                               <h4 class="font-medium mb-2 text-gray-700">会派別 議席数変化</h4>
-                               <div class="h-96"><canvas id="postElectionChart"></canvas></div>
-                           </div>
-                           <div class="lg:col-span-2">
-                               <h4 class="font-medium mb-2 text-gray-700">議席増減表</h4>
-                               <div class="overflow-x-auto">
-                                   <table class="min-w-full bg-white border border-gray-200 text-sm">
-                                       <thead class="bg-gray-100">
-                                           <tr>
-                                               <th class="py-2 px-3 border-b text-left font-semibold">会派名</th>
-                                               <th class="py-2 px-3 border-b text-center font-semibold">現有</th>
-                                               <th class="py-2 px-3 border-b text-center font-semibold">予測</th>
-                                               <th class="py-2 px-3 border-b text-center font-semibold">増減</th>
-                                           </tr>
-                                       </thead>
-                                       <tbody id="seatChangeTableBody">
-                                           <!-- JavaScript will populate this -->
-                                       </tbody>
-                                   </table>
-                               </div>
-                           </div>
-                       </div>
-                </div>
-            </div>
-
-            <!-- 総括タブ -->
-            <div id="summary" class="tab-content hidden p-4">
-                <h3 class="text-lg font-semibold mb-4">参院選シミュレーション総括と提言</h3>
-                <div class="bg-gray-100 p-6 rounded-lg mb-8">
-                    <h4 class="font-semibold text-gray-800 mb-4">主要な発見</h4>
-                    <div class="space-y-4">
-                        <div class="p-3 bg-white rounded shadow-sm border-l-4 border-blue-500">
-                          <h5 class="font-medium text-blue-800">1. 参院選の勝敗ライン</h5>
-                          <p class="mt-1 text-sm">「与党改選60議席」が実質的な勝敗ライン。これを切れば政権運営は常に国民民主党頼みとなる。現時点の予測は与党62議席で非常に僅差の状況。</p>
-                        </div>
-                        <div class="p-3 bg-white rounded shadow-sm border-l-4 border-purple-500">
-                          <h5 class="font-medium text-purple-800">2. 無党派動員と物価対策の成否が決定的</h5>
-                          <p class="mt-1 text-sm">政府は６月補正で"減税より即効性"の現金給付や燃料補助上積みが急務。特に物価高第２波（コメ高騰など）への対策が選挙結果を左右する。</p>
-                        </div>
-                        <div class="p-3 bg-white rounded shadow-sm border-l-4 border-green-500">
-                          <h5 class="font-medium text-green-800">3. 野党側は統一候補での32区25勝が条件</h5>
-                          <p class="mt-1 text-sm">維新・立憲の連携が鍵だが共産党排除では比例票が伸びず、ジレンマを抱える。一人区での候補者一本化の成否が全体結果を大きく左右する。</p>
-                        </div>
-                        <div class="p-3 bg-white rounded shadow-sm border-l-4 border-teal-500">
-                          <h5 class="font-medium text-teal-800">4. 新たな不確定要素「第3極」の台頭</h5>
-                          <p class="mt-1 text-sm">既存政党への不満が受け皿となる少数政党・新党に向かった場合、議席予測が大きく変動するリスクがある。比例代表での得票が特に注視される。</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="mb-8">
-                    <h4 class="font-medium mb-2">選挙結果によるシナリオ発生確率</h4>
-                    <div class="h-96"><canvas id="summaryChart"></canvas></div>
-                </div>
-                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div class="p-4 bg-gray-100 rounded-lg shadow-sm text-center">
-                      <h4 class="font-medium mb-3">与党（自民・公明）</h4>
-                      <div class="text-5xl font-bold text-blue-600 mb-2">62議席</div>
-                      <p class="text-sm text-gray-600">過半数ライン: 63議席</p>
-                      <p class="text-sm text-gray-600">改選前: 69議席</p>
-                      <p class="mt-3 text-sm text-left">予測では単独過半数に1議席不足。国民民主党を加えると72議席で安定。</p>
-                    </div>
-                    <div class="p-4 bg-gray-100 rounded-lg shadow-sm text-center">
-                      <h4 class="font-medium mb-3">野党（立民等）</h4>
-                      <div class="text-5xl font-bold text-red-600 mb-2">29議席</div>
-                      <p class="text-sm text-gray-600">改選前: 33議席</p>
-                      <p class="text-sm text-gray-600">統一候補勝利: 16/32区</p>
-                      <p class="mt-3 text-sm text-left">1人区での勝利数が20を超えなければ、野党の過半数獲得は困難。</p>
-                    </div>
-                    <div class="p-4 bg-gray-100 rounded-lg shadow-sm text-center">
-                      <h4 class="font-medium mb-3">国民民主党</h4>
-                      <div class="text-5xl font-bold text-purple-600 mb-2">10議席</div>
-                      <p class="text-sm text-gray-600">改選前: 6議席</p>
-                      <p class="text-sm text-gray-600">キャスティングボート</p>
-                      <p class="mt-3 text-sm text-left">主流シナリオでは「キングメーカー」となり、政権運営の鍵を握る。</p>
-                    </div>
-                  </div>
-                 <div class="bg-blue-50 p-4 rounded-lg shadow-sm">
-                    <h4 class="font-medium text-blue-800 mb-3">最終提言</h4>
-                    <div class="space-y-3 text-sm">
-                      <p>今回の参院選シミュレーションによれば、最も可能性の高いシナリオは<strong>「与党過半数割れ・国民民主党の閣外協力」</strong>（確率45%）である。</p>
-                      <p>しかし、新たに浮上した<strong>「第3極の地殻変動」シナリオ（確率10%）</strong>は、従来の政治力学を覆す可能性があるため最大限の注意が必要。これは、既存政党への不満の受け皿として、特定の政策（例：過激な減税、反グローバリズム）を掲げる新党や少数政党が比例代表で議席を伸ばすケースを想定している。</p>
-                      <p>政府・与党は物価対策に加え、政治不信を払拭する改革姿勢を示すことが急務。野党側も、既成政党批判の受け皿としての役割を新興勢力に奪われない戦略が求められる。</p>
-                      <p>いずれのシナリオでも、選挙後は<strong>財政規律が緩む方向</strong>に向かう可能性が高いが、「第3極」シナリオでは政策の予測可能性が著しく低下し、市場の混乱を招くリスクがある。</p>
-                    </div>
-                  </div>
-                 <div class="text-sm text-gray-500 mt-8">
-                    <p>今後１か月で公示前最後の大型調査が相次ぐため、随時最新のデータを反映したシミュレーション結果を更新予定。</p>
-                </div>
-            </div>
+    <!-- Custom script with Alpine.js data and initializers -->
+    <script>
+        document.addEventListener('alpine:init', () => {
+            // Data definition for the entire report
+            const reportData = {
+                section_kpi: {
+                    title: "主要目標（KPI）",
+                    kpis: [
+                        { title: "実質賃金上昇率", value: "約1%", description: "物価上昇を安定的に上回る賃金上昇の持続を目指す。", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>` },
+                        { title: "最低賃金", value: "1500円", description: "2030年代半ばまでに全国加重平均1500円を目指す。", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 10v-1m0-6h.01M12 18h.01M17 10h.01M7 10h.01" /></svg>` },
+                        { title: "GX関連投資", value: "150兆円超", description: "今後10年間で官民合わせて実現する投資規模。", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>` },
+                        { title: "訪日外国人観光客", value: "6000万人", description: "2030年の目標として、消費額15兆円と合わせて目指す。", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582" /></svg>` },
+                        { title: "防衛費", value: "約43兆円", description: "2023～27年度の5年間で整備する規模。", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.602-3.751A11.959 11.959 0 0121 9c0 5.592-3.824 10.29 9 11.622-5.176-1.332-9-6.03-9-11.622 0-1.31-.21-2.571-.602-3.751" /></svg>` },
+                        { title: "スタートアップ育成", value: "5か年計画", description: "企業数を10倍に増やす目標の実現に向けた支援策。", icon: `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.63 2.18a14.98 14.98 0 00-7.5 12.12c0 3.43.97 6.63 2.63 9.24l-4.16 4.16v4.8h4.8l4.16-4.16A14.98 14.98 0 0015.59 14.37z" /></svg>` },
+                    ]
+                },
+                section1: {
+                    points: [
+                        { title: "賃上げこそが成長戦略の要", description: "物価上昇を安定的に上回る賃金上昇を実現し、約1%の実質賃金上昇を持続させることが目標。中小企業の価格転嫁や生産性向上支援、最低賃金の着実な引上げを強調。" },
+                        { title: "投資立国・資産運用立国の推進", description: "GX・DX・スタートアップ・経済安保分野への官民連携投資で企業の稼ぐ力を高め、国民の資産形成を促進。NISA拡充で「資産運用立国」を進める。" },
+                        { title: "地方創生2.0 (令和の日本列島改造)", description: "人口減少に対応し、「新しい日本・楽しい日本」を実現。若者や女性に選ばれる地方をつくり、日本全体の活力を取り戻すべく、デジタル田園都市国家構想などを展開。" },
+                        { title: "GX (グリーントランスフォーメーション) の大規模投資", description: "2050年カーボンニュートラル実現へ、今後10年間で官民合わせ150兆円超のGX関連投資を行う。再エネ最大導入、原発再稼働、新エネルギー支援などを推進。" },
+                        { title: "DX (デジタルトランスフォーメーション) と行政改革", description: "デジタル庁の司令塔機能強化の下、AI・ウェブ3.0など技術の社会実装やデータ活用基盤整備を推進。マイナンバーカード機能拡充など行政サービスのデジタル化を目指す。" },
+                        { title: "社会保障の持続可能性確保", description: "全世代型社会保障構築を旗印に、医療・介護等の改革を推進。現役世代の負担軽減と世代間の支え合いのため、医療DXや応能負担の徹底などを検討。" },
+                        { title: "少子化対策の加速", description: "「こどもまんなか社会」実現に向け、今後3年間を集中取組期間とし、児童手当拡充や幼児教育・保育の無償化拡大など大胆な経済的支援策を本格実施。" },
+                        { title: "安全保障と危機管理", description: "防衛費増額を賄う増税時期は明記せず。経済安全保障推進法に沿ったサプライチェーン強靭化や先端技術の流出防止、サイバー対策などを強化。" },
+                    ]
+                },
+                section2: {
+                    fields: [
+                        { name: "賃上げ・所得向上", policies: ["最低賃金1500円への引上げ", "中小企業の価格転嫁・生産性向上支援", "業種別の賃上げ促進（建設、運輸、医療、介護等）", "「年収の壁」への対応と多様な働き方の推進"] },
+                        { name: "三位一体の労働市場改革", policies: ["成長分野への労働移動円滑化", "リスキリング（学び直し）への支援強化", "ジョブ型雇用の導入促進", "企業の採用力・人材育成力の強化支援"] },
+                        { name: "スタートアップ・イノベーション創出", policies: ["スタートアップ育成5か年計画の強力な推進", "大企業とスタートアップの連携（オープンイノベーション）促進", "大学発スタートアップの創出支援", "ベンチャーキャピタルへの官民投資拡大"] },
+                        { name: "GX (グリーントランスフォーメーション)", policies: ["150兆円規模のGX投資の実現", "再生可能エネルギーの最大限の導入", "次世代革新炉の開発・建設と原子力発電の活用", "GXリーグ本格稼働とカーボンプライシング導入"] },
+                        { name: "DX (デジタルトランスフォーメーション)", policies: ["デジタル庁の司令塔機能強化", "行政手続きのオンライン化・ワンスオンリー推進", "マイナンバーカードの機能拡充と利活用推進", "MaaS、ドローンなど新技術の社会実装"] },
+                        { name: "AI・半導体戦略", policies: ["AI開発力・計算基盤の強化", "次世代半導体の国内生産基盤の確立（Rapidus支援）", "AIガバナンスの国際的なルール形成主導", "産業・行政分野でのAI活用推進"] },
+                        { name: "地方創生・地域活性化", policies: ["デジタル田園都市国家構想の推進", "地方への人の流れの創出（移住・関係人口拡大）", "地域公共交通の再構築支援（鉄道、バス等）", "地域の文化・自然資本を活かした産業振興"] },
+                        { name: "観光立国推進", policies: ["2030年訪日客6000万人・消費額15兆円目標", "高付加価値な観光コンテンツの造成", "オーバーツーリズム対策と持続可能な観光の両立", "観光DXによる生産性向上と魅力発信"] },
+                        { name: "農林水産業・食料安全保障", policies: ["食料自給率・自給力の向上", "スマート農業・林業・水産業の社会実装", "「みどりの食料システム戦略」の推進", "農地の集積・集約化と担い手育成"] },
+                        { name: "資産運用立国", policies: ["新しいNISA制度の普及・定着", "国民の金融経済リテラシーの向上", "海外金融・資産運用企業の誘致", "国内アセットオーナーの運用力強化"] },
+                        { name: "子ども・子育て支援（少子化対策）", policies: ["こども未来戦略の着実な実行", "児童手当の拡充と所得制限の撤廃", "幼児教育・保育の質の向上と無償化対象拡大", "こどもまんなか社会の実現に向けた環境整備"] },
+                        { name: "医療・介護制度改革", policies: ["医療DXの推進（電子カルテ情報共有など）", "かかりつけ医機能の制度化と地域医療構想の推進", "創薬力の強化と医薬品の安定供給確保", "介護現場の生産性向上（ロボット・センサー導入支援）"] },
+                        { name: "全世代型社会保障の構築", policies: ["給付と負担の見直しによる制度の持続可能性確保", "勤労者皆保険制度の実現", "予防・健康づくりの推進による健康寿命の延伸", "孤独・孤立対策の強化"] },
+                        { name: "教育再生・人材育成", policies: ["教師の働き方改革と処遇改善", "STEAM教育・探究学習の充実", "高等教育の負担軽減（授業料後払い制度等）", "社会人の学び直し（リカレント教育）の抜本的強化"] },
+                        { name: "科学技術・研究開発", policies: ["10兆円規模の大学ファンドによる研究力強化", "フロンティア分野（宇宙・海洋・核融合）への戦略的投資", "若手・女性研究者の育成と活躍支援", "国際的な頭脳循環のハブ形成"] },
+                        { name: "経済安全保障", policies: ["経済安全保障推進法の着実な運用", "重要物資のサプライチェーン強靱化", "先端重要技術の育成と流出防止", "基幹インフラの信頼性確保"] },
+                        { name: "防衛力の抜本的強化", policies: ["防衛関係費のGDP比2%への増額", "反撃能力の保有と運用態勢の整備", "防衛装備品の開発・生産基盤の強化", "日米同盟の抑止力・対処力の向上"] },
+                        { name: "防災・減災、国土強靱化", policies: ["国土強靱化計画に基づく継続的な投資", "気候変動を踏まえた水災害対策の激甚化", "南海トラフ地震・首都直下地震対策の強化", "インフラの老朽化対策と予防保全への転換"] },
+                        { name: "重要インフラ整備・維持管理", policies: ["デジタル技術を活用したインフラ維持管理（インフラDX）", "無電柱化の推進", "次世代交通ネットワーク（自動運転、ドローン物流等）の整備", "空港・港湾の機能強化とBCP策定"] },
+                        { name: "外国人との共生社会実現", policies: ["新たな在留資格「育成就労」制度の創設・運用", "外国人材の受入れ・社会統合の円滑化", "日本語教育の充実と相談体制の強化", "技能実習制度・特定技能制度の見直し"] }
+                    ]
+                },
+                detailedPolicies: [], // Populated below
+                section6: {
+                    keywords: [
+                        "AI戦略", "MaaS", "NISA", "PPP/PFI", "STEAM教育", "Web3.0", "インボイス制度", "オープンイノベーション", "オーバーツーリズム", "かかりつけ医", "カーボンニュートラル", "カーボンプライシング", "グリーン成長戦略", "コンパクトシティ", "サイバーセキュリティ", "サプライチェーン", "サーキュラーエコノミー", "スタートアップ", "スタートアップ・エコシステム", "スマート農業", "スリープテック", "デュアルユース技術", "デジタル田園都市国家構想", "デジタル行財政改革", "デュアルユース", "テレワーク", "ドローン", "バイオ", "プライマリーバランス", "フリーランス保護", "ヘルステック", "ベンチャーキャピタル", "リカレント教育", "リスキリング", "三位一体の労働市場改革", "事業承継", "予防・健康づくり", "人への投資", "介護DX", "価格転嫁", "偽情報対策", "再生可能エネルギー", "反撃能力", "国際卓越研究大学", "国土強靱化", "地方創生", "地域公共交通", "地域共生社会", "多様な働き方", "大学ファンド", "宇宙コンステレーション", "安全保障", "孤独・孤立対策", "実質賃金", "少子化対策", "年収の壁", "成長と分配の好循環", "新しい資本主義", "次世代半導体", "次世代革新炉", "核融合", "気候変動", "洋上風力", "消費活性化", "無電柱化", "物流", "生産性向上",  "知的財産", "社会人の学び直し", "科学技術", "経済安全保障推進法", "経済", "育成就労", "能登半島地震", "自動運転", "財政健全化", "資産所得倍増プラン", "賃上げ", "貧困", "格差", "高齢", "防衛費", "防災・減災", "量子技術", "食料安全保障", "骨太方針", "教育無償化", "少子化"
+                    ]
+                }
+            };
             
-            <!-- AI分析タブ -->
-            <div id="ai-analysis" class="tab-content hidden p-4">
-                <h3 class="text-xl font-semibold mb-4 text-gray-700">AIによる総合分析</h3>
+            // Populate the detailedPolicies with items (Example data)
+            let allPolicies = [
+                { rank: 1, name: '賃上げ支援(中小企業5か年計画)', total: 88, economy: 18, support: 19, feasibility: 16, innovation: 17, sustainability: 18, details: { direction: "中小・零細企業で働く人々の賃金水準を底上げし、全体として賃上げの裾野を広げる。物価高を上回る賃上げを全国に波及させる起点として、政府が5年間集中的に支援する計画である。", target: "中小企業・小規模事業者全般(製造業からサービス業まで広範囲)。特に賃金が低迷しがちな地方の中小企業や非正規比率の高い業種が恩恵を受ける。", impact: "賃金上昇により個人消費を喚起し、デフレ的傾向を転換する経済波及効果が期待される。一方、賃上げ原資確保のため企業の生産性向上や価格転嫁力の強化が伴わねば、中小企業の経営負担増となるリスクもある。", relatedPlan: "「経済財政運営と改革の基本方針2023（骨太方針2023）」で提起された中小企業の価格交渉力強化策を継承。下請取引適正化や事業再編支援策とも連動し、中小企業基本法に基づく施策パッケージに位置付けられる。" } },
+                { rank: 2, name: 'GX (グリーントランスフォーメーション) 推進', total: 85, economy: 19, support: 16, feasibility: 17, innovation: 17, sustainability: 16, details: { direction: "2050年カーボンニュートラル実現に向け、産業・エネルギー構造を抜本転換する。政府は「GX実行会議」で示した今後10年で150兆円投資の達成に官民一体で取り組む。", target: "エネルギー産業(電力・石油・ガス)、自動車等製造業(EV・蓄電池関連)、建設・住宅産業(省エネ建築)、原子力産業、再エネ関連産業(太陽光・風力・地熱など)、素材・化学産業(新素材開発、リサイクル技術)等、極めて広範な業界が対象となる。", impact: "グリーン投資は短期的には需要喚起・新産業創出効果が大きく、成長押上げ要因となる。長期的にはエネルギー自給率向上やカーボンプライシング収入など経済構造の安定化につながる。", relatedPlan: "「GX基本方針」（2023年策定）および「エネルギー基本計画」（2021年改定）、「地球温暖化対策計画」に則った具体化である。国会にはGX推進のための法案（GX推進法）が提出済み。" } },
+                { rank: 3, name: 'スタートアップ支援強化', total: 82, economy: 17, support: 15, feasibility: 18, innovation: 17, sustainability: 15, details: { direction: "2027年までにスタートアップ企業数を現在の10倍に増やすという政府目標（スタートアップ育成5か年計画）を実現するため、創業から成長段階まで切れ目ない支援策を講じる。", target: "スタートアップ企業およびその予備軍、ベンチャーキャピタル・エンジェル投資家、大学の技術移転機関(TLO)、M&A仲介業者など幅広い。", impact: "創業企業の増加は将来的なイノベーションと雇用創出につながり、日本経済の新陳代謝を促す。リスクマネー供給が厚くなれば、世界的ユニコーン企業が出現する可能性も高まる。", relatedPlan: "2022年11月に決定した「スタートアップ育成5か年計画」の具体的実行フェーズ。各省にもスタートアップ担当官が置かれ、省庁横断のプランが策定されている。" } },
+                { rank: 4, name: '子ども・子育て支援策(少子化対策加速)', total: 80, economy: 15, support: 19, feasibility: 16, innovation: 15, sustainability: 15, details: { direction: "未曾有の少子化に対処すべく、子育て世帯の経済的不安を大幅に軽減し、「子どもを産み育てたい希望」を実現する社会をつくる。児童手当の拡充、幼児教育・保育無償化、高等学校授業料の実質無償化拡大など、大胆な支援策を講じる。", target: "子育て世帯(妊娠・出産期から高校生・大学生の子どもを持つ家庭)、未婚の若者(結婚支援策の対象)、保育所・幼稚園、放課後児童クラブ、住宅業界など。", impact: "児童手当等の現金給付増は短期的には消費増をもたらし経済を下支えする。長期的には出生率が改善すれば将来の労働力人口減少に歯止めがかかり、日本経済の持続力が高まる可能性がある。", relatedPlan: "2023年6月に政府が策定した「こども未来戦略方針」が原点であり、それを具体化する実行計画「こどもまんなか社会実現計画（こどもまんなか実行計画2025）」に沿っている。" } },
+                { rank: 5, name: 'AI・先端半導体戦略', total: 79, economy: 18, support: 15, feasibility: 14, innovation: 18, sustainability: 14, details: { direction: "AIと半導体はデジタル経済の基盤であり、その研究開発・生産体制を国家戦略的に強化する。生成AIの行政活用、倫理・ガバナンス体制を整える。次世代半導体の国内量産プロジェクトに投資する。", target: "AI研究機関・スタートアップ、ICTサービス業、家電・自動車メーカー、半導体メーカー、半導体装置メーカー、ロボット産業、大学など幅広い産業クラスター。", impact: "AI活用により新サービスが創出され、企業の効率化・高度化が進展。半導体の内製能力強化は経済安全保障上も極めて重要であり、供給途絶リスクの低減や関連産業の裾野拡大につながる。", relatedPlan: "2023年に策定された「国家AI戦略」および「半導体・デジタル産業戦略」がベース。「経済安全保障推進法」の指定分野とも重なる。" } },
+                { rank: 6, name: 'デジタル行政・マイナンバー推進', total: 78, economy: 16, support: 14, feasibility: 16, innovation: 15, sustainability: 17, details: { direction: "国と自治体の行政サービスを徹底的にデジタル化し、少子化で人員が制約される中でも公共サービス水準を維持・向上させる。マイナンバーカードをデジタル社会のパスポートと位置づけ、利便性を高める。", target: "地方自治体、中央省庁、行政サービス受託企業、住民全般、マイナンバー制度関連サービス事業者。", impact: "行政コストの削減と迅速なサービス提供は、企業・国民の手続負担を軽減し経済活動の効率を上げる。IT需要拡大は国内IT産業の市場拡大につながる。", relatedPlan: "2023年6月に閣議決定された「デジタル行財政改革の取まとめ2025」に具体策が示されており、その実行計画に相当する。" } },
+                { rank: 7, name: '防災・国土強靱化投資', total: 76, economy: 15, support: 18, feasibility: 15, innovation: 10, sustainability: 18, details: { direction: "近年頻発・激甚化する自然災害や、切迫する巨大地震から国民の生命と暮らしを守るため、計画的に防災投資を継続する。国土強靱化基本計画に基づき、必要かつ十分な予算を確保してハード・ソフト一体の対策を切れ目なく講じる。", target: "国土交通省・内閣府(防災担当)、地方自治体、防災インフラ建設業者、通信・電力等インフラ企業、建設コンサルタント、防災機器メーカー、国民全般。", impact: "防災・減災投資は短期的に公共事業需要を喚起し、建設業・建設資材業界の経済効果が大きい。長期的には災害被害額の低減と早期復旧によって、経済損失を未然に防ぐ効果がある。", relatedPlan: "2013年の「国土強靱化基本法」以来、政府は5年ごとに国土強靱化基本計画とそれに基づく計画を策定。本方針の時点では「第1次実施中期計画」（2023～2025年度）が進行中。" } },
+                { rank: 8, name: '経済安全保障 (サプライチェーン強靱化)', total: 75, economy: 14, support: 16, feasibility: 15, innovation: 16, sustainability: 14, details: { direction: "経済と安全保障を一体で捉え、戦略物資・重要技術を守り抜く。経済安全保障推進法に基づき、サプライチェーン強靭化、重要インフラ防護、先端技術育成、秘匿特許制度の運用といった施策を着実に実行する。", target: "半導体・電子部品産業、製薬・医療品産業、素材(希少金属)調達企業、通信事業者、電力会社、防衛産業など。広くは安保リスクに晒される民間企業全般。", impact: "安定供給が確保されれば企業は生産計画を乱されにくくなり、経済の安定性が増す。一方、効率より安定重視の生産は短期的にはコスト高につながり、物価上昇要因ともなる可能性がある。", relatedPlan: "2022年5月施行の経済安全保障推進法に基づく初の骨太方針反映である。G7広島サミットで各国が経済安保強化で一致したことを受け、G7議長国として日本がイニシアチブを取る姿勢が見える。" } },
+                { rank: 9, name: 'DX推進(社会全体のデジタル化)', total: 74, economy: 16, support: 14, feasibility: 15, innovation: 15, sustainability: 14, details: { direction: "社会全体のデジタル化による新たな価値創出と国民生活の利便性向上が目標。デジタル庁の司令塔機能の下で、AI・IoT・web3などデジタル技術の社会実装、データの利活用ルール整備を進める。", target: "ICT産業全般、AI・データ分析企業、ブロックチェーン関連企業、各種産業のIT部門、スタートアップ企業など。", impact: "DXにより生産性が横断的に向上すれば、日本経済の潜在成長率を押し上げる効果が大きい。特にデータ利活用が進めば、新サービス・新ビジネスの創出が期待できる。", relatedPlan: "「デジタル社会の実現に向けた重点計画」（2024年改定）に定められた各施策を具体化するもの。OECDなど国際的に議論されているDFFT（Data Free Flow with Trust）の理念を国内制度に落とし込むことも目標。" } },
+                { rank: 10, name: '三位一体の労働市場改革', total: 73, economy: 16, support: 13, feasibility: 14, innovation: 16, sustainability: 14, details: { direction: "①リスキリング支援、②労働移動の円滑化、③多様で柔軟な働き方の促進の三方向から、人への投資と労働市場の流動性向上を図る。", target: "全産業。企業の人事部門、人材サービス業、教育訓練業界も対象。", impact: "日本経済全体の潜在成長率押上げに寄与。人的資本のミスマッチ解消と賃金上昇につながる。", relatedPlan: "「人への投資」加速に向けた政府の「人づくり革命」や「新しい資本主義」の一環。" } },
+                { rank: 11, name: '高等教育負担軽減(大学無償化等)', total: 72, economy: 12, support: 17, feasibility: 15, innovation: 13, sustainability: 15, details: { direction: "高等教育費の負担軽減では、2020年に導入した高等教育無償化制度(授業料減免+給付奨学金)の拡充を着実に実施し、中間層への支援も手当てする。加えて授業料後払い制度や、民間資金を活用した奨学金基金の創設など新たな仕組みを検討する。", target: "大学・短大・高専・専門学校、大学生・院生、日本学生支援機構、企業、海外の大学・留学生など。", impact: "大学統合で運営コスト削減により財政効率が上がる。研究力強化や留学生増加により大学の国際競争力が高まれば、経済的便益が期待される。無償化拡充は可処分所得を押し上げ出生率にも寄与する可能性がある。", relatedPlan: "文科省の「高等教育改革方針」（2022年）や中央教育審議会答申に沿った施策。大学ファンド10兆円がトップ大学支援を開始しており、その環境整備をバックアップ。" } },
+                { rank: 12, name: 'デジタル人材育成', total: 71, economy: 14, support: 15, feasibility: 14, innovation: 14, sustainability: 14, details: { direction: "DX推進の基盤として、民間・行政双方でデジタルスキルを持つ人材を大量に育成する。全国統一のデジタル人材育成プラットフォームを構築し、いつでも誰でもICT学習できる環境を整備する。", target: "学生・社会人など労働力人口全般。教育業界、オンライン学習サービス企業、資格試験運営団体、地方公共団体の人材育成部門、企業の研修サービスなど。", impact: "労働市場の需給ギャップを緩和し、企業のDX投資効果を高める。地方における人材流出抑制やIT産業育成に寄与し、地域経済に長期的な利益をもたらす可能性がある。", relatedPlan: "新しい資本主義の一環として「人への投資」の重点項目であり、岸田政権下で創設された1兆円規模の人材育成基金の活用とも連動する。" } },
+                { rank: 13, name: '文化芸術・スポーツ振興', total: 70, economy: 13, support: 15, feasibility: 14, innovation: 14, sustainability: 14, details: { direction: "文化芸術を経済成長と好循環させ「文化芸術立国」を実現すること、およびスポーツの持つ活力を地域経済の起爆剤とすることを目指す。官民の投資を拡大し、文化コンテンツ人材の育成や海外展開を支援する。", target: "芸術家、クリエイター、コンテンツ産業、劇場・美術館運営者、スポーツ産業、観光業界、自治体文化・体育振興部局。", impact: "文化芸術分野への投資拡大はクリエイティブ産業の市場規模拡大と国際競争力強化につながる。スポーツも観戦ツーリズムや関連消費の増大をもたらし、地方経済振興に寄与する。", relatedPlan: "文化庁の「文化芸術基本計画」（第4次）やスポーツ庁の「スポーツ基本計画」（第3期）に沿った施策群。「2025大阪・関西万博」や2025世界陸上などを契機に発信を強化する意図も。" } },
+                { rank: 14, name: '教師の働き方改革と教員不足対策', total: 69, economy: 11, support: 16, feasibility: 13, innovation: 14, sustainability: 15, details: { direction: "教師が子どもと向き合う時間を確保し優秀な人材を呼び込むため、教員の勤務環境と処遇を抜本的に改善する。時間外労働の削減目標を掲げ、部活動の地域移行や事務作業のICT化により学校業務を適正化する。", target: "教員、学校管理職、教育委員会、教員養成課程の大学、学生(教員志望者)、非常勤講師・部活動指導員などの外部人材。", impact: "教師の労働環境改善は深刻化する教員不足に歯止めをかけ、教育の質低下を防ぐ効果がある。教員給与引上げは民間の賃上げを政府自ら実践する意義も大きい。", relatedPlan: "中央教育審議会「教師の働き方改革に関する答申」や文科省の「教師勤務実態調査」結果を踏まえた政策。現政権の「異次元の少子化対策」の一環として教職の魅力向上が位置付けられた。" } },
+                { rank: 15, name: '外国人共生と入管改革', total: 68, economy: 14, support: 12, feasibility: 15, innovation: 13, sustainability: 14, details: { direction: "労働力や地域社会の担い手として外国人を受け入れつつ、日本の秩序や治安を維持するバランスを追求する。在留資格制度の見直しを進め、真に必要な外国人には長期定着してもらう。一方、ルールを守らない外国人への対策も強化する。", target: "在留外国人全般、受入企業・監理団体、自治体国際課、市民社会(共生支援NPOなど)、入管当局、警察など。", impact: "外国人労働者の円滑な受入は、人手不足に悩む産業への労働供給を確保し、生産力維持に貢献する。共生社会の実現は長期的には日本の活力維持に不可欠。", relatedPlan: "法務省・出入国在留管理庁による在留資格「特定技能2号」の拡大検討が進んでおり、それを見据え骨太2025が総論を示した形。政府の「外国人材受入れ・共生のための総合的対応策」の延長線上。" } },
+                { rank: 16, name: '農林水産業の構造転換と食料安全保障', total: 68, economy: 13, support: 14, feasibility: 13, innovation: 13, sustainability: 15, details: { direction: "農林水産業を成長産業化しつつ、食料自給力を高め国家安全保障に資する産業へ転換する。「みどりの食料システム戦略」の加速化によりスマート農業や環境配慮型農法を普及させ、収益性を向上させる。", target: "農業・畜産・水産業界全般(生産者団体、大規模法人、新規就農者)。関連する食品加工・流通業、アグリテック企業、資材メーカーなども含む。", impact: "生産性革命により国内農業の競争力が増せば、国内食料市場は安定供給・価格抑制につながり消費者にも恩恵が及ぶ。食料安全保障が強化されることで外的ショックに対する国民生活の安定度も増す。", relatedPlan: "農水省の「新たな食料・農業・農村基本計画」及び2023年改定の「食料安保強化戦略」に基づく。気候変動対応では「みどりの食料システム法」に則り、化学農薬・肥料低減目標を掲げている。" } },
+                { rank: 17, name: '「世界一安全な日本」治安強化', total: 67, economy: 12, support: 16, feasibility: 15, innovation: 10, sustainability: 14, details: { direction: "犯罪やテロを未然に防ぎ、良好な治安を維持することで、人々が安心して生活できる社会をつくる。CBRNEテロへの備え、マネーロンダリング防止、特殊詐欺や闇バイト犯罪グループの壊滅を目指す。", target: "警察・海上保安庁・自衛隊・入管など治安機関、法務省矯正・保護当局、金融機関、自治体防犯担当、地域住民、防犯設備メーカーなど。", impact: "防犯・セキュリティ産業の需要が増加する。治安維持は経済の基盤条件であり、安全な社会は投資や観光を呼び込む無形の資本といえる。", relatedPlan: "警察庁の「サイバー犯罪対策強化プラン」や「捜査力向上プログラム」、内閣官房のテロ対策推進基本方針などと調和。政府は「世界一安全な国・日本」のキャッチフレーズを2000年代から使っており、本方針でも治安の良さを成長戦略の前提として明示。" } },
+                { rank: 18, name: '地方への人材還流・関係人口拡大策', total: 67, economy: 13, support: 14, feasibility: 14, innovation: 13, sustainability: 13, details: { direction: "地方からの若者・女性の流出を食い止め、都市から地方への人の流れを生み出す。企業の地方移転やサテライトオフィス設置を税制支援などで促進し、リモートワーク普及を活用して専門人材が地方で活躍できる環境を整備する。", target: "都市在住のテレワーカー・ノマドワーカー、地方への移住希望者、デュアルライフ志向者。また地方自治体や民間の人材マッチング事業者、不動産業などが関連する。", impact: "優秀な人材が地方企業・行政に参画することで地域の生産性向上やサービス向上をもたらす。移住者・関係人口の消費増加は地域の内需を刺激し、不動産市場や地域サービス産業の活性化も見込まれる。", relatedPlan: "総務省「関係人口創出・拡大プラン」、厚労省「地方移住・就業マッチング強化事業」、デジタル庁「テレワーク・ワーケーション推進施策」などが該当。政府は2023年に「地方移住支援強化パッケージ」を発表しており、その具体化が骨太2025に反映されている。" } },
+                { rank: 19, name: '外交・防衛力の強化', total: 66, economy: 12, support: 15, feasibility: 14, innovation: 12, sustainability: 13, details: { direction: "国際秩序が揺らぐ中、自国の平和と繁栄を守るため積極的な外交と実効的な防衛力を追求する。日米同盟を基軸に多角的安全保障協力を深化させる。国家安全保障戦略に沿い、反撃能力の保有など防衛力抜本強化を図る。", target: "外交(外務省、防衛省、NSC)、安全保障関連産業(防衛装備品メーカー)、自衛隊、在日米軍、国際機関との関係など。", impact: "防衛費の増加は短期的には防衛産業への需要拡大をもたらす。技術波及効果も見込まれ、デュアルユース技術の民間転用が進めば関連産業の競争力強化につながる。財源として国民負担増(増税)が将来発生する可能性がある。", relatedPlan: "2022年12月策定の国家安全保障戦略、国家防衛戦略、防衛力整備計画の実行フェーズ。外交面では「自由で開かれたインド太平洋（FOIP）」推進が政府の基本方針。" } },
+                { rank: 20, name: '全世代型社会保障改革', total: 65, economy: 11, support: 10, feasibility: 13, innovation: 15, sustainability: 16, details: { direction: "少子高齢・人口減少が進む中でも、現行の国民皆保険・皆年金体制を将来世代に引き継ぎ維持するため、社会保障制度の抜本改革を進める。現役世代の保険料負担を軽減しつつ、能力に応じた公平な負担へ構造を改める。", target: "医療保険制度、年金制度、介護保険制度など社会保障全般。保険者、被保険者・受給者である国民全員、医療・介護提供側など広範囲に及ぶ。", impact: "社会保障改革は歳出削減を通じ財政健全化に寄与する。勤労世代の負担軽減により可処分所得が増え経済活動の活発化を促す可能性がある。しかし給付抑制策は高齢者の可処分所得を下げる側面もある。", relatedPlan: "2024年末に予定される全世代型社会保障構築会議の最終報告が直接的な指針となる。経済財政一体改革計画とも連動し、PB黒字化目標に向け社会保障費伸びの自然抑制路線を継続する方針。" } },
+                { rank: 21, name: '医療・介護サービス提供体制の改革', total: 64, economy: 10, support: 12, feasibility: 15, innovation: 13, sustainability: 14, details: { direction: "医療・介護分野では質を維持しつつ効率化を進め、現役世代の負担増を抑制する。医療DXを推進し、電子処方箋やオンライン資格確認、電子カルテの標準化により無駄な重複検査・投薬を減らす。", target: "病院・診療所、介護事業者、医薬品メーカー・薬局、医療機器・ヘルステック企業、健康保険組合、市町村、患者・高齢者層、ITベンダー。", impact: "医療DX関連市場は大きく拡大しうる。病院統廃合で経営効率が上がれば医療費の伸びが抑制され、長期的に国民負担軽減・財政改善となる。介護現場の省力化技術は関連デバイス市場を成長させる。", relatedPlan: "厚労省の「医療DX推進プラン」「地域医療構想アクションプラン」、デジタル庁の「データヘルス改革」、経産省の「ヘルスケア産業ビジョン」などと合致。政府全体では「経済・財-政一体改革」の重要項目。" } },
+                { rank: 22, name: '研究力強化・大学改革', total: 63, economy: 11, support: 9, feasibility: 15, innovation: 14, sustainability: 14, details: { direction: "日本の基礎研究力低下に歯止めをかけ、研究者が研究に集中できる環境をつくる。運営費交付金・私学助成等の基盤的経費を手厚く確保し、競争的資金の採択率改善・増額を図る。大型研究施設の戦略的整備・共用によって世界最先端の研究を可能にする。", target: "大学・研究所、研究者(大学教員、企業研究者、学生)、文部科学省・JST等資金配分機関、学術会議、民間企業のR&D部門など。", impact: "研究開発投資の拡充は技術革新の加速を通じ、中長期的な経済成長率の押上げにつながる。若手研究者の待遇改善により「研究離れ」を防げれば、頭脳流出も減少し、国内に知的資産が蓄積される。", relatedPlan: "第6期科学技術基本計画（2021～2025年度）に掲げた「卓越研究大学制度」創設や、10兆円大学ファンドの運用が具体化段階に入っており、それらを推進する内容。" } },
+                { rank: 23, name: '地方インフラDX・コンパクトシティ', total: 62, economy: 12, support: 10, feasibility: 13, innovation: 15, sustainability: 12, details: { direction: "国民生活と経済活動の基盤となるライフラインや交通ネットワークを災害に強くし、かつ効率的に維持管理する。老朽インフラは、モニタリング技術やデータ解析で予防保全型に転換し、計画的な更新・補修を進める。", target: "インフラ運営主体、建設業、測量・設計コンサルタント、ソフトウェア企業(建設DXツール開発)、不動産業、自治体都市計画部門、国交省など。", impact: "インフラ老朽化対策への投資は潜在的に大きな市場であり、DXやPPP手法が入ることで新サービスの市場創造が期待できる。コンパクトシティ化は不動産市場において都市構造転換による経済効率向上につながる可能性がある。", relatedPlan: "国交省のインフラDX推進計画や「道路メンテナンス戦略」、総務省の「自治体デジタル・トランスフォーメーション（DX）推進計画」などと整合する。" } },
+                { rank: 24, name: '宇宙開発・宇宙安全保障の強化', total: 62, economy: 12, support: 12, feasibility: 13, innovation: 15, sustainability: 10, details: { direction: "宇宙を経済成長と安全保障の両面で活用し、宇宙基本計画に基づき政策を強化する。地球観測衛星や通信衛星のコンステレーション構築に官民連携で取り組み、災害監視や防衛通信の高度化を図る。", target: "衛星メーカー、ロケット開発企業、新興宇宙ベンチャー、通信・測位サービス会社、大学の宇宙工学研究室、防衛産業など。", impact: "宇宙産業は裾野の広い産業であり、投資拡大は高付加価値な雇用創出と技術波及をもたらす。安全保障面でも宇宙領域の優位性確保は国家リスク低減に資する。", relatedPlan: "「宇宙基本計画」（2023年改定）および防衛省の「宇宙領域における安全保障戦略」に対応した施策。内閣府宇宙開発戦略本部が掲げる目標に向け、宇宙版スタートアップ育成5カ年計画も進行中。" } },
+                { rank: 25, name: '誰一人取り残されない社会の実現', total: 61, economy: 10, support: 14, feasibility: 13, innovation: 12, sustainability: 12, details: { direction: "SDGsの理念にも通じる包摂的社会づくり。高齢者、障害者、生活困窮者など、あらゆる人が生きがいと役割を持てる地域共生社会を目標とする。", target: "地域福祉、社会福祉協議会、生活困窮者支援NPO、ボランティア団体、生活保護受給者、ひとり親家庭など幅広い。", impact: "潜在的な人的資源を活用することで労働参加を促し、生産年齢人口減少を補う効果がある。社会の安定・安心感が高まることで消費マインドの下支えにも寄与する。", relatedPlan: "厚労省の「社会的孤立対策大綱」や「生活困窮者自立支援法改正」に沿った取り組み。SDGs達成も視野に、包摂社会の実現は岸田政権の掲げる「新しい資本主義」における重要テーマ。" } },
+                { rank: 26, name: '観光振興・観光立国', total: 60, economy: 14, support: 13, feasibility: 13, innovation: 10, sustainability: 10, details: { direction: "2030年に訪日外国人6000万人・消費15兆円という高い目標を掲げ、観光を成長産業として位置づける。地域の多様な観光資源の磨き上げ、新コンテンツ造成、受入環境整備を推進する。", target: "観光産業全般(宿泊、飲食、交通、旅行業など)。特に地方の観光地・リゾート地やインバウンド対応事業者。", impact: "インバウンド消費拡大は直接的に地域経済へ資金をもたらし、雇用創出効果も大きい。観光DXにより効率化・高付加価値化が進めば、少ない労働力で収益を上げられる産業モデル転換も可能。", relatedPlan: "政府の「観光立国実現に向けたアクション・プログラム」が土台。2025年度末までに新たな「観光立国推進基本計画」を策定予定。" } },
+                { rank: 27, name: '投資立国の実現(官民連携投資の拡大)', total: 59, economy: 13, support: 11, feasibility: 12, innovation: 11, sustainability: 12, details: { direction: "国内への設備投資・研究投資を促進し、将来の賃金・所得増加につなげる。経済界と政府が連携して、2030年度に民間設備投資135兆円、2040年度200兆円を達成する目標を掲げている。", target: "製造業(半導体・自動車・化学等の工場投資)、サービス業(データセンター投資、物流拠点など)、インフラ事業、海外マルチナショナル企業。", impact: "設備投資は短期的な需要増と長期的な供給能力向上をもたらす。国内投資が増えれば将来の生産拠点・雇用機会が国内に維持され、裾野産業や地域経済への波及も大きい。", relatedPlan: "「新しい資本主義フォローアップ会合」で議論された「国内投資拡大戦略」を具体化するもの。経産省の企業誘致施策と連携。" } },
+                { rank: 28, name: '中堅・中小企業による賃上げの後押し', total: 58, economy: 13, support: 13, feasibility: 11, innovation: 10, sustainability: 11, details: { direction: "経営基盤の弱い中堅・中小企業が賃上げできる余力を生み出すための支援策。事業承継・M&A支援、設備投資や研究開発への補助、金融機関と連携した再生支援などを通じて、中小企業の収益力向上と賃金原資確保を図る。", target: "業績は悪くないが賃上げ余力に乏しい中堅企業、赤字・債務超過で再建中の中小企業など。", impact: "中小企業金融の円滑化や企業再編の促進により「ゾンビ企業」問題が緩和され、生産性向上と賃金アップが見込まれる。地域金融機関のIT化や信用保証改革は金融市場にも効率性をもたらす可能性がある。", relatedPlan: "令和5年度の中小企業強靭化法改正や、中小企業庁の「事業承継5か年計画」、金融庁の中小企業向け新融資制度といった既存施策と整合的。" } },
+                { rank: 29, name: '業種別の賃上げ促進策', total: 57, economy: 12, support: 12, feasibility: 12, innovation: 10, sustainability: 11, details: { direction: "賃金水準が低く人手不足の深刻な業種(建設、運輸、警備、ビルメンテナンス等)を対象に、取引環境の改善を通じて賃上げを実現する。適正な労務単価の設定や価格転嫁徹底などで賃金の底上げを図る。", target: "建設業、物流、警備業、ビルメンテナンス業など、人件費割合が高い労働集約型産業。", impact: "建設・物流分野では人件費上昇分が適切に価格に反映されれば、労働環境が改善し若年層の就業が増える正の循環が期待される。中長期的には業界の競争力強化につながる。", relatedPlan: "国土交通省の「建設業働き方改革加速化プログラム」や「運送業ホワイト物流推進」、厚労省の「警備業務改善基準」など、各業種ごとの行動計画とリンクしている。" } },
+                { rank: 30, name: '海洋開発と海洋資源利用', total: 55, economy: 10, support: 10, feasibility: 10, innovation: 14, sustainability: 11, details: { direction: "四方を海に囲まれた日本の強みを活かし、海洋資源の開発と海洋安全保障技術の向上を図る。深海や大陸棚の資源探査技術を社会実装・産業化につなげることを戦略的に目指す。", target: "海洋調査機器メーカー、造船業、海運・オフショア開発企業、資源メジャー企業、防衛装備産業、海洋研究開発機構(JAMSTEC)など。", impact: "成功すれば海底資源(希少金属など)の開発によって資源自給率が向上し、輸入依存からの脱却や戦略物資確保に資する。また海洋技術輸出で国際市場を獲得できれば新たな成長産業となる。", relatedPlan: "「海洋基本計画」（2023年改定）に沿ったもので、同計画では深海底資源の商業化時期（2030年代）や北極研究の推進が謳われている。" } },
+                { rank: 31, name: '資産運用立国の実現 (NISA拡充)', total: 72, economy: 13, support: 16, feasibility: 17, innovation: 13, sustainability: 13, details: { direction: "家計の金融資産を「貯蓄から投資」へシフトさせ、国民の資産所得増を目指す。2024年から開始された新NISA制度の恒久化・非課税枠拡大を定着させる。", target: "個人投資家、金融業界（証券、銀行、投信）、企業の年金基金運用部門。", impact: "資本市場の活性化、企業の資金調達環境改善に寄与。個人の老後資産形成にもつながるが、投資リスクに関するリテラシー向上が不可欠。", relatedPlan: "金融庁の「資産所得倍増プラン」（2022年発表）が青写真。厚労省のiDeCo改革とも連携し、総合的な資産形成支援策として展開。" } },
+                { rank: 32, name: 'こども・若者施策の推進', total: 71, economy: 11, support: 17, feasibility: 15, innovation: 14, sustainability: 14, details: { direction: "いじめ、不登校、児童虐待、ヤングケアラー、子どもの貧困といった課題に包括的に対応し、誰も孤立しない社会を目指す。こども家庭庁を司令塔として支援体制を強化する。", target: "困難を抱える子ども・若者、その家庭。学校、NPO、児童相談所など。", impact: "直接的な経済効果より、将来の人的資本の損失を防ぐ「未来への投資」としての意義が大きい。社会全体の安定に寄与する。", relatedPlan: "「こども大綱」（2022年策定）に沿った包括的支援策。こども家庭庁が省庁横断で施策を取りまとめる。" } },
+                { rank: 33, name: '公教育の再生（高校・大学接続改革）', total: 70, economy: 12, support: 16, feasibility: 13, innovation: 14, sustainability: 15, details: { direction: "多様な子どもの特性に応じた柔軟な教育課程を可能にし、探究学習や対話型授業で思考力を養う。高校から大学、社会への接続を円滑にする改革を進める。", target: "初等中等教育（小・中・高）、教育委員会、教員、児童生徒、保護者。", impact: "教育水準の向上が長期的な人的資本の底上げにつながり、生産性向上に結実する。教育費負担軽減策と一体で進める。", relatedPlan: "文科省の「教育未来創造会議」提言がベース。「GIGAスクール構想」後の次段階の教育改革と位置付けられる。" } },
+                { rank: 34, name: '復興・復旧の加速', total: 69, economy: 13, support: 17, feasibility: 15, innovation: 10, sustainability: 14, details: { direction: "東日本大震災からの復興を完遂させるとともに、能登半島地震など近年の災害からの復旧・復興を強力に推進する。被災者の生活再建と産業のなりわい再生を最優先課題とする。", target: "被災地の住民、事業者、自治体。", impact: "被災地の経済活動再開は、地域経済の回復とサプライチェーンの正常化に貢献する。公共事業による直接的な経済効果も大きい。", relatedPlan: "「復興・創生期間」後の新たなステージに対応した支援や、能登半島地震復旧・復興支援本部の方針に基づく。" } },
+                { rank: 35, name: '包摂的で魅力ある学校づくり', total: 68, economy: 10, support: 16, feasibility: 14, innovation: 14, sustainability: 14, details: { direction: "特別支援教育の体制強化や、不登校・いじめ・自殺防止策を強化し、すべての子どもが安心して学べる環境を整備する。スクールカウンセラー等の専門人材の配置を拡充する。", target: "全ての学校、生徒・保護者、スクールカウンセラー等の専門スタッフ。", impact: "教育機会の均等を通じて人的資本の毀損を防ぎ、長期的な労働生産性の向上につながる。心理・福祉分野の専門人材の雇用も拡大。", relatedPlan: "「いじめ防止対策推進法」や文科省の各種手引きに基づく措置。厚労省とも連携し、省庁横断で取り組む。" } },
+                { rank: 36, name: '地域課題への対応（生活インフラ維持）', total: 66, economy: 11, support: 15, feasibility: 14, innovation: 13, sustainability: 13, details: { direction: "人口減少下で維持が困難になっている地域交通や買い物環境などの生活インフラを、MaaSやドローン配送などの新技術と住民の協働モデルで支える。", target: "地方の公共交通事業者、小売業、NPO、自治体。DX提供企業にもビジネス機会。", impact: "生活基盤の維持は地方の人口流出抑制につながる。新サービス創出が住民のQOLを支えるが、長期的な行政支援が不可欠。", relatedPlan: "国交省の「地域公共交通計画」や経産省の「買い物弱者対策ガイドライン」などと整合。地方創生の一環として推進。" } },
+                { rank: 37, name: '医療・介護職員の処遇改善', total: 65, economy: 10, support: 17, feasibility: 13, innovation: 12, sustainability: 13, details: { direction: "公定価格で賃金が決まる医療・介護・障害福祉分野の職員の処遇を改善し、他産業と遜色ない水準を目指す。2025年末までに更なる賃上げ策の結論を得る方針。", target: "医師、看護師、介護士、障害福祉サービス従事者など。", impact: "人材不足の緩和とサービス品質向上に寄与。ただし財源は公費や保険料であり、国民的合意形成が課題となる。", relatedPlan: "「全世代型社会保障構築本部」の改革工程に沿い、既存の処遇改善加算等の効果検証を踏まえて検討される。" } },
+                { rank: 38, name: 'PPP/PFIの活用推進', total: 64, economy: 13, support: 10, feasibility: 14, innovation: 13, sustainability: 14, details: { direction: "公共施設の整備・運営等に民間資金とノウハウを活用するPPP/PFIを推進し、公共サービスの効率化と質のの向上を図る。特に上下水道分野（ウォーターPPP）などを重点分野とする。", target: "地方自治体、インフラ関連企業、金融機関。", impact: "民間の活力導入により、財政負担を抑えつつ質の高い公共サービス提供が期待される。一方で、公共性の担保や住民理解の醸成が課題。", relatedPlan: "内閣府のPPP/PFI推進アクションプランに基づき、具体的な数値目標の達成を目指す。" } },
+                { rank: 39, name: '先端科学技術の推進（AI、量子等）', total: 63, economy: 12, support: 10, feasibility: 14, innovation: 16, sustainability: 11, details: { direction: "AI、量子、核融合、バイオなど、国家競争力の源泉となる先端科学技術分野への投資を官民協調で強化し、分野横断の研究開発を推進する。", target: "大学、国立研究開発法人、ハイテク産業、ベンチャーキャピタル。", impact: "中長期的な経済成長と新産業創出の源泉となるが、成果の不確実性が高い。国際的な頭脳循環の活性化も目指す。", relatedPlan: "第6期科学技術・イノベーション基本計画を推進し、2025年度には次期計画を策定。10兆円規模の大学ファンドと連携。" } },
+                { rank: 40, name: '重要インフラ等の強靱化', total: 62, economy: 12, support: 14, feasibility: 15, innovation: 11, sustainability: 10, details: { direction: "老朽化が進む道路・橋梁・上下水道等のインフラを計画的に更新・耐震化する。また、電力・通信・交通などのライフラインの強靱化（無電柱化等）も推進する。", target: "インフラ運営主体（国、自治体、民間企業）、建設業界。", impact: "災害時の被害軽減と経済活動の維持に不可欠。計画的な更新投資は建設業界の安定的な需要創出にもつながる。", relatedPlan: "国土強靱化基本計画の一環として、各インフラ所管省庁の中長期計画に基づき実施される。" } },
+                { rank: 41, name: '女性活躍・男女共同参画の推進', total: 60, economy: 11, support: 15, feasibility: 13, innovation: 11, sustainability: 10, details: { direction: "女性の経済的自立に向けたリスキリング支援や、指導的地位に占める女性割合の向上を目指す。選択的夫婦別姓の導入に向けた国会での議論を促す。", target: "全産業、女性労働者、政治・行政分野。", impact: "労働参加率の向上と多様な視点の導入により、経済全体の生産性向上に寄与する。ジェンダーギャップの解消は国際的な評価にも影響。", relatedPlan: "「女性版骨太の方針」として毎年策定される重点方針に基づき、各省庁が具体的な取り組みを進める。" } },
+                { rank: 42, name: '災害対応力の強化', total: 59, economy: 10, support: 16, feasibility: 14, innovation: 10, sustainability: 9, details: { direction: "国の専門部隊（TEC-FORCE）の拡充や、企業の事業継続計画（BCP）策定支援、防災気象情報の高度化などを通じ、発災時の対応能力を高める。", target: "国、自治体、企業、住民。", impact: "災害時の被害を最小限に抑え、迅速な復旧を可能にすることで、経済・社会へのダメージを軽減する。", relatedPlan: "国土強靱化基本計画と連携し、消防庁や気象庁などの専門機関が中心となって推進。" } },
+                { rank: 43, name: '年収の壁への対応', total: 58, economy: 10, support: 15, feasibility: 12, innovation: 12, sustainability: 9, details: { direction: "パート・アルバイト労働者が就業調整を意識せずに働けるよう、106万円・130万円の壁について、キャリアアップ助成金の拡充や制度の見直しを進める。", target: "パート・アルバイト労働者、配偶者のいる女性、人手不足に悩む企業。", impact: "労働供給の制約となっている「壁」を解消し、人手不足の緩和と世帯所得の向上に貢献する。", relatedPlan: "厚労省を中心に、社会保険制度の見直しと一体で検討が進められている。" } },
+                { rank: 44, name: 'フリーランス保護新法の円滑な施行', total: 57, economy: 10, support: 13, feasibility: 15, innovation: 13, sustainability: 6, details: { direction: "事業者とフリーランスの間の取引適正化を図るため、フリーランス保護新法を円滑に施行し、相談窓口の設置やガイドラインの周知徹底を行う。", target: "フリーランス、発注元の事業者。", impact: "フリーランスが安心して働ける環境を整備し、多様な働き方を後押しする。取引の透明性向上にも寄与。", relatedPlan: "公正取引委員会、中小企業庁、厚労省が連携して法執行と周知活動にあたる。" } },
+                { rank: 45, name: '孤独・孤立対策の推進', total: 56, economy: 8, support: 14, feasibility: 14, innovation: 11, sustainability: 9, details: { direction: "孤独・孤立対策推進法に基づき、官民連携のプラットフォームを構築し、NPO等への支援を通じて、地域における見守りや相談支援体制を強化する。", target: "高齢者、ひきこもり状態にある人々など、社会的に孤立しがちな層。", impact: "社会的なつながりを回復させることで、個人のウェルビーイング向上と、将来的な社会保障コストの抑制につなげる。", relatedPlan: "内閣官房の孤独・孤立対策担当室が司令塔となり、分野横断的な取り組みを推進。" } },
+                { rank: 46, name: '消費者志向経営の推進', total: 55, economy: 9, support: 12, feasibility: 15, innovation: 10, sustainability: 9, details: { direction: "消費者庁を中心に、事業者が消費者の視点に立った事業活動を行う「消費者志向経営」を推進する。優良な取り組みを行う企業を認定・公表する。", target: "消費者向けビジネスを行う全企業。", impact: "消費者満足度の向上と、企業の持続的な成長を両立させる。悪質商法による消費者被害の防止にもつながる。", relatedPlan: "消費者基本計画に基づき、消費者庁が各種支援策を展開。" } },
+                { rank: 47, name: '認知症施策の推進', total: 54, economy: 8, support: 14, feasibility: 13, innovation: 10, sustainability: 9, details: { direction: "認知症基本法に基づき、予防から診断、治療、ケア、社会参加まで、共生と予防を両輪とした施策を総合的に推進する。", target: "認知症の人とその家族、医療・介護事業者、地域住民。", impact: "認知症になっても安心して暮らせる社会の実現を目指す。関連する医薬品やケアサービスの市場拡大にも寄与。", relatedPlan: "厚労省が中心となり、認知症共生社会の実現に向けた大綱（新オレンジプラン）を改定し推進。" } },
+                { rank: 48, name: 'GXリーグの本格稼働', total: 53, economy: 10, support: 9, feasibility: 14, innovation: 12, sustainability: 8, details: { direction: "2050年カーボンニュートラル目標の達成に向け、野心的な目標を掲げる企業の自主的な排出量取引（GX-ETS）を本格稼働させ、産業界全体のGXを牽引する。", target: "排出量削減に取り組む大企業を中心とした産業界。", impact: "企業の脱炭素投資を促進し、新たなグリーン市場を創出する。国際的なカーボンプライシングの潮流に対応する。", relatedPlan: "経産省が主導する官民連携の枠組みであり、GX経済移行債の発行と並行して推進される。" } },
+                { rank: 49, name: 'インボイス制度の定着支援', total: 52, economy: 8, support: 8, feasibility: 15, innovation: 7, sustainability: 14, details: { direction: "複数税率に対応した消費税の仕入税額控除の方式であるインボイス制度について、事業者の負担軽減措置を講じつつ、円滑な定着を図る。", target: "免税事業者を含む全事業者、特に中小・小規模事業者やフリーランス。", impact: "税の公平性・透明性を高める一方、小規模事業者の事務負担増大や取引からの排除といった懸念があり、影響は両面的。", relatedPlan: "国税庁と中小企業庁が連携し、相談体制の充実やIT導入補助金等で支援。" } },
+                { rank: 50, name: '花粉症対策の推進', total: 50, economy: 7, support: 18, feasibility: 12, innovation: 5, sustainability: 8, details: { direction: "発生源対策、飛散対策、発症・曝露対策を三本柱として、関係省庁が連携して総合的な花粉症対策を推進する。治療薬（舌下免疫療法）の増産や、スギ人工林の伐採・植え替えを進める。", target: "花粉症に悩む国民、医療機関、製薬会社、林業関係者。", impact: "国民のQOL向上と、花粉症による労働生産性の低下（約2,000億円/日との試算も）を防ぐことで経済的損失を軽減する。", relatedPlan: "2023年に総理指示で取りまとめられた「花粉症に関する関係閣僚会議」の方針に基づき、林野庁・厚労省・環境省等が連携して実施。" } },
+                { rank: 51, name: 'Web3.0/メタバースの社会実装・環境整備', total: 49, economy: 10, support: 9, feasibility: 9, innovation: 15, sustainability: 6, details: { direction: "Web3.0やメタバースといった新しいデジタル領域の健全な発展を促す。利用者保護とイノベーション促進のバランスを取りながら、国際標準をにらんだルール整備や実証実験支援を行う。", target: "ブロックチェーン関連企業、コンテンツクリエイター、VR/AR技術開発企業、NFTプラットフォーマー。", impact: "新たなデジタル経済圏の創出と、日本のコンテンツ産業の国際競争力強化が期待される。一方で、法整備の遅れや投機的利用がリスクとなる。", relatedPlan: "デジタル庁の「Web3.0政策推進室」が中心となり、税制改正の議論や関係省庁との連携を進める。" } },
+                { rank: 52, name: 'サーキュラーエコノミーへの移行戦略', total: 48, economy: 9, support: 10, feasibility: 10, innovation: 11, sustainability: 8, details: { direction: "廃棄物削減と資源の有効活用を徹底し、持続可能な経済社会システムへ転換する。「動脈産業」と「静脈産業」の連携を強化し、製品の長寿命化やリサイクルしやすい設計（エコデザイン）を促進する。", target: "製造業全般、廃棄物処理・リサイクル産業、リース・レンタル業、シェアリングサービス事業者。", impact: "資源の海外依存度を低減し、経済安全保障に貢献。静脈産業という新たな成長市場が創出される。企業のコスト構造変革が求められる。", relatedPlan: "環境省の「第四次循環型社会形成推進基本計画」や、経産省の「成長志向型の資源自律経済戦略」と連動する。" } },
+                { rank: 53, name: 'ロボット・ドローン実装の加速化プラン', total: 47, economy: 11, support: 9, feasibility: 11, innovation: 12, sustainability: 4, details: { direction: "人手不足が深刻な物流、建設、農業、介護などの分野で、ロボットやドローンの社会実装を加速させる。規制緩和や標準化、導入支援のための補助金制度を拡充する。", target: "ロボットメーカー、ドローンメーカー、システムインテグレーター、導入を検討する各産業の事業者。", impact: "生産性の大幅な向上と、危険な作業からの解放による労働環境改善が期待される。新たなサービス産業の創出にもつながる。", relatedPlan: "「ロボット新戦略」や「空の産業革命に向けたロードマップ」に基づき、具体的な目標を設定し推進。" } },
+                { rank: 54, name: '再生可能エネルギーの導入拡大に向けた系統強化', total: 46, economy: 10, support: 11, feasibility: 8, innovation: 9, sustainability: 8, details: { direction: "再生可能エネルギーの導入ポテンシャルが高い北海道や東北、九州などから大消費地へ電力を送るための送電網（系統）を増強する。次世代の送電技術（HVDC等）の導入も検討する。", target: "電力会社（送配電事業者）、再生可能エネルギー発電事業者、重電メーカー、建設業界。", impact: "再生可能エネルギーの導入量を飛躍的に増やし、エネルギー自給率向上と脱炭素化に貢献する。巨額のインフラ投資が必要となる。", relatedPlan: "エネルギー基本計画に示された再エネ主力電源化の方針を実現するためのインフラ整備策。広域連系系統のマスタープランと整合性を図る。" } },
+                { rank: 55, name: 'デジタル田園都市国家構想の具体化', total: 45, economy: 9, support: 12, feasibility: 11, innovation: 9, sustainability: 4, details: { direction: "デジタルの力を活用して地方の社会課題を解決し、都市部と遜色ない生活・仕事の環境を整備する。光ファイバー網の未整備地域解消や、5Gのエリア拡大を推進する。", target: "地方自治体、通信事業者、ITベンダー、地方の中小企業や住民。", impact: "地方における新たな産業創出や、テレワーク移住の促進につながる。デジタルデバイド対策が成功の鍵となる。", relatedPlan: "岸田政権の看板政策の一つ。関連交付金を活用し、自治体の優良モデル（遠隔医療、自動配送等）を全国に横展開する。" } },
+                { rank: 56, name: 'ジョブ型雇用の普及と労働移動の円滑化', total: 44, economy: 8, support: 8, feasibility: 10, innovation: 12, sustainability: 6, details: { direction: "個人の専門性を評価し、職務内容に基づいて処遇が決まるジョブ型雇用の導入を企業に促す。自己都合退職時の失業給付見直しなど、成長分野への自律的な労働移動を後押しする制度を整備する。", target: "全産業の企業、労働者、人材紹介会社。", impact: "専門性を持つ人材の処遇改善と、産業構造の変化に応じた柔軟な人材配置が進む可能性がある。一方で、雇用の安定性が損なわれるとの懸念もある。", relatedPlan: "「三位一体の労働市場改革」の核心部分であり、企業の賃金体系や人事評価制度の変革を促す。" } },
+                { rank: 57, name: '最低賃金全国加重平均1500円への段階的引上げ', total: 43, economy: 7, support: 15, feasibility: 9, innovation: 6, sustainability: 6, details: { direction: "「成長と分配の好循環」の中核として、最低賃金の継続的な引上げを行う。中小企業の賃上げ原資確保に向けた生産性向上支援とセットで推進する。", target: "非正規労働者、中小・小規模事業者、労働集約型のサービス産業。", impact: "低所得者層の所得を底上げし、格差是正に寄与する。急激な引上げは中小企業の経営を圧迫し、雇用減につながるリスクも指摘される。", relatedPlan: "最低賃金審議会での議論を促すとともに、中小企業向けの各種補助金（事業再構築補助金等）で賃上げを支援。" } },
+                { rank: 58, name: '次世代革新炉の開発とサプライチェーン維持', total: 42, economy: 10, support: 7, feasibility: 7, innovation: 12, sustainability: 6, details: { direction: "廃炉が決まった原発の敷地内での次世代革新炉への建て替えを具体化する。高温ガス炉や高速炉などの開発を推進し、原子力を支える技術・人材基盤を維持・強化する。", target: "電力会社、原子力プラントメーカー、研究機関、関連部品を供給する中小企業。", impact: "エネルギーの安定供給と脱炭素化に貢献するが、安全性確保や最終処分場の問題、国民理解の醸成など課題は山積している。", relatedPlan: "GX基本方針およびエネルギー基本計画に盛り込まれた原子力活用の具体化。" } },
+                { rank: 59, name: 'オープンイノベーションと知的財産戦略', total: 41, economy: 8, support: 9, feasibility: 10, innovation: 9, sustainability: 5, details: { direction: "大企業が持つ経営資源と、スタートアップや大学が持つ革新的な技術・アイデアを結びつけるオープンイノベーションを推進する。創出された技術を知的財産として適切に保護・活用する戦略を強化する。", target: "全産業の大企業、スタートアップ、大学・研究機関、特許庁。", impact: "既存産業の競争力強化と、新産業の創出を同時に実現する。企業の自前主義からの脱却が鍵となる。", relatedPlan: "経産省のJ-Startupプログラムや、特許庁の知財活用支援策と連携。" } },
+                { rank: 60, name: '教育無償化の推進（高校授業料等）', total: 40, economy: 6, support: 16, feasibility: 10, innovation: 4, sustainability: 4, details: { direction: "子育て世帯の教育費負担を軽減するため、高等学校等就学支援金制度の所得制限を緩和し、より多くの中間層世帯を対象に含めることを目指す。", target: "高校生の子どもを持つ世帯、私立高等学校。", impact: "可処分所得の増加を通じて少子化対策に貢献する可能性がある。財源の確保が課題。", relatedPlan: "「こども未来戦略」に盛り込まれた教育費負担軽減策の一環。" } },
+                { rank: 61, name: '国際卓越研究大学の選定と支援強化', total: 62, economy: 11, support: 10, feasibility: 13, innovation: 15, sustainability: 13, details: { direction: "世界トップレベルの研究大学を形成するため、10兆円規模の大学ファンドを活用し、国際卓越研究大学として認定された大学を重点的に支援する。ガバナンス改革や若手研究者支援を一体的に進める。", target: "国内の主要大学、研究機関、若手研究者、大学と連携する企業。", impact: "日本の研究力の国際的な地位向上と、イノベーション創出の基盤強化が期待される。認定大学への集中投資が、大学間の格差を広げる可能性も指摘される。", relatedPlan: "「国際卓越研究大学法」に基づき、文部科学省が認定プロセスを進行中。「第6期科学技術・イノベーション基本計画」の柱の一つ。" } },
+                { rank: 62, name: '宇宙コンステレーション構築と月面探査（アルテミス計画）', total: 61, economy: 12, support: 11, feasibility: 10, innovation: 15, sustainability: 13, details: { direction: "安全保障や防災、通信分野での活用を目指し、小型衛星を多数連携させる「衛星コンステレーション」の構築を官民連携で推進する。また、国際協力による月面探査「アルテミス計画」に参画し、日本の宇宙技術の優位性を示す。", target: "宇宙航空研究開発機構（JAXA）、衛星・ロケットメーカー、宇宙ベンチャー、通信事業者、防衛産業。", impact: "宇宙利用産業という新たな巨大市場の創出と、安全保障能力の向上が見込まれる。先端技術開発が他産業へ波及する効果も大きい。", relatedPlan: "「宇宙基本計画」における重点項目。宇宙政策委員会が司令塔となり、省庁横断で推進される。" } },
+                { rank: 63, name: '教員の働き方改革の加速化', total: 59, economy: 7, support: 17, feasibility: 11, innovation: 9, sustainability: 15, details: { direction: "教員の長時間労働を是正し、子どもと向き合う時間を確保するため、給特法の改正や支援スタッフの増員、学校のICT化による業務効率化を強力に推進する。部活動の地域移行も加速させる。", target: "全国の公立学校の教職員、教育委員会、教員志望の学生。", impact: "教職の魅力を高め、優秀な人材の確保と定着につながる。教育の質の維持・向上に不可欠だが、財源確保や地域での受け皿整備が課題。", relatedPlan: "中央教育審議会の答申を受け、文部科学省が「学校における働き方改革プラン」を改定し推進。" } },
+                 { rank: 64, name: '量子技術の研究開発と社会実装', total: 58, economy: 12, support: 9, feasibility: 8, innovation: 16, sustainability: 13, details: { direction: "量子コンピュータ、量子通信、量子センシングなどの基盤技術開発を加速し、産業応用を目指す。", target: "ICT産業、金融、製薬、素材開発、防衛など、計算能力や高精度計測が求められる分野。", impact: "既存の計算能力を凌駕し、新薬開発や金融市場予測、高精度なナビゲーション等で破壊的イノベーションを生む可能性がある。", relatedPlan: "「量子未来社会ビジョン」や「統合イノベーション戦略」の主要な柱。関連する研究開発法人や大学を中心に推進。" } },
+                 { rank: 65, name: '持続的な実質賃金上昇の実現', total: 87, economy: 19, support: 18, feasibility: 15, innovation: 17, sustainability: 18, details: { direction: "デフレからの完全脱却を確実にするため、物価上昇を上回る持続的な賃金上昇構造を定着させる。生産性向上と適切な価格転嫁を両輪で進める。", target: "全ての産業、労働者、経営者。", impact: "経済の好循環を実現する最重要課題。個人消費を刺激し、内需主導の持続的成長を可能にする。", relatedPlan: "新しい資本主義の核心的目標。政府、経済界、労働界が一体で取り組む。" } },
+                 { rank: 66, name: '洋上風力発電の導入加速', total: 65, economy: 13, support: 11, feasibility: 12, innovation: 13, sustainability: 16, details: { direction: "再エネの主力電源化に向け、洋上風力発電の導入を加速する。基地港湾の整備や国内サプライチェーンの形成を支援する。", target: "電力会社、重電メーカー、建設・マリコン業界、地方自治体。", impact: "エネルギー自給率の向上と脱炭素に大きく貢献。関連産業の育成により、新たな雇用と技術革新を生む。", relatedPlan: "GX実現に向けた基本方針に明記。再エネ海域利用法に基づき、案件形成を促進する。" } },
+                 { rank: 67, name: '次世代太陽光発電（ペロブスカイト等）の開発', total: 60, economy: 11, support: 10, feasibility: 10, innovation: 15, sustainability: 14, details: { direction: "軽量で柔軟な次世代太陽電池の実用化を加速し、ビルの壁面など新たな設置場所を開拓する。技術開発から量産体制構築までを支援する。", target: "化学・素材メーカー、電子部品メーカー、建設業界。", impact: "国内の再エネ導入ポテンシャルを大幅に拡大。日本の技術的優位性を活かせる分野として期待される。", relatedPlan: "グリーン成長戦略の重点分野の一つ。技術開発プロジェクトへの予算を重点的に配分。" } },
+                 { rank: 68, name: '社会人の学び直し（リカレント教育）の抜本強化', total: 68, economy: 14, support: 14, feasibility: 13, innovation: 14, sustainability: 13, details: { direction: "デジタル化など産業構造の変化に対応するため、社会人が生涯にわたって学び直し、スキルアップできる環境を整備する。教育訓練給付の拡充や、企業による支援を促進する。", target: "全ての労働者、企業、大学、専門学校、オンライン教育事業者。", impact: "労働生産性の向上と、成長分野への円滑な労働移動を促す。個人のキャリア自律を支援し、所得向上につなげる。", relatedPlan: "「人への投資」パッケージの柱。雇用保険制度の見直しとも連動。" } },
+                 { rank: 69, name: 'オーバーツーリズム対策と持続可能な観光の両立', total: 55, economy: 10, support: 12, feasibility: 14, innovation: 11, sustainability: 8, details: { direction: "観光地の混雑緩和やマナー啓発、高付加価値化を通じて、地域住民の生活と観光客の満足度を両立させる。入場料や予約制の導入、観光客の分散化などを検討・推進する。", target: "主要観光地の自治体、観光事業者、交通事業者、住民。", impact: "観光地の魅力を長期的に維持し、持続可能な成長を実現する。短期的には一部の観光客からの反発も予想される。", relatedPlan: "観光立国推進基本計画の改定において、持続可能性を重視する方針として明記。" } },
+                 { rank: 70, name: 'サイバーセキュリティ体制の抜本的強化', total: 70, economy: 13, support: 15, feasibility: 14, innovation: 12, sustainability: 16, details: { direction: "重要インフラや政府機関、企業へのサイバー攻撃に対処するため、情報収集・分析能力や防御態勢を抜本的に強化する。セキュリティ人材の育成も急務とする。", target: "政府機関、重要インフラ事業者（電力、金融、通信等）、大企業から中小企業まで全ての事業者。", impact: "デジタル社会の安全性を確保し、経済活動の基盤を守る。対策コストは増加するが、被害による損失を未然に防ぐ効果は大きい。", relatedPlan: "「サイバーセキュリティ戦略」に基づき、NISC（内閣サイバーセキュリティセンター）が司令塔となり、官民連携で取り組む。" } },
+                 { rank: 71, name: '財政健全化とPB黒字化目標の堅持', total: 55, economy: 9, support: 8, feasibility: 10, innovation: 8, sustainability: 20, details: { direction: "経済再生と財政健全化の両立を図る。歳出・歳入一体改革を継続し、国・地方のプライマリーバランス黒字化目標を堅持する。", target: "政府、財務省、地方自治体、国民全体。", impact: "財政規律を維持し、将来世代への負担を抑制。金利上昇リスクを低減させるが、短期的には緊縮財政が景気を下押しする可能性もある。", relatedPlan: "「経済財政運営と改革の基本方針」の根幹。中長期の経済財政の試算と連動して進捗が管理される。" } },
+                 { rank: 72, name: '地域共生社会の実現に向けた包括的支援', total: 60, economy: 8, support: 15, feasibility: 12, innovation: 12, sustainability: 13, details: { direction: "高齢者、障害者、生活困窮者など、誰もが地域で孤立せず支え合える社会を目指す。分野横断的な相談支援体制を市町村に整備する。", target: "地方自治体、社会福祉協議会、NPO、民生委員、地域住民。", impact: "社会的孤立を防ぎ、住民のウェルビーイングを向上させる。長期的には医療・介護費用の抑制にもつながる。", relatedPlan: "「地域共生社会」の理念に基づき、社会福祉法改正等と連動して推進。" } },
+                 { rank: 73, name: '医薬品・医療機器サプライチェーン強靱化', total: 69, economy: 12, support: 16, feasibility: 14, innovation: 12, sustainability: 15, details: { direction: "感染症のパンデミックや地政学リスクに備え、重要な医薬品や医療機器の国内生産基盤を強化し、安定供給を確保する。", target: "製薬会社、医療機器メーカー、関連素材・部品メーカー。", impact: "国民の健康・安全保障に直結する。国内生産への回帰は関連産業の投資を促進するが、薬価への影響も考慮が必要。", relatedPlan: "経済安全保障推進法に基づく特定重要物資の一つ。厚生労働省の医薬品安定供給支援策と連携。" } },
+                 { rank: 74, name: 'バイオエコノミー戦略の推進', total: 66, economy: 13, support: 10, feasibility: 11, innovation: 16, sustainability: 16, details: { direction: "バイオテクノロジーを活用し、医薬品、機能性食品、バイオ燃料、生分解性プラスチックなど高付加価値な製品・サービスを創出する。", target: "製薬、食品、化学、エネルギーなど幅広い産業。大学や研究機関。", impact: "化石資源への依存を減らし、持続可能な社会を実現する。日本の技術力を活かせる新たな成長産業となるポテンシャルがある。", relatedPlan: "「バイオ戦略」に基づき、市場創出と研究開発を両輪で推進。" } },
+                 { rank: 75, name: '核融合エネルギー開発の加速', total: 57, economy: 12, support: 9, feasibility: 7, innovation: 17, sustainability: 12, details: { direction: "究極のエネルギーとされる核融合の早期実現を目指し、国際協力（ITER計画等）と国内の研究開発を加速する。関連産業の育成も図る。", target: "大学、研究機関（量研機構など）、重電・素材メーカー、建設業界、核融合スタートアップ。", impact: "実現すればエネルギー問題を根本的に解決しうる革新的技術。ただし、実用化までの道のりは長く、巨額の長期投資が必要。", relatedPlan: "「統合イノベーション戦略」およびエネルギー基本計画の中で、未来への先行投資として位置づけられている。" } },
+                 { rank: 76, name: 'STEAM教育・探究学習の充実', total: 67, economy: 13, support: 14, feasibility: 13, innovation: 15, sustainability: 12, details: { direction: "文理横断的な思考力や創造性を育むため、STEAM（科学・技術・工学・芸術・数学）教育や探究的な学習活動を小中高で推進する。", target: "学校、教員、生徒、教育関連企業。", impact: "第4次産業革命に対応できる人材を育成し、長期的な国際競争力を高める。", relatedPlan: "学習指導要領の改訂と連動し、GIGAスクール構想の端末活用も視野に入れる。" } },
+                 { rank: 77, name: 'かかりつけ医機能の制度化と推進', total: 66, economy: 10, support: 15, feasibility: 13, innovation: 12, sustainability: 16, details: { direction: "身近な地域で継続的な医療・相談を受けられる「かかりつけ医」機能を制度的に位置づけ、国民への普及を図る。", target: "診療所、病院、医師会、国民。", impact: "医療の効率化と質の向上、国民の安心感醸成に寄与。医療費の適正化にもつながる。", relatedPlan: "全世代型社会保障改革の一環として、医療法改正などを通じて具体化。" } },
+                 { rank: 78, name: 'スタートアップ・エコシステムの形成', total: 70, economy: 15, support: 13, feasibility: 14, innovation: 15, sustainability: 13, details: { direction: "拠点都市を中心に、大学、企業、VC、自治体が連携する世界レベルのスタートアップ・エコシステムを形成する。", target: "地方自治体、大学、ベンチャーキャピタル、スタートアップ企業。", impact: "イノベーションの連続的な創出と、地域経済の活性化を促す。東京一極集中の是正にも貢献。", relatedPlan: "「スタートアップ育成5か年計画」の柱の一つ。拠点都市への集中支援を行う。" } },
+                 { rank: 79, name: 'スリープテック等ヘルステックの普及促進', total: 58, economy: 10, support: 12, feasibility: 13, innovation: 14, sustainability: 9, details: { direction: "睡眠の質の向上など、国民の健康増進に資するデジタル技術（ヘルステック）の社会実装を進める。健康経営に取り組む企業への導入を支援する。", target: "ヘルスケア関連企業、IT企業、健康経営を志向する企業、従業員。", impact: "労働生産性の向上と医療費の抑制に貢献。新たな健康関連サービス市場を創出する。", relatedPlan: "「健康・医療戦略」の中で、予防・健康づくりの重要なツールとして位置づけられる。" } },
+                 { rank: 80, name: '介護DXによる生産性向上', total: 67, economy: 11, support: 15, feasibility: 14, innovation: 13, sustainability: 14, details: { direction: "介護現場の負担を軽減し、サービスの質を向上させるため、介護ロボットやセンサー、記録・情報共有システムの導入を強力に推進する。", target: "介護サービス事業者、介護従事者、ロボット・ICTメーカー。", impact: "深刻な介護人材不足の緩和と、働きがいのある職場環境の実現に貢献。持続可能な介護保険制度の構築に不可欠。", relatedPlan: "「介護DX推進プラン」に基づき、導入補助や実証事業などを展開。" } },
+                 { rank: 81, name: '偽情報対策の強化', total: 64, economy: 9, support: 14, feasibility: 13, innovation: 12, sustainability: 16, details: { direction: "AI等で巧妙化する偽情報から社会を守るため、ファクトチェック機能の強化、メディアリテラシー教育の推進、プラットフォーム事業者との連携を強化する。", target: "プラットフォーム事業者、報道機関、教育機関、国民。", impact: "民主主義の基盤である健全な言論空間を維持する。社会の分断や混乱を未然に防ぐ。", relatedPlan: "「デジタル社会の実現に向けた重点計画」や「サイバーセキュリティ戦略」に盛り込まれる。" } },
+                 { rank: 82, name: '自動運転（レベル4）の社会実装', total: 69, economy: 14, support: 13, feasibility: 12, innovation: 16, sustainability: 14, details: { direction: "過疎地の移動手段確保や物流の効率化のため、特定条件下で完全自動運転を可能にするレベル4の社会実装を目指す。関連する法制度の整備を急ぐ。", target: "自動車メーカー、IT・通信業界、物流業界、地方自治体。", impact: "交通弱者の解消や物流危機への対応に貢献。新たなモビリティサービス市場を創出する。", relatedPlan: "「官民ITS構想・ロードマップ」において、2025年度を目途としたサービス開始が目標。" } },
+                 { rank: 83, name: '防衛生産・技術基盤の強化', total: 68, economy: 12, support: 14, feasibility: 15, innovation: 12, sustainability: 15, details: { direction: "防衛力の抜本的強化を支えるため、国内の防衛産業の事業継続性を確保し、先端技術開発を促進する。装備品の安定的なサプライチェーンを構築する。", target: "防衛装備品メーカーおよび関連の中小企業。", impact: "国家の安全保障に直結。先端技術の維持・発展が民間にも波及する可能性がある。", relatedPlan: "「国家安全保障戦略」に示された防衛力整備計画の根幹をなす施策。" } },
+                 { rank: 84, name: '予防・健康づくりの推進', total: 65, economy: 10, support: 16, feasibility: 14, innovation: 12, sustainability: 13, details: { direction: "健康寿命の延伸を目指し、個人の健康状態に応じた予防・健康づくりサービスを推進する。ナッジなどを活用し、国民の健康的な行動変容を促す。", target: "国民全体、健康・フィットネス産業、食品業界、自治体。", impact: "将来の医療・介護費用の抑制に大きく貢献。国民のQOL向上と労働生産性の維持につながる。", relatedPlan: "「健康日本21（第三次）」やデータヘルス改革と連携し、エビデンスに基づく予防医療を推進。" } },
+                 { rank: 85, name: '大規模災害（津波・火山等）対策の強化', total: 63, economy: 10, support: 17, feasibility: 13, innovation: 10, sustainability: 13, details: { direction: "南海トラフ巨大地震等に備え、津波からの避難施設や避難路の整備、火山噴火時の広域避難計画の策定などを進める。", target: "沿岸部・火山周辺地域の自治体、住民、インフラ事業者。", impact: "最悪の事態を想定した対策は、国民の生命を守る上で不可欠。インフラ投資による経済効果も見込まれる。", relatedPlan: "国土強靱化基本計画に基づき、ハード・ソフト一体の対策を推進。" } },
+                 { rank: 86, name: '持続的な消費活性化策', total: 62, economy: 15, support: 14, feasibility: 13, innovation: 10, sustainability: 10, details: { direction: "賃上げの成果を消費につなげ、経済の好循環を確実にするため、効果的な消費喚起策を機動的に実施する。", target: "小売業、サービス業、家計。", impact: "個人消費はGDPの過半を占めるため、経済成長の鍵を握る。ただし、施策の中身によっては財政負担増につながる。", relatedPlan: "政府の経済対策の一環として、景気動向を注視しつつ検討。" } },
+                 { rank: 87, name: '物流の2024年問題への対応', total: 68, economy: 13, support: 14, feasibility: 15, innovation: 12, sustainability: 14, details: { direction: "トラックドライバーの時間外労働規制強化に伴う輸送力不足に対応するため、共同輸配送の促進、高速道路料金の見直し、荷主と運送事業者の連携強化などを進める。", target: "物流業界、荷主となる全産業、消費者。", impact: "物流の停滞は経済活動全体に深刻な影響を及ぼすため、対策は急務。効率化により物流コストを抑制できれば、物価安定にも寄与。", relatedPlan: "「物流革新に向けた政策パッケージ」に基づき、関係省庁が連携して対策を推進。" } },
+                 { rank: 88, name: '男性の育児休業取得促進', total: 57, economy: 9, support: 15, feasibility: 13, innovation: 11, sustainability: 9, details: { direction: "共働き・共育てを当たり前にするため、男性の育児休業取得率の目標を掲げ、企業への働きかけや給付金の拡充を行う。", target: "全ての企業、働く男女。", impact: "女性のキャリア継続を支援し、少子化対策にもつながる。企業の意識改革と代替要員の確保が課題。", relatedPlan: "「こども未来戦略」の柱の一つ。育児・介護休業法の改正と連動。" } },
+                 { rank: 89, name: '外国人材の受入れ・共生のための「育成就労」制度', total: 64, economy: 12, support: 11, feasibility: 14, innovation: 13, sustainability: 14, details: { direction: "技能実習制度に代わる新制度として、人材育成と人材確保を目的とした「育成就労」制度を創設。特定技能への円滑な移行を促す。", target: "人手不足分野の企業、外国人労働者、監理団体。", impact: "より明確なキャリアパスを提供し、外国人材の定着を促進。人権配慮の観点からも国際社会の要請に応える。", relatedPlan: "出入国管理及び難民認定法の改正に基づき、2025年度からの施行を目指す。" } },
+            ];
 
-                <!-- API Key Input Section -->
-                <div class="max-w-3xl mx-auto mb-6 bg-white p-6 rounded-xl shadow">
-                    <h4 class="text-lg font-semibold mb-3 text-gray-800">APIキーの設定</h4>
-                    <p class="text-sm text-gray-600 mb-4">分析機能を利用するには、Google AI Studioの無料APIキーが必要です。</p>
-                    <div class="flex flex-col sm:flex-row items-center gap-3">
-                        <label for="api-key-input" class="sr-only">API Key</label>
-                        <input type="password" id="api-key-input" placeholder="ここにAPIキーを貼り付け" class="flex-grow w-full p-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <button id="save-api-key" class="w-full sm:w-auto bg-indigo-600 text-white font-bold py-2 px-5 rounded-lg hover:bg-indigo-700 transition-colors duration-300 whitespace-nowrap">
-                            APIキーを保存
-                        </button>
-                    </div>
-                    <p id="api-key-message" class="text-center text-sm h-5 mt-2"></p>
-                    <div class="mt-4 text-xs text-gray-500 border-t pt-3">
-                        <p class="font-bold mb-1">無料APIキーの取得方法:</p>
-                        <ol class="list-decimal list-inside space-y-1">
-                            <li><a href="https://aistudio.google.com/" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">Google AI Studio</a> にアクセスし、Googleアカウントでログインします。</li>
-                            <li>「Get API key」メニューに移動します。</li>
-                            <li>「Create API key」をクリックして新しいキーを生成します。</li>
-                            <li>生成されたAPIキーをコピーし、上の入力欄に貼り付けて保存してください。</li>
-                        </ol>
-                    </div>
-                </div>
+            // Sort by total score and re-assign rank
+            allPolicies.sort((a, b) => b.total - a.total);
+            allPolicies.forEach((policy, index) => {
+                policy.rank = index + 1;
+            });
+            
+            reportData.detailedPolicies = allPolicies;
+            
+            // Registering Alpine.js components
+            Alpine.data('app', () => ({
+                activePage: 'section_kpi',
+                modalOpen: false,
+                selectedPolicy: null,
+                keywordModalOpen: false,
+                selectedKeyword: null,
+                relatedPolicies: [],
+                allPolicies: reportData.detailedPolicies,
+                openModal(policy) {
+                    this.selectedPolicy = policy;
+                    this.modalOpen = true;
+                },
+                closeModal() {
+                    this.modalOpen = false;
+                    this.selectedPolicy = null;
+                },
+                showRelatedPolicies(keyword) {
+                    this.selectedKeyword = keyword;
+                    this.relatedPolicies = this.allPolicies.filter(p => {
+                        if (!p || !p.details) return false;
+                        const content = `${p.name} ${p.details.direction} ${p.details.target} ${p.details.impact} ${p.details.relatedPlan}`;
+                        return content.toLowerCase().includes(keyword.toLowerCase());
+                    });
+                    this.keywordModalOpen = true;
+                },
+                closeKeywordModal() {
+                    this.keywordModalOpen = false;
+                    this.selectedKeyword = null;
+                    this.relatedPolicies = [];
+                }
+            }));
+            
+            Alpine.data('sectionKpi', () => ({ ...reportData.section_kpi }));
+            Alpine.data('section1', () => ({ ...reportData.section1 }));
+            Alpine.data('section2', () => ({ ...reportData.section2 }));
+            
+            Alpine.data('policyEvaluation', () => ({
+                policies: reportData.detailedPolicies,
+                sortColumn: 'rank',
+                sortDirection: 'asc',
+                get sortedPolicies() {
+                    return [...this.policies].sort((a, b) => {
+                        let aValue = a[this.sortColumn];
+                        let bValue = b[this.sortColumn];
+                        
+                        let modifier = this.sortDirection === 'asc' ? 1 : -1;
 
-                <div class="text-center mb-8">
-                    <p class="max-w-3xl mx-auto text-slate-600">
-                        シミュレーション分析の内容を基に、AIが選挙情勢の要約と戦略的洞察を生成。
-                    </p>
-                </div>
+                        if (aValue < bValue) return -1 * modifier;
+                        if (aValue > bValue) return 1 * modifier;
+                        return 0;
+                    });
+                },
+                sort(column) {
+                    if (this.sortColumn === column) {
+                        this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        this.sortColumn = column;
+                        this.sortDirection = 'asc';
+                    }
+                }
+            }));
 
-                <div class="text-center mb-8">
-                    <button id="run-ai-analysis" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
-                        分析実行
-                    </button>
+            Alpine.data('policyKeywords', () => ({
+                searchTerm: '',
+                keywords: reportData.section6.keywords.sort(),
+                get filteredKeywords() {
+                    if (this.searchTerm === '') {
+                        return this.keywords;
+                    }
+                    return this.keywords.filter(keyword => {
+                        return keyword.toLowerCase().includes(this.searchTerm.toLowerCase());
+                    });
+                }
+            }));
+        });
+    </script>
+    <!-- Alpine.js library, deferred to run after the DOM is parsed -->
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body x-data="app" @keydown.escape.window="closeModal(); closeKeywordModal();">
+
+    <!-- Header -->
+    <header id="page-header" class="bg-white shadow-md sticky top-0 z-40">
+        <div class="container mx-auto px-4 py-4">
+            <h1 class="text-2xl md:text-4xl main-title text-gray-800 text-center">経済財政運営と改革の基本方針2025 分析</h1>
+        </div>
+        <!-- Top Navigation -->
+        <nav class="bg-gray-100 border-b border-t border-gray-200">
+            <div class="container mx-auto px-4">
+                <div id="main-nav" class="flex justify-center items-center space-x-4 md:space-x-8 overflow-x-auto py-2">
+                    <a href="#" @click.prevent="activePage = 'section_kpi'" :class="{ 'active': activePage === 'section_kpi' }" class="text-sm md:text-base text-gray-600 font-semibold py-2 border-b-2 border-transparent nav-link whitespace-nowrap">主要目標</a>
+                    <a href="#" @click.prevent="activePage = 'section1'" :class="{ 'active': activePage === 'section1' }" class="text-sm md:text-base text-gray-600 font-semibold py-2 border-b-2 border-transparent nav-link whitespace-nowrap">注目ポイント</a>
+                    <a href="#" @click.prevent="activePage = 'section2'" :class="{ 'active': activePage === 'section2' }" class="text-sm md:text-base text-gray-600 font-semibold py-2 border-b-2 border-transparent nav-link whitespace-nowrap">重点政策一覧</a>
+                    <a href="#" @click.prevent="activePage = 'section4'" :class="{ 'active': activePage === 'section4' }" class="text-sm md:text-base text-gray-600 font-semibold py-2 border-b-2 border-transparent nav-link whitespace-nowrap">主要施策の評価</a>
+                    <a href="#" @click.prevent="activePage = 'section5'" :class="{ 'active': activePage === 'section5' }" class="text-sm md:text-base text-gray-600 font-semibold py-2 border-b-2 border-transparent nav-link whitespace-nowrap">総合所見</a>
+                    <a href="#" @click.prevent="activePage = 'section6'" :class="{ 'active': activePage === 'section6' }" class="text-sm md:text-base text-gray-600 font-semibold py-2 border-b-2 border-transparent nav-link whitespace-nowrap">政策キーワード</a>
+                    <a href="#" @click.prevent="activePage = 'section_report'" :class="{ 'active': activePage === 'section_report' }" class="text-sm md:text-base text-gray-600 font-semibold py-2 border-b-2 border-transparent nav-link whitespace-nowrap">詳細レポート</a>
+                    <a href="#" @click.prevent="activePage = 'section_audio'" :class="{ 'active': activePage === 'section_audio' }" class="text-sm md:text-base text-gray-600 font-semibold py-2 border-b-2 border-transparent nav-link whitespace-nowrap">音声概要</a>
                 </div>
-                <div id="ai-result-container" class="bg-white p-6 md:p-8 rounded-xl shadow-lg min-h-[300px] prose max-w-none">
-                    <div id="ai-loader" class="hidden justify-center items-center">
-                       <div class="loader"></div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content p-4 md:p-8 lg:p-10 container mx-auto">
+        <!-- Section KPI: Key Targets -->
+        <section id="section_kpi" class="mb-12" x-show="activePage === 'section_kpi'" x-data="sectionKpi" x-cloak>
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800 border-b-2 border-blue-500 pb-2" x-text="title"></h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <template x-for="(kpi, index) in kpis" :key="index">
+                    <div class="bg-white p-6 rounded-lg shadow kpi-card flex flex-col items-center text-center">
+                        <div class="text-blue-500 mb-3" x-html="kpi.icon"></div>
+                        <h3 class="text-lg font-bold text-gray-700" x-text="kpi.title"></h3>
+                        <p class="text-3xl font-bold text-blue-600 my-2" x-text="kpi.value"></p>
+                        <p class="text-gray-600 text-sm" x-text="kpi.description"></p>
                     </div>
-                    <div id="ai-output">
-                        <p class="text-center text-gray-500">APIキーを設定してから、「分析実行」ボタンを押してAIによる分析を開始してください。</p>
+                </template>
+            </div>
+        </section>
+
+        <!-- Section 1: Key Points -->
+        <section id="section1" class="mb-12" x-show="activePage === 'section1'" x-data="section1" x-cloak>
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800 border-b-2 border-blue-500 pb-2">1. 骨太方針2025の注目ポイント</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <template x-for="(point, index) in points" :key="index">
+                    <div class="bg-white p-6 rounded-lg shadow policy-card">
+                        <h3 class="text-lg font-bold mb-3 text-blue-600" x-text="point.title"></h3>
+                        <p class="text-gray-700" x-text="point.description"></p>
+                    </div>
+                </template>
+            </div>
+        </section>
+
+        <!-- Section 2: Policy List -->
+        <section id="section2" class="mb-12" x-show="activePage === 'section2'" x-data="section2" x-cloak>
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800 border-b-2 border-blue-500 pb-2">2. 分野別・重点政策と主な施策一覧</h2>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-4 font-bold text-gray-600">分野 (政策テーマ)</th>
+                                <th class="p-4 font-bold text-gray-600">主な政策・施策</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="(field, index) in fields" :key="index">
+                                <tr class="border-b">
+                                    <td class="p-4 font-semibold align-top" x-text="field.name"></td>
+                                    <td class="p-4">
+                                        <ul class="list-disc list-inside space-y-2 text-gray-700">
+                                            <template x-for="policy in field.policies" :key="policy">
+                                                <li x-html="policy"></li>
+                                            </template>
+                                        </ul>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section 4: Policy Evaluation -->
+        <section id="section4" class="mb-12" x-show="activePage === 'section4'" x-data="policyEvaluation" x-cloak>
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800 border-b-2 border-blue-500 pb-2">4. 主要施策の評価 (ランキング)</h2>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                 <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-2 md:p-4 cursor-pointer align-top" @click="sort('rank')">順位 <span x-show="sortColumn === 'rank'" x-text="sortDirection === 'asc' ? '▲' : '▼'"></span></th>
+                                <th class="p-2 md:p-4 align-top">施策名</th>
+                                <th class="p-2 md:p-4 cursor-pointer align-top" @click="sort('total')">総合点 <span x-show="sortColumn === 'total'" x-text="sortDirection === 'asc' ? '▲' : '▼'"></span></th>
+                                <th class="p-2 md:p-4 cursor-pointer align-top" @click="sort('economy')">経済波及 <span x-show="sortColumn === 'economy'" x-text="sortDirection === 'asc' ? '▲' : '▼'"></span></th>
+                                <th class="p-2 md:p-4 cursor-pointer align-top" @click="sort('support')">国民支持 <span x-show="sortColumn === 'support'" x-text="sortDirection === 'asc' ? '▲' : '▼'"></span></th>
+                                <th class="p-2 md:p-4 cursor-pointer align-top" @click="sort('feasibility')">実行可能性 <span x-show="sortColumn === 'feasibility'" x-text="sortDirection === 'asc' ? '▲' : '▼'"></span></th>
+                                <th class="p-2 md:p-4 cursor-pointer align-top" @click="sort('innovation')">政策革新性 <span x-show="sortColumn === 'innovation'" x-text="sortDirection === 'asc' ? '▲' : '▼'"></span></th>
+                                <th class="p-2 md:p-4 cursor-pointer align-top" @click="sort('sustainability')">持続可能性 <span x-show="sortColumn === 'sustainability'" x-text="sortDirection === 'asc' ? '▲' : '▼'"></span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template x-for="policy in sortedPolicies" :key="policy.rank">
+                                <tr class="border-b hover:bg-gray-50 cursor-pointer" @click="$dispatch('open-modal', policy)">
+                                    <td class="p-2 md:p-4 text-center font-bold align-top" x-text="policy.rank"></td>
+                                    <td class="p-2 md:p-4 font-semibold text-blue-700 align-top" x-text="policy.name"></td>
+                                    <td class="p-2 md:p-4 text-center font-bold align-top" x-text="policy.total"></td>
+                                    <td class="p-2 md:p-4 text-center align-top" x-text="policy.economy"></td>
+                                    <td class="p-2 md:p-4 text-center align-top" x-text="policy.support"></td>
+                                    <td class="p-2 md:p-4 text-center align-top" x-text="policy.feasibility"></td>
+                                    <td class="p-2 md:p-4 text-center align-top" x-text="policy.innovation"></td>
+                                    <td class="p-2 md:p-4 text-center align-top" x-text="policy.sustainability"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Other Sections ... -->
+        <section id="section5" class="mb-12" x-show="activePage === 'section5'" x-cloak>
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800 border-b-2 border-blue-500 pb-2">5. おわりに (総合所見)</h2>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <p class="text-gray-700 leading-relaxed">以上、骨太方針2025に基づき主要政策を分析・評価した。各政策は相互に関連しあい、「今日より明日がよくなる」社会を実現するという理念の下で統合されている。賃上げによる成長循環の確立、地方の活性化、GX/DXによる新たな成長市場の開拓、社会保障や教育への未来投資、そして安全保障・防災による基盤強化というバランスの取れた政策パッケージであり、日本経済社会の転換点において包括的戦略を示したものと言える。</p>
+                <h4 class="text-xl font-bold mt-8 mb-4 text-gray-800">2030年の日本の姿（政策実現後の未来像）</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                        <h5 class="font-bold text-blue-800">力強い経済成長</h5>
+                        <p class="text-2xl font-bold text-blue-600">名目GDP 700兆円</p>
+                        <p class="text-sm text-gray-600">賃上げと投資の好循環により、デフレから完全に脱却し、安定的な成長軌道を実現。</p>
+                    </div>
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg">
+                        <h5 class="font-bold text-green-800">全国民の所得向上</h5>
+                        <p class="text-2xl font-bold text-green-600">平均年収 600万円</p>
+                        <p class="text-sm text-gray-600">「賃上げが当たり前」の社会となり、誰もが豊かさを実感できる水準へ。</p>
+                    </div>
+                    <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-r-lg">
+                        <h5 class="font-bold text-purple-800">テクノロジー立国</h5>
+                        <p class="text-2xl font-bold text-purple-600">ユニコーン企業 100社</p>
+                        <p class="text-sm text-gray-600">スタートアップが次々と生まれ、GX/DX分野で世界をリードするイノベーションが社会を豊かにする。</p>
+                    </div>
+                    <div class="bg-pink-50 border-l-4 border-pink-500 p-4 rounded-r-lg">
+                        <h5 class="font-bold text-pink-800">安心できる社会</h5>
+                        <p class="text-2xl font-bold text-pink-600">出生率 1.6</p>
+                        <p class="text-sm text-gray-600">子育て支援の抜本的拡充により、誰もが安心して子どもを産み育てられる環境を実現。</p>
+                    </div>
+                    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+                        <h5 class="font-bold text-yellow-800">どこでも豊かに</h5>
+                        <p class="text-2xl font-bold text-yellow-600">全地域で所得向上</p>
+                        <p class="text-sm text-gray-600">地方創生2.0が実を結び、都市と地方の格差なく、質の高い生活と仕事が可能になる。</p>
+                    </div>
+                    <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-lg">
+                        <h5 class="font-bold text-indigo-800">スマート国家</h5>
+                        <p class="text-2xl font-bold text-indigo-600">行政手続き100%オンライン</p>
+                        <p class="text-sm text-gray-600">マイナンバーカードが社会基盤となり、国民一人ひとりが最高の行政サービスを享受。</p>
+                    </div>
+                    <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg">
+                        <h5 class="font-bold text-red-800">資産運用立国</h5>
+                        <p class="text-2xl font-bold text-red-600">NISA 5000万口座</p>
+                        <p class="text-sm text-gray-600">「貯蓄から投資へ」の流れが定着し、国民の資産所得が倍増。</p>
+                    </div>
+                    <div class="bg-lime-50 border-l-4 border-lime-500 p-4 rounded-r-lg">
+                        <h5 class="font-bold text-lime-800">食の安全保障</h5>
+                        <p class="text-2xl font-bold text-lime-600">食料自給率 50%</p>
+                        <p class="text-sm text-gray-600">国内の食料生産基盤が強化され、いかなる時も国民に食料が安定供給される。</p>
                     </div>
                 </div>
             </div>
+        </section>
+        <section id="section6" class="mb-12" x-show="activePage === 'section6'" x-data="policyKeywords" x-cloak>
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800 border-b-2 border-blue-500 pb-2">6. 政策キーワード一覧</h2>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="mb-4">
+                    <input type="text" x-model="searchTerm" placeholder="キーワードを検索..." class="w-full p-2 border border-gray-300 rounded-md">
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <template x-for="keyword in filteredKeywords" :key="keyword">
+                        <button @click="$dispatch('open-keyword-modal', keyword)" class="bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full hover:bg-blue-200 transition">
+                            <span x-text="keyword"></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Section Report: Embedded Page -->
+        <section id="section_report" class="mb-12" x-show="activePage === 'section_report'" x-cloak>
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800 border-b-2 border-blue-500 pb-2">詳細レポート</h2>
+            <div class="bg-white p-2 md:p-4 rounded-lg shadow-md">
+                <iframe src="https://rifj00.github.io/honebuto2025-2/" class="w-full h-[80vh] border-0 rounded-md"></iframe>
+            </div>
+        </section>
 
+        <!-- Section Audio: Audio Summary -->
+        <section id="section_audio" class="mb-12" x-show="activePage === 'section_audio'" x-cloak>
+            <h2 class="text-2xl md:text-3xl font-bold mb-6 text-gray-800 border-b-2 border-blue-500 pb-2">音声概要</h2>
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <p class="mb-4 text-gray-700">「経済財政運営と改革の基本方針（骨太の方針）2025」のポイントを音声で解説。</p>
+                <audio controls class="w-full">
+                    <source src="https://www.rifj.jp/wp/wp-content/uploads/2025/06/骨太方針2025解剖：賃上げ、投資、地方創生、少子化対策—日本の未来図を徹底分析.m4a" type="audio/mp4">
+                    ご使用のブラウザは音声の再生に対応していません。
+                </audio>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="bg-gray-200 text-center text-gray-600 text-sm py-4">
+        ©️2025 一般社団法人日本みらい研 | 最終更新日: <span id="update-date"></span>
+    </footer>
+
+    <!-- Policy Detail Modal -->
+    <div x-show="modalOpen" @open-modal.window="openModal($event.detail)" @keydown.escape.window="closeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" x-cloak>
+        <div @click.away="closeModal" class="bg-white rounded-lg shadow-xl w-full md:w-2/3 lg:w-1/2 max-h-[90vh] overflow-y-auto">
+            <template x-if="selectedPolicy">
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-800" x-text="selectedPolicy.name"></h3>
+                    <div class="space-y-4 text-gray-700">
+                        <div><strong class="font-semibold text-gray-600 block">目指す方向性:</strong> <span x-text="selectedPolicy.details.direction"></span></div>
+                        <div><strong class="font-semibold text-gray-600 block">対象市場・業界:</strong> <span x-text="selectedPolicy.details.target"></span></div>
+                        <div><strong class="font-semibold text-gray-600 block">市場へのインパクト:</strong> <span x-text="selectedPolicy.details.impact"></span></div>
+                        <div><strong class="font-semibold text-gray-600 block">関連計画・政府方針:</strong> <span x-text="selectedPolicy.details.relatedPlan"></span></div>
+                    </div>
+                    <button @click="closeModal" class="mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">閉じる</button>
+                </div>
+            </template>
+        </div>
+    </div>
+    
+    <!-- Keyword Modal -->
+    <div x-show="keywordModalOpen" @open-keyword-modal.window="showRelatedPolicies($event.detail)" @keydown.escape.window="closeKeywordModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" x-cloak>
+        <div @click.away="closeKeywordModal" class="bg-white rounded-lg shadow-xl w-full md:w-2/3 lg:w-1/2 max-h-[90vh] overflow-y-auto">
+            <template x-if="selectedKeyword">
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold mb-4 text-gray-800">「<span x-text="selectedKeyword"></span>」に関連する施策</h3>
+                    <div class="space-y-2">
+                        <template x-if="relatedPolicies.length > 0">
+                            <ul class="list-disc list-inside">
+                                <template x-for="policy in relatedPolicies" :key="policy.rank">
+                                    <li>
+                                        <a href="#" @click.prevent="$dispatch('open-modal', policy); closeKeywordModal()" class="text-blue-600 hover:underline" x-text="policy.name"></a>
+                                    </li>
+                                </template>
+                            </ul>
+                        </template>
+                        <template x-if="relatedPolicies.length === 0">
+                            <p class="text-gray-500">関連する施策は見つかりませんでした。</p>
+                        </template>
+                    </div>
+                    <button @click="closeKeywordModal" class="mt-6 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">閉じる</button>
+                </div>
+            </template>
         </div>
     </div>
 
-    <footer class="text-center text-xs text-gray-500 mt-8 pb-4">
-        <p>この分析は一般社団法人日本みらい研による独自調査である（更新日: <span id="update-date"></span>）</p>
-    </footer>
-
     <script>
-        // === DATA DEFINITIONS (UPDATED June 20, 2025) ===
-        // Note: Party/group names are standardized for consistency based on official sources.
-        // This data represents the simulation's PREDICTION for the 124 seats up for election.
-        const baselineResults = [
-            { party: '自由民主党', color: '#58A9F2', singleSeat: 33, proportionalSeat: 20, total: 53 },
-            { party: '公明党', color: '#92C364', singleSeat: 4, proportionalSeat: 5, total: 9 },
-            { party: '国民民主党・新緑風会', color: '#BA68C8', singleSeat: 5, proportionalSeat: 5, total: 10 },
-            { party: '立憲民主・社民・無所属', color: '#F06292', singleSeat: 9, proportionalSeat: 4, total: 13 },
-            { party: '日本維新の会', color: '#FFB74D', singleSeat: 6, proportionalSeat: 3, total: 9 },
-            { party: '日本共産党', color: '#E57373', singleSeat: 2, proportionalSeat: 3, total: 5 },
-            { party: 'れいわ新選組', color: '#FF8A65', singleSeat: 2, proportionalSeat: 1, total: 3 },
-            { party: 'その他・無所属', color: '#90A4AE', singleSeat: 13, proportionalSeat: 9, total: 22 },
-        ];
-
-        // This data represents the CURRENT seats in the House of Councillors before the election.
-        // reElect: Seats up for election in 2025 (term ends July 28, 2025)
-        // nonReElect: Seats not up for election (term ends July 25, 2028)
-        const currentSeatsData = [
-            { party: '自由民主党', total: 113, reElect: 52, nonReElect: 61, color: '#58A9F2' },
-            { party: '立憲民主・社民・無所属', total: 41, reElect: 23, nonReElect: 18, color: '#F06292' },
-            { party: '公明党', total: 27, reElect: 14, nonReElect: 13, color: '#92C364' },
-            { party: '日本維新の会', total: 17, reElect: 5, nonReElect: 12, color: '#FFB74D' },
-            { party: '国民民主党・新緑風会', total: 12, reElect: 5, nonReElect: 7, color: '#BA68C8' },
-            { party: '日本共産党', total: 11, reElect: 7, nonReElect: 4, color: '#E57373' },
-            { party: 'れいわ新選組', total: 5, reElect: 2, nonReElect: 3, color: '#FF8A65' },
-            { party: 'その他・無所属', total: 14, reElect: 9, nonReElect: 5, color: '#90A4AE' } // Groups Okinawa(2), NHK(2), Independents(10)
-        ];
-
-        const partyGroups = [
-            { name: '与党', value: 62, fill: '#64B5F6' },
-            { name: '与党系', value: 10, fill: '#BA68C8' },
-            { name: '野党', value: 30, fill: '#EF5350' },
-            { name: 'その他', value: 22, fill: '#90A4AE' }
-        ];
-
-        const scenarios = [
-            { id: 'S-1', name: '与党単独で改選過半数維持', probability: 20, color: '#64B5F6', description: '自民党が選挙区で40議席以上を獲得し、与党だけで過半数の63議席以上を確保するシナリオ。無党派層の投票率が低い場合に実現しやすい。', trigger: '自民選挙区40超獲得・無党派投票率低', outcome: '与党の安定政権運営継続。石破政権の基盤が強化され、政策実行力が増す。' },
-            { id: 'S-2', name: '与党過半数割れ・DPFP補完', probability: 45, color: '#81C784', description: '与党が55-62議席を獲得するが過半数に届かず、国民民主党が閣外協力する形で政権運営を継続するシナリオ。最も実現確率が高い。', trigger: 'DPFPが物価対策で連立合意、石破続投', outcome: '物価対策・減税協議会が設置され、国民民主党の意向を踏まえた政策運営が必要になる。' },
-            { id: 'S-3', name: '野党連携で参院過半数奪取', probability: 10, color: '#EF5350', description: '立憲民主党、国民民主党、日本維新の会、れいわ新選組などの野党が連携し、参議院で65議席以上を獲得して過半数を握るシナリオ。', trigger: '32の1人区で統一候補25勝、公明比例失速', outcome: '衆参ねじれ状態となり、予算関連法案は衆院優越で成立するものの、重要政策で修正圧力が強まる。' },
-            { id: 'S-4', name: '自民惨敗＋石破退陣', probability: 12, color: '#FF8A65', description: '与党が55議席未満に留まり、自民党内で石破総裁の求心力が大きく低下するシナリオ。内閣支持率が25%未満まで下落した場合に実現する可能性が高まる。', trigger: '支持率25%未満＋幹事長派「ポスト石破」加速', outcome: '選挙区で自民が25議席以下の場合、「責任論」が噴出。有力後継として小林鷹之・萩生田光一・野田佳彦などの名前が挙がる。' },
-            { id: 'S-5', name: '選挙後ダブル選・衆院解散', probability: 3, color: '#9575CD', description: '参院選で与党が劣勢となった後、石破総理が主導権を取り戻すために衆議院を解散し、ダブル選挙に打って出るシナリオ。実現確率は非常に低い。', trigger: '石破が主導権奪回狙い解散カード行使', outcome: '衆参同日もしくは秋口の衆院解散。低支持率での解散は党内抵抗が大きい。' },
-            { id: 'S-6', name: '第3極の地殻変動', probability: 10, color: '#4DB6AC', description: '主要政党への不信感が増幅し、無党派層の票が既存の枠組みを超えて少数政党や新党に流れるシナリオ。', trigger: '大型スキャンダル＋カリスマ新候補の出現', outcome: '参院の勢力図が細分化し、連立協議が極度に難航。政策の一貫性が失われ、政局が不安定化する。' }
-        ];
-        
-        const singleDistrictData = [
-            { id: 1, name: '与党有利', count: 7, color: '#64B5F6' },
-            { id: 2, name: '与党やや有利', count: 10, color: '#90CAF9' },
-            { id: 3, name: '接戦', count: 8, color: '#E0E0E0' },
-            { id: 4, name: '野党やや有利', count: 5, color: '#FFAB91' },
-            { id: 5, name: '野党有利', count: 2, color: '#FF8A65' }
-        ];
-
-        const riskFactors = [
-            { name: '物価高第２波', impact: 9, probability: 7, score: 63, color: '#EF5350', description: 'コメ高騰などによる物価高が再発し、支持率が想定以上に悪化するリスク' },
-            { name: 'トランプ関税再交渉', impact: 8, probability: 6, score: 48, color: '#FF8A65', description: 'アメリカとの関税再交渉の失敗により、与党基盤に打撃を与えるリスク' },
-            { name: '野党一本化交渉', impact: 7, probability: 8, score: 56, color: '#FFD54F', description: '32選挙区での候補調整がカギとなる野党一本化交渉の成否によるリスク' },
-            { name: '公明の基礎票減少', impact: 6, probability: 5, score: 30, color: '#81C784', description: '支持母体の高齢化による公明党の基礎票減少で比例区5議席割れの懸念' }
-        ];
-
-        const supportRateSimulation = [
-            { support: 25, seats: 42, result: 'S-4/S-5' }, { support: 27, seats: 48, result: 'S-4/S-3' },
-            { support: 30, seats: 56, result: 'S-2' }, { support: 33, seats: 61, result: 'S-2' },
-            { support: 35, seats: 64, result: 'S-1' }, { support: 38, seats: 69, result: 'S-1' },
-        ];
-        
-        const summaryChartData = [
-            { seats: "70以上", s1: 90, s2: 10, s3: 0, s4: 0, s5: 0, s6: 0 },
-            { seats: "63-69", s1: 80, s2: 18, s3: 0, s4: 0, s5: 2, s6: 0 },
-            { seats: "58-62", s1: 0, s2: 80, s3: 10, s4: 0, s5: 5, s6: 5 },
-            { seats: "50-57", s1: 0, s2: 55, s3: 25, s4: 5, s5: 5, s6: 10 },
-            { seats: "45-49", s1: 0, s2: 10, s3: 40, s4: 30, s5: 5, s6: 15 },
-            { seats: "45未満", s1: 0, s2: 0, s3: 15, s4: 55, s5: 10, s6: 20 },
-        ];
-        
-        // === DATA FOR "ISSUES & RISKS" TAB ===
-        const reportData = {
-          oppositionSupport: {
-            labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
-            datasets: [
-                { label: '立憲民主', data: [5.8, 6.1, 5.9, 5.6, 5.6, 8.2], borderColor: '#F06292', tension: 0.1 },
-                { label: '国民民主', data: [8.1, 7.5, 9.1, 8.8, 10.2, 6.8], borderColor: '#BA68C8', tension: 0.1 },
-                { label: '維新', data: [6.5, 5.9, 4.8, 4.1, 4.3, 2.3], borderColor: '#FFB74D', tension: 0.1 },
-            ]
-          },
-          voterSegments: {
-            labels: ['支持政党なし', '自民', '立憲', '国民', 'その他政党'],
-            data: [42.2, 24.3, 8.2, 6.8, 18.5],
-            colors: ['#9ca3af', '#58A9F2', '#F06292', '#BA68C8', '#d1d5db']
-          },
-          komeitoPerformance: {
-            labels: ['2013', '2016', '2019', '2022', '2025(予測)'],
-            datasets: [{
-                label: '比例獲得議席',
-                data: [7, 7, 7, 6, 5],
-                backgroundColor: '#92C364',
-                borderColor: '#689F38',
-            }]
-          }
-        };
-
-        // === DATA CALCULATION FOR PREDICTION TAB ===
-        const projectedSeatData = baselineResults.map(prediction => {
-            const current = currentSeatsData.find(c => c.party === prediction.party);
-            if (!current) {
-                return { ...prediction, currentTotal: 0, nonReElect: 0, projectedTotal: prediction.total, change: prediction.total };
-            }
-            const projectedTotal = current.nonReElect + prediction.total;
-            const change = projectedTotal - current.total;
-            return {
-                ...prediction,
-                currentTotal: current.total,
-                nonReElect: current.nonReElect,
-                projectedTotal: projectedTotal,
-                change: change,
-            };
-        }).sort((a,b) => b.projectedTotal - a.projectedTotal);
-
-        const powerBalanceData = {
-            '与党': { parties: ['自由民主党', '公明党'], seats: 0, color: '#64B5F6' },
-            '与党系': { parties: ['国民民主党・新緑風会'], seats: 0, color: '#BA68C8' },
-            '野党': { parties: ['立憲民主・社民・無所属', '日本維新の会', '日本共産党', 'れいわ新選組'], seats: 0, color: '#EF5350' },
-            'その他': { parties: ['その他・無所属'], seats: 0, color: '#90A4AE' }
-        };
-
-        projectedSeatData.forEach(p => {
-            for (const group in powerBalanceData) {
-                if (powerBalanceData[group].parties.includes(p.party)) {
-                    powerBalanceData[group].seats += p.projectedTotal;
-                }
-            }
-        });
-
-        // === CHARTING LOGIC ===
-        let charts = {};
-        const destroyChart = (chartId) => {
-            if (charts[chartId]) {
-                charts[chartId].destroy();
-                delete charts[chartId];
-            }
-        };
-
-        const populateCurrentSeatsTable = () => {
-            const tableBody = document.getElementById('currentSeatsTableBody');
-            const sortedData = [...currentSeatsData].sort((a, b) => b.total - a.total);
-            tableBody.innerHTML = sortedData.map(d => `
-                <tr class="hover:bg-gray-50">
-                    <td class="py-2 px-3 border-b text-left font-medium">${d.party}</td>
-                    <td class="py-2 px-3 border-b text-center font-bold">${d.total}</td>
-                    <td class="py-2 px-3 border-b text-center text-red-600">${d.reElect}</td>
-                    <td class="py-2 px-3 border-b text-center text-gray-600">${d.nonReElect}</td>
-                </tr>
-            `).join('');
-        };
-        
-        const renderCurrentSeatsChart = () => {
-            destroyChart('currentSeatsChart');
-            const sortedData = [...currentSeatsData].sort((a, b) => a.total - b.total);
-            charts['currentSeatsChart'] = new Chart(document.getElementById('currentSeatsChart'), {
-                type: 'bar',
-                data: {
-                    labels: sortedData.map(d => d.party),
-                    datasets: [
-                        { label: '改選対象', data: sortedData.map(d => d.reElect), backgroundColor: '#EF5350' },
-                        { label: '非改選', data: sortedData.map(d => d.nonReElect), backgroundColor: '#90A4AE' },
-                    ]
-                },
-                options: { 
-                    indexAxis: 'y', responsive: true, maintainAspectRatio: false, 
-                    scales: { x: { stacked: true, title: { display: true, text: '議席数' } }, y: { stacked: true } }, 
-                    plugins: { legend: { position: 'top' }, tooltip: { callbacks: { footer: (items) => '合計: ' + items.reduce((sum, item) => sum + item.parsed.x, 0) + '議席' } } } 
-                }
-            });
-        };
-
-        const renderBaselineCharts = () => {
-            destroyChart('baselineChart');
-            const sortedData = [...baselineResults].sort((a,b) => a.total - b.total);
-            charts['baselineChart'] = new Chart(document.getElementById('baselineChart'), {
-                type: 'bar',
-                data: {
-                    labels: sortedData.map(d => d.party),
-                    datasets: [ { label: '選挙区', data: sortedData.map(d => d.singleSeat), backgroundColor: '#2196F3' }, { label: '比例区', data: sortedData.map(d => d.proportionalSeat), backgroundColor: '#4CAF50' }]
-                },
-                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, max: 60 }, y: { stacked: true } }, plugins: { legend: { position: 'top' } } }
-            });
-
-            destroyChart('partyGroupsChart');
-            charts['partyGroupsChart'] = new Chart(document.getElementById('partyGroupsChart'), {
-                type: 'pie',
-                data: {
-                    labels: partyGroups.map(d => `${d.name} (${((d.value/124)*100).toFixed(1)}%)`),
-                    datasets: [{ data: partyGroups.map(d => d.value), backgroundColor: partyGroups.map(d => d.fill) }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' }, tooltip: { callbacks: { label: (c) => `${c.raw}議席` } } } }
-            });
-            
-            destroyChart('seatAllocationChart');
-            charts['seatAllocationChart'] = new Chart(document.getElementById('seatAllocationChart'), {
-                type: 'bar',
-                data: {
-                    labels: ['選挙区', '比例区'],
-                    datasets: [ { label: '与党', data: [37, 25], backgroundColor: '#64B5F6' }, { label: '野党', data: [24, 16], backgroundColor: '#EF5350' }, { label: 'その他', data: [13, 9], backgroundColor: '#90A4AE' } ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true } }, plugins: { legend: { position: 'top' } } }
-            });
-
-            populateCurrentSeatsTable();
-            renderCurrentSeatsChart();
-        };
-        
-        const renderScenarioDetail = (index) => {
-            const scenario = scenarios[index];
-            const detailDiv = document.getElementById('scenarioDetail');
-            detailDiv.innerHTML = `
-                <div class="bg-white p-4 rounded-lg shadow-sm">
-                  <div class="flex items-center">
-                    <div class="w-12 h-12 flex items-center justify-center rounded-full mr-4 text-white font-bold" style="background-color: ${scenario.color};">
-                      <span>${scenario.id}</span>
-                    </div>
-                    <div>
-                      <h3 class="font-medium text-lg">${scenario.name}</h3>
-                      <div class="text-sm text-gray-600">実現確率: <span class="font-medium">${scenario.probability}%</span></div>
-                    </div>
-                  </div>
-                  <div class="mt-4">
-                    <p class="text-sm text-gray-800 mb-3">${scenario.description}</p>
-                    <div class="bg-gray-100 p-3 rounded">
-                      <p class="text-xs text-gray-600 mb-1">トリガー条件:</p>
-                      <p class="text-sm font-medium">${scenario.trigger}</p>
-                    </div>
-                    <div class="bg-blue-50 p-3 rounded mt-3">
-                      <p class="text-xs text-blue-800 mb-1">想定される結果:</p>
-                      <p class="text-sm">${scenario.outcome}</p>
-                    </div>
-                  </div>
-                </div>`;
-        };
-
-        const renderScenariosCharts = () => {
-            destroyChart('scenarioPieChart');
-            const scenarioPieCtx = document.getElementById('scenarioPieChart');
-            charts['scenarioPieChart'] = new Chart(scenarioPieCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: scenarios.map(s => s.name),
-                    datasets: [{ data: scenarios.map(s => s.probability), backgroundColor: scenarios.map(s => s.color), borderWidth: 4, borderColor: '#f9fafb' }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, cutout: '60%',
-                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.label}: ${c.raw}%` } } },
-                    onClick: (evt, elements) => { if (elements.length > 0) { renderScenarioDetail(elements[0].index); } }
-                }
-            });
-            renderScenarioDetail(1); // 初期表示
-
-            destroyChart('supportRateChart');
-            charts['supportRateChart'] = new Chart(document.getElementById('supportRateChart'), {
-                type: 'line',
-                data: {
-                    labels: supportRateSimulation.map(d => d.support),
-                    datasets: [{ label: '自民党予測議席', data: supportRateSimulation.map(d => d.seats), borderColor: '#2196F3', backgroundColor: '#2196F3', tension: 0.1 }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    scales: { x: { title: { display: true, text: '自民党支持率(%)' } }, y: { title: { display: true, text: '予測獲得議席数' }, min: 40, max: 70 } },
-                    plugins: { legend: { position: 'top' } }
-                }
-            });
-            
-            destroyChart('singleDistrictChart');
-            charts['singleDistrictChart'] = new Chart(document.getElementById('singleDistrictChart'), {
-                type: 'bar',
-                data: {
-                    labels: singleDistrictData.map(d => d.name),
-                    datasets: [{ label: '選挙区数', data: singleDistrictData.map(d => d.count), backgroundColor: singleDistrictData.map(d => d.color) }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-            });
-        };
-        
-        const renderRiskDetails = () => {
-             const container = document.getElementById('riskFactorDetails');
-             container.innerHTML = riskFactors.map(risk => `
-                 <div class="mb-4 last:mb-0">
-                   <div class="flex items-center mb-1">
-                     <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${risk.color};"></div>
-                     <h5 class="font-medium">${risk.name}</h5>
-                   </div>
-                   <div class="text-sm pl-5">
-                     <p class="text-gray-700 mb-1">${risk.description}</p>
-                     <div class="flex text-xs text-gray-600">
-                       <span class="mr-4">影響度: <strong>${risk.impact}/10</strong></span>
-                       <span>確率: <strong>${risk.probability}/10</strong></span>
-                     </div>
-                   </div>
-                 </div>
-             `).join('');
-        };
-
-        const renderRisksCharts = () => {
-            destroyChart('riskFactorChart');
-             charts['riskFactorChart'] = new Chart(document.getElementById('riskFactorChart'), {
-                type: 'bar',
-                data: {
-                    labels: riskFactors.map(d => d.name),
-                    datasets: [
-                        { type: 'bar', label: 'リスクスコア', data: riskFactors.map(d => d.score), backgroundColor: riskFactors.map(d => d.color), yAxisID: 'y' },
-                        { type: 'line', label: '影響度', data: riskFactors.map(d => d.impact), borderColor: '#2196F3', yAxisID: 'y1' },
-                        { type: 'line', label: '発生確率', data: riskFactors.map(d => d.probability), borderColor: '#FF5722', yAxisID: 'y1' }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    scales: {
-                        y: { type: 'linear', display: true, position: 'left', title: { display: true, text: 'リスクスコア' } },
-                        y1: { type: 'linear', display: true, position: 'right', max: 10, title: { display: true, text: '確率/影響度' }, grid: { drawOnChartArea: false } }
-                    }
-                }
-            });
-            
-            destroyChart('riskRadarChart');
-            charts['riskRadarChart'] = new Chart(document.getElementById('riskRadarChart'), {
-                type: 'radar',
-                data: {
-                    labels: riskFactors.map(d => d.name),
-                    datasets: [ { label: '影響度', data: riskFactors.map(d => d.impact), backgroundColor: 'rgba(136, 132, 216, 0.6)', borderColor: '#8884d8' }, { label: '発生確率', data: riskFactors.map(d => d.probability), backgroundColor: 'rgba(130, 202, 157, 0.6)', borderColor: '#82ca9d' } ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 10 } } }
-            });
-            renderRiskDetails();
-        };
-
-        const renderIssuesRisksCharts = () => {
-            const tabButtons = document.querySelectorAll('#issues-risks .sub-tab-button');
-            const tabContents = document.querySelectorAll('#issues-risks .sub-tab-content');
-            
-            tabButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const subtabId = button.dataset.subtab;
-
-                    tabButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-
-                    tabContents.forEach(content => {
-                        content.classList.add('hidden');
-                        if (content.id === `sub-${subtabId}`) {
-                            content.classList.remove('hidden');
-                        }
-                    });
-
-                    // Render charts on tab click to ensure canvas is visible
-                    if (subtabId === 'tab2') {
-                        destroyChart('oppositionSupportChart');
-                        const ctx = document.getElementById('oppositionSupportChart').getContext('2d');
-                        charts['oppositionSupportChart'] = new Chart(ctx, {
-                            type: 'line', data: reportData.oppositionSupport,
-                            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: '主要野党の支持率推移 (%)', font: {size: 14}}, legend: { position: 'bottom', labels: { boxWidth: 20 } }}, scales: { y: { beginAtZero: true, title: { display: true, text: '支持率 (%)' } }}}
-                        });
-                    }
-                    if (subtabId === 'tab3') {
-                        destroyChart('voterSegmentsChart');
-                        const ctx = document.getElementById('voterSegmentsChart').getContext('2d');
-                        charts['voterSegmentsChart'] = new Chart(ctx, {
-                            type: 'doughnut', data: { labels: reportData.voterSegments.labels, datasets: [{ data: reportData.voterSegments.data, backgroundColor: reportData.voterSegments.colors, hoverOffset: 4 }] },
-                            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: '有権者の支持政党（6月 JNN調査）', font: {size: 14}}, legend: { position: 'bottom', labels: { boxWidth: 20 } }}}
-                        });
-                    }
-                     if (subtabId === 'tab4') {
-                        destroyChart('komeitoPerformanceChart');
-                        const ctx = document.getElementById('komeitoPerformanceChart').getContext('2d');
-                        charts['komeitoPerformanceChart'] = new Chart(ctx, {
-                            type: 'bar',
-                            data: reportData.komeitoPerformance,
-                            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: '公明党 参院選比例獲得議席数', font: {size: 14}}, legend: {display: false} }, scales: { y: { beginAtZero: true, max: 10, title: { display: true, text: '議席数' } }}}
-                        });
-                    }
-                });
-            });
-            // Activate the first sub-tab by default if it's not already active
-            if(!document.querySelector('#issues-risks .sub-tab-button.active')) {
-                 document.querySelector('#issues-risks .sub-tab-button[data-subtab="tab1"]').click();
-            }
-        };
-
-        const renderPredictionCharts = () => {
-            // 1. Post Election Seat Change Chart
-            destroyChart('postElectionChart');
-            const sortedProjectedData = [...projectedSeatData].sort((a,b) => a.projectedTotal - b.projectedTotal);
-            charts['postElectionChart'] = new Chart(document.getElementById('postElectionChart'), {
-                type: 'bar',
-                data: {
-                    labels: sortedProjectedData.map(d => d.party),
-                    datasets: [
-                        { label: '非改選', data: sortedProjectedData.map(d => d.nonReElect), backgroundColor: '#90A4AE' },
-                        { label: '改選後予測', data: sortedProjectedData.map(d => d.total), backgroundColor: '#4DD0E1' }
-                    ]
-                },
-                options: { 
-                    indexAxis: 'y', responsive: true, maintainAspectRatio: false, 
-                    scales: { x: { stacked: true, title: { display: true, text: '議席数' } }, y: { stacked: true } }, 
-                    plugins: { legend: { position: 'top' } }
-                }
-            });
-
-            // 2. Seat Change Table
-            const tableBody = document.getElementById('seatChangeTableBody');
-            tableBody.innerHTML = projectedSeatData.map(d => {
-                const changeColor = d.change > 0 ? 'text-green-600' : (d.change < 0 ? 'text-red-600' : 'text-gray-600');
-                const changeSign = d.change > 0 ? '+' : '';
-                return `
-                <tr class="hover:bg-gray-50">
-                    <td class="py-2 px-3 border-b text-left font-medium">${d.party}</td>
-                    <td class="py-2 px-3 border-b text-center">${d.currentTotal}</td>
-                    <td class="py-2 px-3 border-b text-center font-bold">${d.projectedTotal}</td>
-                    <td class="py-2 px-3 border-b text-center font-bold ${changeColor}">${changeSign}${d.change}</td>
-                </tr>
-            `}).join('');
-
-            // 3. Power Balance Doughnut Chart
-            destroyChart('powerBalanceChart');
-            charts['powerBalanceChart'] = new Chart(document.getElementById('powerBalanceChart'), {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(powerBalanceData),
-                    datasets: [{
-                        data: Object.values(powerBalanceData).map(d => d.seats),
-                        backgroundColor: Object.values(powerBalanceData).map(d => d.color),
-                        borderColor: '#f9fafb',
-                        borderWidth: 4,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '60%',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { callbacks: { label: (c) => ` ${c.label}: ${c.raw}議席` } }
-                    }
-                }
-            });
-
-            // 4. Power Balance Details
-            const detailsContainer = document.getElementById('powerBalanceDetails');
-            detailsContainer.innerHTML = Object.entries(powerBalanceData).map(([group, data]) => {
-                const percentage = ((data.seats / 248) * 100).toFixed(1);
-                return `
-                    <div class="flex items-center p-2 bg-white rounded-lg shadow-sm">
-                        <div class="w-4 h-10 rounded mr-4" style="background-color: ${data.color};"></div>
-                        <div>
-                            <div class="font-bold text-gray-800">${group}</div>
-                            <div class="text-sm text-gray-600">${data.parties.join(', ')}</div>
-                        </div>
-                        <div class="ml-auto text-right">
-                            <div class="text-lg font-bold text-gray-900">${data.seats} <span class="text-sm font-normal">議席</span></div>
-                            <div class="text-xs text-gray-500">${percentage}%</div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        };
-
-        const renderSummaryCharts = () => {
-             destroyChart('summaryChart');
-             charts['summaryChart'] = new Chart(document.getElementById('summaryChart'), {
-                type: 'bar',
-                data: {
-                    labels: summaryChartData.map(d => d.seats),
-                    datasets: [
-                        { label: 'S-1: 与党過半数維持', data: summaryChartData.map(d => d.s1), backgroundColor: '#64B5F6' },
-                        { label: 'S-2: 国民民主閣外協力', data: summaryChartData.map(d => d.s2), backgroundColor: '#81C784' },
-                        { label: 'S-3: 野党参院過半数', data: summaryChartData.map(d => d.s3), backgroundColor: '#EF5350' },
-                        { label: 'S-4: 石破退陣', data: summaryChartData.map(d => d.s4), backgroundColor: '#FF8A65' },
-                        { label: 'S-5: ダブル選挙', data: summaryChartData.map(d => d.s5), backgroundColor: '#9575CD' },
-                        { label: 'S-6: 第3極地殻変動', data: summaryChartData.map(d => d.s6), backgroundColor: '#4DB6AC' }
-                    ]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false,
-                    plugins: { title: { display: false }, legend: { position: 'top' } },
-                    scales: {
-                        x: { stacked: true, title: { display: true, text: '与党獲得議席数' } },
-                        y: { stacked: true, title: { display: true, text: 'シナリオ発生確率(%)' }, min: 0, max: 100 }
-                    },
-                }
-            });
-        };
-
-        // === AI ANALYSIS LOGIC ===
-        let userApiKey = '';
-
-        const handleAiAnalysis = async () => {
-            const runButton = document.getElementById('run-ai-analysis');
-            const loader = document.getElementById('ai-loader');
-            const outputContainer = document.getElementById('ai-output');
-
-            if (!userApiKey) {
-                outputContainer.innerHTML = '<p class="text-red-500 text-center">APIキーが設定されていません。上でAPIキーを設定してください。</p>';
-                return;
-            }
-            
-            runButton.disabled = true;
-            runButton.classList.add('opacity-50', 'cursor-not-allowed');
-            outputContainer.innerHTML = '';
-            loader.style.display = 'flex';
-
-
-            const prompt = `
-                あなたは日本の選挙を専門とする優秀な政治アナリストです。
-                以下の2025年参議院選挙に関するシミュレーションデータを分析し、総合的なサマリーと戦略的洞察を生成してください。
-
-                # データ
-                ## 1. 改選議席予測 (ベースライン)
-                ${JSON.stringify(baselineResults, null, 2)}
-
-                ## 2. 選挙後の全体議席予測
-                ${JSON.stringify(projectedSeatData, null, 2)}
-
-                ## 3. 主要シナリオと発生確率
-                ${JSON.stringify(scenarios, null, 2)}
-
-                ## 4. 主なリスク要因
-                ${JSON.stringify(riskFactors, null, 2)}
-
-                # 指示
-                以下の構成で、洞察に満ちた分析レポートを作成してください。
-                出力はHTML形式とし、<h3>, <h4>, <p>, <ul>, <li>タグのみを使用してください。
-
-                ### 1. 総合評価 (Executive Summary)
-                * 選挙情勢を一言で要約してください。
-                * 最も可能性の高い選挙結果と、その場合の政治的帰結を簡潔に述べてください。
-
-                ### 2. 勢力図の変化
-                * 与党（自民・公明）は、選挙全体で過半数を維持できそうか？ その鍵となる要因は何か？
-                * 野党勢力は議席を伸ばせるか？ 課題は何か？
-                * 選挙後のキープレイヤーとなる政党はどこか？その理由も述べてください。
-
-                ### 3. 戦略的インプリケーション
-                * 与党が勝利するために克服すべき最大のリスクは何か？
-                * 野党が議席を増やすための最も効果的な戦略は何か？
-                * 選挙結果が日本の経済や外交政策に与える潜在的な影響について論じてください。
-
-                レポートは、専門的かつ分かりやすい言葉で記述し、単なるデータの羅列ではなく、データから読み取れる「意味」を解説することに重点を置いてください。
-            `;
-
-            try {
-                let chatHistory = [];
-                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
-                const payload = { contents: chatHistory };
-                const apiKey = userApiKey;
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(`APIエラー: ${response.statusText}. 詳細: ${JSON.stringify(errorData.error.message)}`);
-                }
-
-                const result = await response.json();
-
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0) {
-                    const text = result.candidates[0].content.parts[0].text;
-                    // AIが生成したHTMLをそのまま挿入
-                    outputContainer.innerHTML = text;
-                } else {
-                    outputContainer.innerHTML = '<p class="text-red-500">分析結果の取得に失敗しました。レスポンスの形式が正しくありません。</p>';
-                    console.error("Unexpected API response structure:", result);
-                }
-
-            } catch (error) {
-                outputContainer.innerHTML = `<p class="text-red-500">分析中にエラーが発生しました: ${error.message}</p>`;
-                console.error("AI Analysis Error:", error);
-            } finally {
-                loader.style.display = 'none';
-                runButton.disabled = false;
-                runButton.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
-        };
-
-
-        // === TAB LOGIC ===
-        document.addEventListener('DOMContentLoaded', () => {
-            const tabs = document.querySelectorAll('.tab-button');
-            const tabContents = document.querySelectorAll('.tab-content');
-            const switchTab = (tabName) => {
-                tabContents.forEach(content => {
-                    if (content.id === tabName) {
-                        content.classList.remove('hidden');
-                        // Call the specific render function for the active tab
-                        if (tabName === 'baseline') renderBaselineCharts();
-                        else if (tabName === 'scenarios') renderScenariosCharts();
-                        else if (tabName === 'risks') renderRisksCharts();
-                        else if (tabName === 'issues-risks') renderIssuesRisksCharts();
-                        else if (tabName === 'prediction') renderPredictionCharts(); 
-                        else if (tabName === 'politics') { /* No chart rendering needed for this tab */ }
-                        else if (tabName === 'summary') renderSummaryCharts();
-                        else if (tabName === 'ai-analysis') { 
-                            // AI Tab Specific Setup
-                            const apiKeyInput = document.getElementById('api-key-input');
-                            const saveApiKeyButton = document.getElementById('save-api-key');
-                            const runAnalysisButton = document.getElementById('run-ai-analysis');
-                            const apiKeyMessage = document.getElementById('api-key-message');
-                            const aiOutput = document.getElementById('ai-output');
-
-                            const loadApiKey = () => {
-                                userApiKey = localStorage.getItem('googleAiApiKey') || '';
-                                apiKeyInput.value = userApiKey;
-                                if (userApiKey) {
-                                    runAnalysisButton.disabled = false;
-                                    aiOutput.innerHTML = '<p class="text-center text-gray-500">上の「分析実行」ボタンを押して、AIによる分析を開始してください。</p>';
-                                } else {
-                                    runAnalysisButton.disabled = true;
-                                    aiOutput.innerHTML = '<p class="text-center text-gray-500">APIキーを設定してから、「分析実行」ボタンを押してAIによる分析を開始してください。</p>';
-                                }
-                            };
-
-                            saveApiKeyButton.addEventListener('click', () => {
-                                const key = apiKeyInput.value.trim();
-                                if(key) {
-                                    localStorage.setItem('googleAiApiKey', key);
-                                    userApiKey = key;
-                                    apiKeyMessage.textContent = 'APIキーを保存しました。';
-                                    apiKeyMessage.className = 'text-center text-sm h-5 mt-2 text-green-600';
-                                    runAnalysisButton.disabled = false;
-                                    aiOutput.innerHTML = '<p class="text-center text-gray-500">上の「分析実行」ボタンを押して、AIによる分析を開始してください。</p>';
-                                    setTimeout(() => { apiKeyMessage.textContent = ''; }, 3000);
-                                } else {
-                                    apiKeyMessage.textContent = 'APIキーを入力してください。';
-                                    apiKeyMessage.className = 'text-center text-sm h-5 mt-2 text-red-600';
-                                }
-                            });
-
-                            runAnalysisButton.addEventListener('click', handleAiAnalysis);
-                            loadApiKey();
-                        }
-                    } else {
-                        content.classList.add('hidden');
-                    }
-                });
-                tabs.forEach(tab => {
-                    tab.classList.toggle('active', tab.dataset.tab === tabName);
-                });
-            };
-
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => switchTab(tab.dataset.tab));
-            });
-            
-            switchTab('baseline'); // 初期タブ
-
-            // Add footer date
+        document.addEventListener('DOMContentLoaded', (event) => {
             const today = new Date();
             const year = today.getFullYear();
-            const month = today.getMonth() + 1;
+            const month = today.getMonth() + 1; // getMonth() is zero-based
             const day = today.getDate();
             document.getElementById('update-date').textContent = `${year}年${month}月${day}日`;
         });
