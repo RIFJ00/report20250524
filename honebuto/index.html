@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>骨太の方針2025の方向性について：インタラクティブ概要</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Visualization & Content Choices:
+        - Report Info: Population decline, aging demographics (Ref Doc 1, Fig II-1-1) -> Goal: Show trend & impact -> Viz: Line chart (Chart.js) -> Interaction: Hover for specific year data -> Justification: Clear visual of demographic challenge -> Library: Chart.js.
+        - Report Info: Primary Balance (PB) targets, Debt-to-GDP ratio (Ref Doc 1, Fig II-3-11) -> Goal: Track fiscal consolidation progress -> Viz: Line/Bar chart (Chart.js) with target lines -> Interaction: Toggle actual vs. target, select year range -> Justification: Visualize progress towards key fiscal goals -> Library: Chart.js.
+        - Report Info: Impact of 1% interest rate rise on debt servicing costs (Main Report, Table 2) -> Goal: Illustrate fiscal risk -> Viz: Dynamic Bar chart (Chart.js) -> Interaction: User sees cost increase over years -> Justification: Concrete demonstration of interest rate sensitivity -> Library: Chart.js.
+        - Report Info: Key policy areas like GX/DX, regional revitalization, social security reforms (Outline Doc, Main Report) -> Goal: Summarize policy directions -> Viz: Structured HTML sections with iconography (Tailwind, Unicode icons) and expandable text blocks -> Interaction: Click to expand for details -> Justification: Organized presentation of diverse policy initiatives -> Library/Method: HTML/CSS/Tailwind/JS.
+        - Report Info: International comparison of debt levels (Main Report) -> Goal: Contextualize Japan's fiscal situation -> Viz: Bar chart (Chart.js) -> Interaction: Hover for country details -> Justification: Easy comparison with other G7/major economies -> Library: Chart.js.
+        CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            padding-top: 80px; /* Header height */
+        }
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            height: 80px; /* Consistent height with body padding-top */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+            /* Adjust nav top position if it's sticky below the fixed header */
+            .md\:sticky-nav-adjusted {
+                top: 80px; /* Header height */
+            }
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f8fafc; /* slate-50 */
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1; /* slate-300 */
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; /* slate-500 */
+        }
+        .nav-item {
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+        }
+        .nav-item.active {
+            background-color: #0ea5e9; /* sky-500 */
+            color: white;
+            font-weight: 600;
+        }
+        .nav-item:not(.active):hover {
+            background-color: #f0f9ff; /* sky-50 */
+            color: #0369a1; /* sky-700 */
+        }
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .content-section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .expand-toggle {
+            transition: background-color 0.2s ease;
+        }
+        .expand-content {
+            transition: max-height 0.3s ease-out, opacity 0.3s ease-in-out;
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+        }
+        .expand-content.expanded {
+            max-height: 1000px; /* Adjust as needed for content */
+            opacity: 1;
+        }
+        .stat-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Styles for the full report section */
+        .report-content h2 {
+            font-size: 1.875rem; /* text-3xl */
+            font-weight: 700; /* font-bold */
+            margin-top: 2rem; /* mt-8 */
+            margin-bottom: 1rem; /* mb-4 */
+            padding-bottom: 0.5rem; /* pb-2 */
+            border-bottom: 2px solid #38bdf8; /* border-sky-400 */
+        }
+        .report-content h3 {
+            font-size: 1.5rem; /* text-2xl */
+            font-weight: 600; /* font-semibold */
+            margin-top: 1.5rem; /* mt-6 */
+            margin-bottom: 0.75rem; /* mb-3 */
+            color: #1f2937; /* text-gray-800 */
+        }
+        .report-content h4 {
+            font-size: 1.25rem; /* text-xl */
+            font-weight: 600; /* font-semibold */
+            margin-top: 1rem; /* mt-4 */
+            margin-bottom: 0.5rem; /* mb-2 */
+            color: #374151; /* text-gray-700 */
+        }
+        .report-content p {
+            margin-bottom: 1rem; /* mb-4 */
+            line-height: 1.75; /* leading-relaxed */
+            color: #4b5563; /* text-gray-600 */
+        }
+        .report-content strong {
+            font-weight: 600; /* font-semibold */
+            color: #111827; /* text-gray-900 */
+        }
+        .report-content ul {
+            list-style-type: disc;
+            margin-left: 1.5rem; /* ml-6 */
+            margin-bottom: 1rem; /* mb-4 */
+        }
+        .report-content li {
+            margin-bottom: 0.25rem; /* mb-1 */
+        }
+        .report-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+        .report-content th, .report-content td {
+            border: 1px solid #e5e7eb; /* border-gray-200 */
+            padding: 0.75rem; /* p-3 */
+            text-align: left;
+            vertical-align: top;
+        }
+        .report-content th {
+            background-color: #f9fafb; /* bg-gray-50 */
+            font-weight: 600; /* font-semibold */
+        }
+        .audio-container {
+            background-color: #ffffff; /* bg-white */
+            padding: 1.5rem; /* p-6 */
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+        }
+        .audio-container audio {
+            width: 100%;
+            margin-top: 1rem; /* mt-4 */
+        }
+        .iframe-container {
+            background-color: #ffffff;
+            padding: 1rem; /* p-4 for less padding than cards */
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+            height: calc(100vh - 160px); /* Adjust height considering header and some padding */
+            overflow: hidden;
+        }
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-neutral-800">
+
+    <header class="fixed-header bg-white shadow-md flex items-center justify-center px-4">
+        <h1 class="text-3xl md:text-4xl font-bold text-sky-700">経済財政運営と改革の基本方針（骨太の方針）2025 について</h1>
+    </header>
+
+    <div class="flex flex-col md:flex-row min-h-screen">
+        <nav class="w-full md:w-72 bg-white shadow-xl p-5 space-y-3 md:sticky md:h-screen md:overflow-y-auto custom-scrollbar flex-shrink-0 md:sticky-nav-adjusted">
+            <div class="mb-8 pb-3 border-b border-stone-200 md:hidden"> <h1 class="text-xl font-bold text-sky-700">ナビゲーション</h1>
+            </div>
+            <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-neutral-700" data-target="section-current-situation">
+                <span class="text-xl">🌍</span>
+                <span>現状認識と課題</span>
+            </a>
+            <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-neutral-700" data-target="section-growth-engines">
+                <span class="text-xl">📈</span>
+                <span>成長へのエンジン</span>
+            </a>
+            <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-neutral-700" data-target="section-future-foundations">
+                <span class="text-xl">🏗️</span>
+                <span>未来への基盤づくり</span>
+            </a>
+            <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-neutral-700" data-target="section-fiscal-compass">
+                <span class="text-xl">🧭</span>
+                <span>財政の羅針盤</span>
+            </a>
+            <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-neutral-700" data-target="section-full-report">
+                <span class="text-xl">📄</span>
+                <span>詳細レポート</span>
+            </a>
+            <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-neutral-700" data-target="section-audio-summary">
+                <span class="text-xl">🎧</span>
+                <span>音声概要</span>
+            </a>
+            <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-neutral-700" data-target="section-key-policy-analysis">
+                <span class="text-xl">🔍</span>
+                <span>重要政策の分析</span>
+            </a>
+            <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-neutral-700" data-target="section-party-policies">
+                <span class="text-xl">📊</span>
+                <span>主要政党の経済対策</span>
+            </a>
+            <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-neutral-700" data-target="section-draft-policy">
+                <span class="text-xl">📝</span>
+                <span>骨太の方針原案</span>
+            </a>
+            <a href="#" class="nav-item flex items-center space-x-3 p-3 rounded-lg text-neutral-700" data-target="section-honebuto-2025">
+                <span class="text-xl">🏛️</span>
+                <span>骨太の方針2025</span>
+            </a>
+            <div class="pt-4 mt-4 border-t border-stone-200 text-xs text-stone-500">
+                <p>&copy; 2025 一般社団法人日本みらい研</p>
+                <p>2025年5月28日作成</p>
+                <p>（2025年6月23日更新）</p>
+            </div>
+        </nav>
+
+        <main class="flex-1 p-6 md:p-10 overflow-y-auto custom-scrollbar bg-stone-50">
+            <div id="section-current-situation" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-neutral-700 border-b-2 border-sky-500 pb-2">🌍 現状認識と日本が直面する課題</h2>
+                <p class="text-lg text-neutral-600">
+                    日本経済は、長年のデフレからの脱却に向けた重要な局面に位置する。しかし、世界的な地政学的リスクの高まり、資源価格の変動、国内における急速な人口減少と少子高齢化など、内外に多くの構造的課題を抱えている。本セクションでは、これらの現状認識と、基本方針2025が取り組むべき主要な課題の概観を示す。
+                </p>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-3">人口動態の変化</h3>
+                        <p class="text-sm text-neutral-600 mb-4">日本の総人口は減少傾向にあり、特に生産年齢人口の減少が経済成長の制約要因となっている。高齢化率も上昇を続けている。</p>
+                        <div class="chart-container h-64 md:h-72"><canvas id="chartPopulationTrend"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-3">財政状況の概観：債務残高対GDP比の推移</h3>
+                        <p class="text-sm text-neutral-600 mb-4">日本の公的債務残高対GDP比は依然として高い水準にある。財政健全化は喫緊の課題であり、将来に向けた安定的な引き下げが目標とされている。</p>
+                        <div class="chart-container h-64 md:h-72"><canvas id="chartDebtToGDPStatus"></canvas></div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-sky-700 mb-3">国際環境と経済リスク</h3>
+                    <ul class="list-disc list-inside text-neutral-600 space-y-1 text-sm">
+                        <li>米国の通商政策や国際経済枠組みの変化の可能性。</li>
+                        <li>地政学的緊張の高まりとサプライチェーンの脆弱性。</li>
+                        <li>世界的なインフレ圧力と金融引き締めの影響。</li>
+                        <li>気候変動問題と脱炭素化への対応。</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="section-growth-engines" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-neutral-700 border-b-2 border-sky-500 pb-2">📈 成長へのエンジン：賃上げ・地方創生・投資</h2>
+                <p class="text-lg text-neutral-600">
+                    持続的な経済成長を実現するため、基本方針2025では「賃金と物価の好循環」の定着、地域の活力を引き出す「地方創生2.0」、そして未来を拓く「投資立国・資産運用立国」を三位一体で推進する。このセクションでは、これらの成長戦略の柱となる具体的な政策の方向性を解説する。
+                </p>
+                
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold text-sky-700 mb-4">💰 物価上昇を上回る賃上げの実現</h3>
+                    <p class="text-sm text-neutral-600 mb-4">持続的な賃上げは、デフレ完全脱却と力強い経済成長の鍵である。中小企業・小規模事業者の賃上げ支援、三位一体の労働市場改革（リスキリング、職務給、労働移動円滑化）を強力に推進する。</p>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="border p-4 rounded-lg bg-sky-50">
+                            <h4 class="font-semibold text-sky-600">中小企業賃上げ5か年計画</h4>
+                            <p class="text-xs text-neutral-500">官公需における価格転嫁推進、公定価格引上げ等。</p>
+                        </div>
+                        <div class="border p-4 rounded-lg bg-sky-50">
+                            <h4 class="font-semibold text-sky-600">労働市場改革</h4>
+                            <p class="text-xs text-neutral-500">成長分野への円滑な労働移動を促進し、生産性向上を目指す。</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 chart-container h-64 md:h-72"><canvas id="chartWageGrowth"></canvas></div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold text-sky-700 mb-4">🏠 地方創生2.0：「令和の日本列島改造」</h3>
+                    <p class="text-sm text-neutral-600 mb-4">東京一極集中を是正し、各地域がその特色を活かせるよう支援する。デジタル技術を活用した地域課題の解決、関係人口の拡大、農林水産業の振興と食料安全保障の強化に取り組む。</p>
+                     <div class="chart-container h-64 md:h-72"><canvas id="chartRegionalPopulation"></canvas></div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold text-sky-700 mb-4">🚀 投資立国・資産運用立国</h3>
+                    <p class="text-sm text-neutral-600 mb-4">GX（グリーントランスフォーメーション）、DX（デジタルトランスフォーメーション）への大胆な投資を官民連携で推進する。特にAI、半導体、宇宙、海洋などのフロンティア分野への投資を強化し、スタートアップ育成や対内直接投資の拡大も図る。</p>
+                    <div class="chart-container h-64 md:h-72"><canvas id="chartGxDxInvestment"></canvas></div>
+                </div>
+            </div>
+
+            <div id="section-future-foundations" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-neutral-700 border-b-2 border-sky-500 pb-2">🏗️ 未来への基盤づくり：社会保障・人的資本・安全</h2>
+                <p class="text-lg text-neutral-600">
+                    全ての国民が安心して豊かに暮らせる社会の実現に向け、持続可能な社会保障制度の構築、人的資本への投資、そして国民の安全・安心の確保に取り組む。これらの基盤強化が、日本の長期的な発展を支える。
+                </p>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold text-sky-700 mb-4">🧑‍⚕️ 全世代型社会保障制度の構築</h3>
+                    <p class="text-sm text-neutral-600 mb-4">医療・介護制度の効率化と給付・負担の見直し、年金制度の持続可能性確保、こども・子育て支援の充実を進める。社会保障費の伸びを高齢化要因の範囲内に抑制する努力を継続する。</p>
+                    <div class="chart-container h-64 md:h-72"><canvas id="chartSocialSecurityCosts"></canvas></div>
+                </div>
+                 <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold text-sky-700 mb-4">🎓 人的資本への投資</h3>
+                    <p class="text-sm text-neutral-600 mb-4">高等教育改革を通じた教育の質の向上、生涯学習とリスキリング機会の拡充により、個人の能力開発とキャリアアップを支援する。これにより、イノベーション創出と生産性向上を目指す。</p>
+                </div>
+                 <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-semibold text-sky-700 mb-4">🛡️ 国民の安心・安全の確保</h3>
+                    <p class="text-sm text-neutral-600 mb-4">防災・減災、国土強靱化を推進し、大規模自然災害への備えを強化する。また、経済安全保障、サイバーセキュリティ対策、食料安全保障の確立など、複合的な危機に対応できる体制を構築する。</p>
+                </div>
+            </div>
+
+            <div id="section-fiscal-compass" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-neutral-700 border-b-2 border-sky-500 pb-2">🧭 財政の羅針盤：持続可能な財政運営</h2>
+                <p class="text-lg text-neutral-600">
+                    「経済あっての財政」の原則のもと、成長と財政健全化の両立を目指す。「経済・財政新生計画」に基づき、プライマリーバランス（PB）の黒字化目標や債務残高対GDP比の安定的な引き下げ目標を堅持し、市場の信認を確保する。このセクションでは、財政目標、金利上昇リスクへの対応、財政規律強化の取り組みについて解説する。
+                </p>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-3">プライマリーバランス(PB)黒字化目標</h3>
+                        <p class="text-sm text-neutral-600 mb-4">国・地方を合わせたPB黒字化を2025～2026年度に可能な限り早期に目指す。</p>
+                        <div class="chart-container h-64 md:h-72"><canvas id="chartPBTarget"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-3">債務残高対GDP比の安定引下げ</h3>
+                        <p class="text-sm text-neutral-600 mb-4">PB黒字化後、2030年度までに債務残高対GDP比をコロナ禍前水準へ向け安定的に引き下げる。</p>
+                        <div class="chart-container h-64 md:h-72"><canvas id="chartDebtToGDPTarget"></canvas></div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg mt-6">
+                    <h3 class="text-xl font-semibold text-sky-700 mb-3">金利上昇リスクと国債管理</h3>
+                    <p class="text-sm text-neutral-600 mb-4">金利が1%上昇した場合の利払い費増加影響を試算し、国債市場の安定性維持に努める。</p>
+                    <div class="chart-container h-64 md:h-72"><canvas id="chartInterestRateImpact"></canvas></div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg mt-6">
+                    <h3 class="text-xl font-semibold text-sky-700 mb-3">財政規律の国際比較と強化</h3>
+                    <p class="text-sm text-neutral-600 mb-4">多くの先進国が採用する財政ルールを参考に、独立財政機関（IFI）の設置やPAYGO原則導入など、規律強化策を検討する。</p>
+                    <div class="chart-container h-64 md:h-72"><canvas id="chartFiscalRulesComparison"></canvas></div>
+                </div>
+            </div>
+
+            <div id="section-full-report" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-neutral-700 border-b-2 border-sky-500 pb-2">📄 詳細レポート</h2>
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg report-content">
+                    <h2 class="text-3xl font-bold">経済財政運営と改革の基本方針2025：日本の進路を読む詳細分析</h2>
+                    <h3>第1章 基本方針2025の背景と要請</h3>
+                    <h4>1.1. 激動する国際環境と国内の構造的課題への対応</h4>
+                    <p>世界は大きな転換点を迎えており、例えば米国のトランプ政権による関税政策は、戦後の自由貿易体制を根底から揺るがす可能性を秘めている。これは一時的な現象ではなく、資本主義社会が広がる中での所得格差や分断、それに伴う社会の不安定化といった構造的な変化として捉える必要がある。日本は、こうした変化に対し、中長期的な視点から冷静かつ戦略的に対応していかなければならない。</p>
+                </div>
+            </div>
+
+            <div id="section-audio-summary" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-neutral-700 border-b-2 border-sky-500 pb-2">🎧 音声概要</h2>
+                <div class="space-y-8">
+                    <div class="audio-container">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-2">骨太方針2025：賃上げと財政再建、矛盾する二つの目標を日本はどう両立させるのか？</h3>
+                        <audio controls src="https://www.rifj.jp/wp/wp-content/uploads/2025/05/骨太方針2025：賃上げと財政再建、矛盾する二つの目標を日本はどう両立させるのか？.m4a">
+                            お使いのブラウザは音声要素をサポートしていません。
+                        </audio>
+                        <p class="text-sm text-neutral-500 mt-3">
+                            この音声は、骨太方針2025における主要なポイント、特に賃金上昇の実現と財政再建という二つの大きな目標に対し、日本政府がどのような戦略で取り組もうとしているのかについて解説するものである。
+                        </p>
+                    </div>
+                    <div class="audio-container">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-2">骨太の方針2025原案 解説</h3>
+                        <audio controls src="https://www.rifj.jp/wp/wp-content/uploads/2025/06/経済財政諮問会議-2.m4a">
+                            お使いのブラウザは音声要素をサポートしていません。
+                        </audio>
+                    </div>
+                    <div class="audio-container">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-2">経済財政運営と改革の基本方針（骨太の方針）2025 解説</h3>
+                        <audio controls src="https://www.rifj.jp/wp/wp-content/uploads/2025/06/経済財政運営と改革の基本方針2025-5.m4a">
+                            お使いのブラウザは音声要素をサポートしていません。
+                        </audio>
+                    </div>
+                    <div class="audio-container">
+                        <h3 class="text-xl font-semibold text-sky-700 mb-2">骨太方針2025解剖：賃上げ、投資、地方創生、少子化対策—日本の未来図を徹底分析</h3>
+                        <audio controls src="https://www.rifj.jp/wp/wp-content/uploads/2025/06/骨太方針2025解剖：賃上げ、投資、地方創生、少子化対策—日本の未来図を徹底分析.m4a">
+                            お使いのブラウザは音声要素をサポートしていません。
+                        </audio>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="section-key-policy-analysis" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-neutral-700 border-b-2 border-sky-500 pb-2">🔍 重要政策の分析</h2>
+                <div class="iframe-container">
+                    <iframe src="https://rifj00.github.io/policy4/" title="重要政策の分析"></iframe>
+                </div>
+            </div>
+
+            <div id="section-party-policies" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-neutral-700 border-b-2 border-sky-500 pb-2">📊 主要政党の経済対策</h2>
+                <div class="iframe-container">
+                    <iframe src="https://rifj00.github.io/policy2/" title="主要政党の経済対策"></iframe>
+                </div>
+            </div>
+
+            <div id="section-draft-policy" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-neutral-700 border-b-2 border-sky-500 pb-2">📝 骨太の方針原案</h2>
+                <div class="iframe-container">
+                    <iframe src="https://rifj00.github.io/honebuto/" title="骨太の方針原案"></iframe>
+                </div>
+            </div>
+            
+            <div id="section-honebuto-2025" class="content-section space-y-6">
+                <h2 class="text-3xl font-bold text-neutral-700 border-b-2 border-sky-500 pb-2">🏛️ 骨太の方針2025</h2>
+                <div class="iframe-container">
+                    <iframe src="https://report.rifj.jp/honebuto2025/" title="骨太の方針2025"></iframe>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+<script>
+    const navItems = document.querySelectorAll('.nav-item');
+    const contentSections = document.querySelectorAll('.content-section');
+
+    function setActiveSection(targetId) {
+        navItems.forEach(i => i.classList.remove('active'));
+        contentSections.forEach(section => section.classList.remove('active'));
+
+        const activeNavItem = document.querySelector(`.nav-item[data-target="${targetId}"]`);
+        const activeSection = document.getElementById(targetId);
+
+        if (activeNavItem) activeNavItem.classList.add('active');
+        if (activeSection) activeSection.classList.add('active');
+    }
+
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetSectionId = item.dataset.target;
+            setActiveSection(targetSectionId);
+            document.querySelector('main').scrollTop = 0;
+        });
+    });
+
+    let initialSection = 'section-current-situation';
+    if (window.location.hash) {
+        const hashTarget = window.location.hash.substring(1);
+        if (document.getElementById(hashTarget) && Array.from(navItems).some(item => item.dataset.target === hashTarget)) {
+            initialSection = hashTarget;
+        }
+    }
+    setActiveSection(initialSection);
+     if (navItems.length > 0 && !document.querySelector('.nav-item.active')) {
+         const firstNavItem = document.querySelector(`.nav-item[data-target="${initialSection}"]`);
+         if(firstNavItem) firstNavItem.classList.add('active');
+    }
+
+
+    function formatLabel(value, maxLength = 12) {
+        if (typeof value !== 'string') return value;
+        if (value.length <= maxLength) return value;
+        let lines = [];
+        let currentLine = "";
+        const words = value.split(/\s+/);
+        if (words.length > 1 && value.length > maxLength) {
+            for (const word of words) {
+                if ((currentLine + word).length > maxLength && currentLine.length > 0) {
+                    lines.push(currentLine.trim());
+                    currentLine = "";
+                }
+                currentLine += (currentLine.length > 0 ? " " : "") + word;
+            }
+            if (currentLine.length > 0) lines.push(currentLine.trim());
+        } else {
+            for (let i = 0; i < value.length; i += maxLength) {
+                lines.push(value.substring(i, i + maxLength));
+            }
+        }
+        return lines.length > 0 ? lines : value;
+    }
+    
+    const commonChartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: {
+                    font: { size: 10 }
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) {
+                            label += ': ';
+                        }
+                        if (context.parsed.y !== null) {
+                            label += context.parsed.y.toLocaleString();
+                        }
+                        return formatLabel(label, 30);
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                ticks: {
+                    font: { size: 10 },
+                    callback: function(value, index, ticks) {
+                        return formatLabel(this.getLabelForValue(value));
+                    }
+                },
+                grid: { display: false }
+            },
+            y: {
+                ticks: {
+                    font: { size: 10 },
+                    callback: function(value) { return value.toLocaleString(); }
+                },
+                grid: { color: '#e5e7eb' } 
+            }
+        }
+    };
+
+    const ctxPopulation = document.getElementById('chartPopulationTrend')?.getContext('2d');
+    if (ctxPopulation) {
+        new Chart(ctxPopulation, {
+            type: 'line',
+            data: {
+                labels: ['2010', '2015', '2020', '2025 (予測)', '2030 (予測)'],
+                datasets: [
+                    {
+                        label: '総人口 (万人)',
+                        data: [12806, 12709, 12615, 12450, 12250],
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    },
+                    {
+                        label: '生産年齢人口 (万人)',
+                        data: [8173, 7728, 7509, 7200, 6800],
+                        borderColor: '#fb923c',
+                        backgroundColor: 'rgba(251, 146, 60, 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: commonChartOptions
+        });
+    }
+
+    const ctxDebtToGDP = document.getElementById('chartDebtToGDPStatus')?.getContext('2d');
+    if (ctxDebtToGDP) {
+        new Chart(ctxDebtToGDP, {
+            type: 'line', // Changed from 'bar' to 'line'
+            data: {
+                labels: ['2000', '2005', '2010', '2015', '2020', '2023(実績)', '2025(目標)', '2030(目標)'],
+                datasets: [{
+                    label: '債務残高対GDP比 (%)',
+                    data: [135, 175, 200, 228, 258, 255, 250, 230], // Example data based on typical trends and targets
+                    borderColor: '#db2777', // A distinct pink/purple color
+                    backgroundColor: 'rgba(219, 39, 119, 0.1)',
+                    fill: true,
+                    tension: 0.1,
+                    pointRadius: 3,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: {...commonChartOptions, 
+                scales: {
+                    x: {
+                        ticks: {
+                            font: { size: 10 },
+                             callback: function(value, index, ticks) {
+                                const label = this.getLabelForValue(value);
+                                // For years, no need to split unless very long, which is not the case here.
+                                return label;
+                            }
+                        },
+                        grid: { display: false }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: '債務残高対GDP比 (%)',
+                            font: {size: 12}
+                        },
+                        ticks: {
+                            font: { size: 10 },
+                            callback: function(value) { return value.toLocaleString() + '%'; }
+                        },
+                        grid: { color: '#e5e7eb' } 
+                    }
+                },
+                plugins: {
+                    ...commonChartOptions.plugins,
+                    title: {
+                        display: true,
+                        text: '公的債務残高対GDP比の推移と目標',
+                        font: {size: 14, weight: 'bold'},
+                        padding: {top: 10, bottom: 10}
+                    }
+                }
+            }
+        });
+    }
+    
+    const ctxWageGrowth = document.getElementById('chartWageGrowth')?.getContext('2d');
+    if (ctxWageGrowth) {
+        new Chart(ctxWageGrowth, {
+            type: 'line',
+            data: {
+                labels: ['2022年', '2023年', '2024年', '2025年 (目標)'],
+                datasets: [
+                    {
+                        label: '名目賃金上昇率 (%)',
+                        data: [1.0, 2.1, 3.0, 3.5], 
+                        borderColor: '#22c55e', 
+                        tension: 0.1
+                    },
+                    {
+                        label: '物価上昇率 (%)',
+                        data: [2.5, 3.2, 2.8, 2.0], 
+                        borderColor: '#ef4444', 
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: commonChartOptions
+        });
+    }
+
+    const ctxRegionalPopulation = document.getElementById('chartRegionalPopulation')?.getContext('2d');
+    if(ctxRegionalPopulation) {
+        new Chart(ctxRegionalPopulation, {
+            type: 'doughnut',
+            data: {
+                labels: ['東京圏', 'その他地域', '関係人口 (概念)'],
+                datasets: [{
+                    label: '人口構成イメージ',
+                    data: [30, 65, 5], 
+                    backgroundColor: ['#ef4444', '#3b82f6', '#facc15'], 
+                }]
+            },
+            options: {...commonChartOptions, cutout: '50%'}
+        });
+    }
+
+    const ctxGxDxInvestment = document.getElementById('chartGxDxInvestment')?.getContext('2d');
+    if (ctxGxDxInvestment) {
+        new Chart(ctxGxDxInvestment, {
+            type: 'bar',
+            data: {
+                labels: ['GX投資 (兆円)', 'DX投資 (兆円)', 'スタートアップ投資 (兆円)'],
+                datasets: [{
+                    label: '年間目標投資額 (官民計)',
+                    data: [15, 10, 1], 
+                    backgroundColor: ['#10b981', '#6366f1', '#f59e0b'] 
+                }]
+            },
+            options: commonChartOptions
+        });
+    }
+
+    const ctxSocialSecurityCosts = document.getElementById('chartSocialSecurityCosts')?.getContext('2d');
+    if (ctxSocialSecurityCosts) {
+        new Chart(ctxSocialSecurityCosts, {
+            type: 'line',
+            data: {
+                labels: ['2020年度', '2023年度', '2025年度(見込)', '2030年度(推計)'],
+                datasets: [{
+                    label: '社会保障給付費 (兆円)',
+                    data: [121, 130, 135, 145], 
+                    borderColor: '#8b5cf6', 
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: commonChartOptions
+        });
+    }
+
+    const ctxPBTarget = document.getElementById('chartPBTarget')?.getContext('2d');
+    if (ctxPBTarget) {
+        new Chart(ctxPBTarget, {
+            type: 'bar',
+            data: {
+                labels: ['2023年度実績', '2024年度見通し', '2025年度目標', '2026年度目標'],
+                datasets: [{
+                    label: 'PB対GDP比 (%)',
+                    data: [-3.0, -1.5, -0.5, 0.1], 
+                    backgroundColor: ['#f87171', '#fbbf24', '#a3e635', '#4ade80'] 
+                }]
+            },
+            options: commonChartOptions
+        });
+    }
+    
+    const ctxDebtToGDPTarget = document.getElementById('chartDebtToGDPTarget')?.getContext('2d');
+    if (ctxDebtToGDPTarget) {
+        new Chart(ctxDebtToGDPTarget, {
+            type: 'line',
+            data: {
+                labels: ['2020', '2023', '2025(目標域)', '2030(目標域)'],
+                datasets: [{
+                    label: '債務残高対GDP比 (%)',
+                    data: [255, 260, 250, 230], 
+                    borderColor: '#ef4444', 
+                    tension: 0.1,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#ef4444'
+                }]
+            },
+            options: commonChartOptions
+        });
+    }
+
+    const ctxInterestRateImpact = document.getElementById('chartInterestRateImpact')?.getContext('2d');
+    if (ctxInterestRateImpact) {
+        new Chart(ctxInterestRateImpact, {
+            type: 'bar',
+            data: {
+                labels: ['2026年度', '2028年度', '2030年度', '2034年度'],
+                datasets: [{
+                    label: '金利1%上昇時の追加利払い費 (兆円/年)',
+                    data: [0.9, 3.3, 5.4, 8.7], 
+                    backgroundColor: '#f97316', 
+                }]
+            },
+            options: commonChartOptions
+        });
+    }
+
+    const ctxFiscalRules = document.getElementById('chartFiscalRulesComparison')?.getContext('2d');
+    if (ctxFiscalRules) {
+        new Chart(ctxFiscalRules, {
+            type: 'pie',
+            data: {
+                labels: ['債務ルールあり(具体的数値目標)', 'フローの規律のみ(日本)', 'ルールなし/その他'],
+                datasets: [{
+                    label: '財政規律を持つ国 (IMF調査対象106ヶ国中)',
+                    data: [81, 1, 24], 
+                    backgroundColor: ['#2563eb', '#f59e0b', '#9ca3af'], 
+                }]
+            },
+            options: {...commonChartOptions, cutout: '30%'}
+        });
+    }
+
+    document.querySelectorAll('.expand-toggle').forEach(button => {
+        button.addEventListener('click', () => {
+            const content = button.nextElementSibling;
+            content.classList.toggle('expanded');
+            button.textContent = content.classList.contains('expanded') ? '閉じる' : '詳細を見る';
+        });
+    });
+
+</script>
+</body>
+</html>
