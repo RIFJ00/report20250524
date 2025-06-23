@@ -833,7 +833,7 @@
 
                 backButton.addEventListener('click', function() {
                     resultsScreen.style.display = 'none';
-                    uploadScreen.style.display = 'block';
+                    uploadScreen.style.display = 'flex'; // Changed to flex for centering
                     fileInput.value = '';
                     searchInput.value = '';
                     currentData = []; // Clear data when going back to upload screen
