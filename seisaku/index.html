@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>国民の関心課題について</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 600px; 
+            max-height: 70vh;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 500px; 
+                max-height: 80vh;
+            }
+        }
+        .modal {
+            transition: opacity 0.25s ease;
+        }
+        .modal-content {
+            transition: transform 0.25s ease;
+        }
+        .card-enter {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+        }
+        .card-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .sidebar-section {
+            margin-bottom: 1.5rem; /* mb-6 */
+        }
+        .sidebar-label {
+            display: block;
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 600; /* font-semibold */
+            color: #0369a1; /* sky-700 */
+            margin-bottom: 0.5rem; /* mb-2 */
+        }
+        .radio-label {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem;
+            border-radius: 0.375rem; /* rounded-md */
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+        .radio-label:hover {
+            background-color: #f1f5f9; /* slate-100 */
+        }
+        .radio-label input[type="radio"]:checked + span {
+            font-weight: 600;
+            color: #0284c7; /* sky-600 */
+        }
+        .filter-btn {
+             display: block;
+             width: 100%;
+             text-align: left;
+             margin-bottom: 0.25rem; /* mb-1 */
+             padding: 0.5rem 1rem; /* px-4 py-2 */
+             border-radius: 0.375rem; /* rounded-md */
+             transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+        }
+        .filter-btn.active {
+            background-color: #0284c7; /* sky-600 */
+            color: white;
+        }
+        .filter-btn:not(.active) {
+            background-color: #e2e8f0; /* slate-200 */
+            color: #334155; /* slate-700 */
+        }
+         .filter-btn:not(.active):hover {
+            background-color: #cbd5e1; /* slate-300 */
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 1rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem; /* text-xs */
+        }
+        .legend-color-box {
+            width: 0.75rem; /* w-3 */
+            height: 0.75rem; /* h-3 */
+            margin-right: 0.25rem; /* mr-1 */
+            border-radius: 0.125rem; /* rounded-sm */
+            border: 1px solid #94a3b8; /* slate-400 for better visibility of light colors */
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-700 antialiased">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-sky-700 mb-2">国民の関心課題について</h1>
+            <p class="text-slate-500 text-md sm:text-lg mb-3">一般社団法人日本みらい研作成</p>
+        </header>
+
+        <div class="md:flex">
+            <aside id="sidebar" class="w-full md:w-1/4 md:mr-6 mb-6 md:mb-0 p-6 bg-white rounded-lg shadow-md">
+                <div class="sidebar-section">
+                    <label class="sidebar-label">表示スコア種別:</label>
+                    <div id="score-type-controls">
+                        <label class="radio-label">
+                            <input type="radio" name="scoreType" value="concernScore" class="mr-2 accent-sky-600" checked>
+                            <span>国民の関心度</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="scoreType" value="politicalPriorityScore" class="mr-2 accent-sky-600">
+                            <span>政治的優先度</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="scoreType" value="economicPriorityScore" class="mr-2 accent-sky-600">
+                            <span>経済的優先度</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="scoreType" value="socialPriorityScore" class="mr-2 accent-sky-600">
+                            <span>社会的優先度</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <label class="sidebar-label">グラフ種別:</label>
+                    <div id="chart-type-controls">
+                        <label class="radio-label">
+                            <input type="radio" name="chartType" value="bar" class="mr-2 accent-sky-600" checked>
+                            <span>ランキング（棒グラフ）</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="chartType" value="bubble" class="mr-2 accent-sky-600">
+                            <span>マトリクス（バブル）</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="chartType" value="radar" class="mr-2 accent-sky-600">
+                            <span>多角的比較（レーダー）</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <label class="sidebar-label">カテゴリで絞り込む:</label>
+                    <div id="category-filters">
+                        </div>
+                </div>
+            </aside>
+
+            <main id="main-content" class="w-full md:w-3/4">
+                <section id="introduction" class="mb-8 p-6 bg-white rounded-lg shadow-md">
+                    <h2 class="text-2xl font-semibold text-sky-600 mb-3">はじめに</h2>
+                    <p class="text-slate-600 leading-relaxed">
+                        このレポートは、2025年3月から5月にかけて実施された計46本の世論調査結果を統合し、さらに2025年6月2日時点の最新動向も踏まえ、国民がどのような課題に高い関心を寄せているかを分析したものである。各課題には、国民の関心の度合いを示す「関心度スコア」に加え、「政治的優先度」「経済的優先度」「社会的優先度」の各スコア（いずれも当研究所による分析・仮設定）を付与し、主な関心理由や経済への影響も併記している。このページを通じて、現代日本の国民意識の動向を多角的に理解する一助となれば幸いである。チャートやカードをクリックして、詳細情報を参照されたい。
+                    </p>
+                </section>
+
+                <section id="chart-section" class="mb-8 p-4 sm:p-6 bg-white rounded-lg shadow-md">
+                    <h2 id="chart-title" class="text-2xl font-semibold text-sky-600 mb-4 text-center">国民の関心度スコアランキング</h2>
+                    <div class="chart-container">
+                        <canvas id="issuesChart"></canvas>
+                    </div>
+                    <p id="chart-description" class="text-xs text-slate-500 mt-2 text-center">グラフの項目にマウスオーバー（またはタップ）すると詳細が表示される。</p>
+                    <div id="bubble-legend-container" class="mt-4"></div>
+                </section>
+
+                <section id="issues-list" class="mb-8">
+                    <h2 id="list-title" class="text-2xl font-semibold text-sky-600 mb-4 text-center">課題一覧（国民の関心度順）</h2>
+                    <div id="issues-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    </div>
+                </section>
+
+                <section id="report-insights" class="p-6 bg-white rounded-lg shadow-md mb-8">
+                    <h2 class="text-2xl font-semibold text-sky-600 mb-3">読み取りポイント</h2>
+                    <ul class="list-disc list-inside text-slate-600 space-y-2 leading-relaxed">
+                        <li>物価高騰への対策は依然として国民最大の関心事である。</li>
+                        <li>社会保障や将来不安に関する項目が上位に多く見られる。</li>
+                        <li>エネルギー政策や安全保障に関する関心も引き続き高い水準を維持している。</li>
+                        <li>新たにランキング入りした項目は、気候変動や教育問題など、中長期的な課題が多い。</li>
+                        <li>表示スコア種別やグラフ種別を切り替えることで、異なる視点から課題の重要性や特性を確認できる。マトリクスグラフではカテゴリー別の傾向も把握しやすい。</li>
+                    </ul>
+                </section>
+
+                <section id="scoring-methodology" class="p-6 bg-white rounded-lg shadow-md">
+                    <h2 class="text-2xl font-semibold text-sky-600 mb-3">関心度・優先度スコア算出式</h2>
+                    <div class="text-slate-600 leading-relaxed">
+                        <p>スコア = (各評価指標 × 重み付け / 基準値) × 100</p>
+                        <p class="text-sm mt-1">（各種スコアにおいて、トップ課題のスコアを100点基準に線形換算）</p>
+                        <p class="mt-2">「国民の関心度スコア」は、世論調査における課題への肯定的な回答の割合と、その課題が調査で取り上げられる頻度（サリエンス係数）を組み合わせて算出されている。その他の「優先度スコア」およびマトリクスグラフ用の「経済規模（成長性）」は、政治的・経済的・社会的観点から当研究所が独自に評価・仮設定したものである。これにより、多角的な視点から課題の重要性を評価することを目指している。</p>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <div id="modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 opacity-0 pointer-events-none z-50">
+        <div class="modal-content bg-white rounded-lg shadow-xl p-6 sm:p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto transform scale-95">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modal-title" class="text-2xl font-bold text-sky-700"></h3>
+                <button id="close-modal" class="text-slate-500 hover:text-slate-700 text-2xl">&times;</button>
+            </div>
+            <div class="space-y-3 text-slate-600">
+                <p><strong class="text-slate-700">国民の関心度スコア:</strong> <span id="modal-concern-score" class="font-semibold text-sky-600"></span></p>
+                <p><strong class="text-slate-700">政治的優先度スコア:</strong> <span id="modal-political-score" class="font-semibold text-blue-600"></span></p>
+                <p><strong class="text-slate-700">経済的優先度スコア:</strong> <span id="modal-economic-score" class="font-semibold text-green-600"></span></p>
+                <p><strong class="text-slate-700">社会的優先度スコア:</strong> <span id="modal-social-score" class="font-semibold text-purple-600"></span></p>
+                 <p><strong class="text-slate-700">経済規模（成長性）スコア:</strong> <span id="modal-economic-scale" class="font-semibold text-orange-600"></span></p>
+                <hr class="my-2">
+                <p><strong class="text-slate-700">主な関心理由〈世論面〉:</strong> <span id="modal-reason"></span></p>
+                <p><strong class="text-slate-700">経済への影響・強化経路〈要点〉:</strong> <span id="modal-impact"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let nationalIssuesData = [
+            { rank: 1, title: "物価高・コメ価格急騰対策", concernScore: 100, politicalPriorityScore: 95, economicPriorityScore: 100, socialPriorityScore: 98, economicScale: 80, reason: "生活費上昇への強い懸念・「対策不十分」の声多数", economicImpact: "実質賃金↓→民間消費停滞深刻化、中小企業経営圧迫", category: "経済・生活" },
+            { rank: 2, title: "消費税減税・廃止", concernScore: 92, politicalPriorityScore: 70, economicPriorityScore: 85, socialPriorityScore: 90, economicScale: 70, reason: "家計負担軽減への期待大・減税要求高まる", economicImpact: "実施なら家計可処分所得増→消費刺激期待、財源確保が課題", category: "経済・税制" },
+            { rank: 3, title: "対米高関税交渉不信", concernScore: 85, politicalPriorityScore: 80, economicPriorityScore: 90, socialPriorityScore: 70, economicScale: 85, reason: "輸出産業への影響懸念・「交渉力に不安」", economicImpact: "関税発動で輸出減・国内生産調整、サプライチェーン再編コスト増", category: "経済・外交" },
+            { rank: 4, title: "社会保障サービス低下不安", concernScore: 84, politicalPriorityScore: 90, economicPriorityScore: 80, socialPriorityScore: 95, economicScale: 60, reason: "年金・医療・介護の将来不安根強い", economicImpact: "予防的貯蓄増加→消費抑制、社会保障費増大とサービス維持のジレンマ", category: "社会保障" },
+            { rank: 5, title: "雇用・実質賃上げ", concernScore: 75, politicalPriorityScore: 88, economicPriorityScore: 92, socialPriorityScore: 85, economicScale: 75, reason: "賃上げ実感乏しく・「生活改善に繋がらず」", economicImpact: "実質所得伸び悩み→個人消費低迷、持続的賃上げと生産性向上が鍵", category: "経済・労働" },
+            { rank: 6, title: "少子化・子育て支援", concernScore: 71, politicalPriorityScore: 85, economicPriorityScore: 75, socialPriorityScore: 92, economicScale: 50, reason: "将来の担い手不足・「支援策の実効性に疑問」", economicImpact: "労働力人口減少加速、子育て世代包括支援と働き方改革が急務", category: "社会保障" },
+            { rank: 7, title: "防衛力強化", concernScore: 66, politicalPriorityScore: 92, economicPriorityScore: 70, socialPriorityScore: 60, economicScale: 65, reason: "周辺国の軍事動向活発化・「安全保障環境悪化」認識", economicImpact: "防衛費増額→関連産業活性化期待、財源確保と他予算への影響懸念", category: "安全保障・財政" },
+            { rank: 8, title: "エネルギー・環境（補助金見直し含む）", concernScore: 62, politicalPriorityScore: 82, economicPriorityScore: 78, socialPriorityScore: 75, economicScale: 90, reason: "電気ガス料金高止まり・「補助金終了後の負担増不安」", economicImpact: "エネルギー価格安定と脱炭素の両立、再エネ導入と省エネ推進が重要", category: "エネルギー・環境" },
+            { rank: 9, title: "年金制度改革是非", concernScore: 60, politicalPriorityScore: 78, economicPriorityScore: 65, socialPriorityScore: 88, economicScale: 40, reason: "制度持続性への不信・「給付水準維持困難」", economicImpact: "高齢化進展で財政圧迫、世代間公平性と受給開始年齢引き上げ議論", category: "社会保障" },
+            { rank: 10, title: "政治とカネ（献金禁止）", concernScore: 58, politicalPriorityScore: 75, economicPriorityScore: 50, socialPriorityScore: 80, economicScale: 20, reason: "政治不信根強く・「透明性確保求める」", economicImpact: "政治の信頼回復が経済政策推進の土台、企業団体献金のあり方議論", category: "政治・行政" },
+            { rank: 11, title: "選択的夫婦別姓制度", concernScore: 41, politicalPriorityScore: 50, economicPriorityScore: 40, socialPriorityScore: 78, economicScale: 30, reason: "多様な家族観への理解求める・「改姓負担大きい」", economicImpact: "女性のキャリア継続支援、労働参加率向上への期待", category: "社会・制度" },
+            { rank: 12, title: "防災・災害対策", concernScore: 38, politicalPriorityScore: 65, economicPriorityScore: 60, socialPriorityScore: 85, economicScale: 55, reason: "大規模災害への備え・「インフラ老朽化不安」", economicImpact: "国土強靭化投資継続、災害復旧と事前防災のバランス", category: "社会基盤" },
+            { rank: 13, title: "外国人労働者受入拡大", concernScore: 33, politicalPriorityScore: 60, economicPriorityScore: 72, socialPriorityScore: 55, economicScale: 68, reason: "人手不足分野での労働力確保・「共生社会への課題」", economicImpact: "労働市場への影響、社会統合コストと多文化共生の推進", category: "経済・労働" },
+            { rank: 14, title: "デジタル行政サービス向上", concernScore: 32, politicalPriorityScore: 72, economicPriorityScore: 68, socialPriorityScore: 65, economicScale: 72, reason: "手続きの利便性向上期待・「情報格差懸念」", economicImpact: "行政効率化と生産性向上、セキュリティ対策とプライバシー保護", category: "政治・行政" },
+            { rank: 15, title: "住宅価格・金利対策", concernScore: 31, politicalPriorityScore: 40, economicPriorityScore: 55, socialPriorityScore: 50, economicScale: 45, reason: "住宅ローン金利上昇不安・「購入断念層増加」", economicImpact: "住宅投資冷え込み懸念、中古市場活性化と空き家対策", category: "経済・生活" },
+            { rank: 16, title: "地方創生・人口減少", concernScore: 30, politicalPriorityScore: 68, economicPriorityScore: 62, socialPriorityScore: 70, economicScale: 48, reason: "地域経済の疲弊・「東京一極集中是正求める」", economicImpact: "地方の担い手不足深刻化、魅力ある雇用創出と移住支援", category: "社会・地域" },
+            { rank: 17, title: "原発再稼働是非", concernScore: 27, politicalPriorityScore: 55, economicPriorityScore: 45, socialPriorityScore: 30, economicScale: 35, reason: "エネルギー安定供給と安全性・「意見対立続く」", economicImpact: "電力コストへの影響、再生可能エネルギーとのバランス", category: "エネルギー・環境" },
+            { rank: 18, title: "交通インフラ老朽化更新", concernScore: 26, politicalPriorityScore: 50, economicPriorityScore: 58, socialPriorityScore: 60, economicScale: 52, reason: "安全確保と維持費増大・「地方路線維持困難」", economicImpact: "物流効率化と地域アクセス維持、財源確保と新技術導入", category: "社会基盤" },
+            { rank: 19, title: "SNS偽情報規制", concernScore: 25, politicalPriorityScore: 45, economicPriorityScore: 30, socialPriorityScore: 68, economicScale: 25, reason: "情報社会の健全性確保・「表現の自由との両立」", economicImpact: "プラットフォーム事業者の責任、メディアリテラシー教育の重要性", category: "情報・社会" },
+            { rank: 20, title: "医療制度改革（医師不足、地域医療）", concernScore: 22, politicalPriorityScore: 76, economicPriorityScore: 70, socialPriorityScore: 82, economicScale: 62, reason: "地域医療の崩壊懸念・「医師の偏在是正求める」", economicImpact: "医療費抑制と質の確保、オンライン診療普及とタスクシフト", category: "社会保障" },
+            { rank: 21, title: "文化・芸術振興支援", concernScore: 18, politicalPriorityScore: 30, economicPriorityScore: 25, socialPriorityScore: 40, economicScale: 15, reason: "心の豊かさと創造性育成・「予算不足の声」", economicImpact: "コンテンツ産業の国際競争力強化、観光資源としての活用", category: "文化・社会" },
+            { rank: 22, title: "気候変動対策・脱炭素化推進", concernScore: 16, politicalPriorityScore: 68, economicPriorityScore: 75, socialPriorityScore: 72, economicScale: 88, reason: "異常気象頻発・「国際公約達成への危機感」", economicImpact: "GX投資と新技術開発、産業構造転換と雇用への影響", category: "エネルギー・環境" },
+            { rank: 23, title: "教育改革・格差是正", concernScore: 14, politicalPriorityScore: 62, economicPriorityScore: 50, socialPriorityScore: 76, economicScale: 42, reason: "グローバル人材育成・「教育費負担重い」", economicImpact: "人的資本投資の重要性、デジタル教育とSTEAM教育推進", category: "教育・社会" },
+            { rank: 24, title: "食料自給率向上と食の安全", concernScore: 12, politicalPriorityScore: 58, economicPriorityScore: 65, socialPriorityScore: 60, economicScale: 58, reason: "国際情勢不安と供給網懸念・「国産志向高まる」", economicImpact: "農業振興とスマート農業推進、食品ロス削減とトレーサビリティ", category: "経済・生活" },
+            { rank: 25, title: "サイバーセキュリティ対策強化", concernScore: 11, politicalPriorityScore: 70, economicPriorityScore: 60, socialPriorityScore: 50, economicScale: 78, reason: "企業・個人への攻撃増加・「国家レベルでの対応求める」", economicImpact: "情報漏洩リスクと経済損失、重要インフラ防護と人材育成", category: "情報・社会" },
+            { rank: 26, title: "働き方改革・長時間労働是正", concernScore: 10, politicalPriorityScore: 52, economicPriorityScore: 58, socialPriorityScore: 62, economicScale: 38, reason: "ワークライフバランス重視・「過労死問題依然深刻」", economicImpact: "生産性向上と多様な働き方の実現、ハラスメント対策強化", category: "経済・労働" },
+            { rank: 27, title: "ジェンダー平等推進", concernScore: 9, politicalPriorityScore: 48, economicPriorityScore: 35, socialPriorityScore: 66, economicScale: 28, reason: "男女格差解消求める・「意思決定層への女性登用遅れ」", economicImpact: "経済成長への貢献、多様な視点の活用とイノベーション促進", category: "社会・制度" },
+            { rank: 28, title: "外交・国際関係（近隣諸国との安定）", concernScore: 8, politicalPriorityScore: 66, economicPriorityScore: 52, socialPriorityScore: 40, economicScale: 32, reason: "地政学リスク高まり・「平和と安定希求」", economicImpact: "貿易・投資への影響、経済安全保障と国際協力の推進", category: "経済・外交" },
+            { rank: 29, title: "消費者保護強化（悪質商法対策など）", concernScore: 7, politicalPriorityScore: 35, economicPriorityScore: 30, socialPriorityScore: 45, economicScale: 18, reason: "巧妙化する手口への不安・「情報弱者保護求める」", economicImpact: "健全な市場形成、オンライン取引の安全性確保と相談体制充実", category: "経済・生活" },
+            { rank: 30, title: "地方交通の維持・活性化", concernScore: 6, politicalPriorityScore: 42, economicPriorityScore: 38, socialPriorityScore: 58, economicScale: 22, reason: "生活の足確保困難・「高齢者の移動手段不安」", economicImpact: "地域経済への影響、自動運転技術活用とデマンド交通導入", category: "社会基盤" }
+        ];
+
+        const issuesGrid = document.getElementById('issues-grid');
+        const modal = document.getElementById('modal');
+        const modalTitleEl = document.getElementById('modal-title');
+        const modalConcernScoreEl = document.getElementById('modal-concern-score');
+        const modalPoliticalScoreEl = document.getElementById('modal-political-score');
+        const modalEconomicScoreEl = document.getElementById('modal-economic-score');
+        const modalSocialScoreEl = document.getElementById('modal-social-score');
+        const modalEconomicScaleEl = document.getElementById('modal-economic-scale');
+        const modalReasonEl = document.getElementById('modal-reason');
+        const modalImpactEl = document.getElementById('modal-impact');
+        const closeModalBtn = document.getElementById('close-modal');
+        
+        const categoryFiltersContainer = document.getElementById('category-filters');
+        const scoreTypeControls = document.getElementById('score-type-controls');
+        const chartTypeControls = document.getElementById('chart-type-controls');
+        const chartTitleEl = document.getElementById('chart-title');
+        const listTitleEl = document.getElementById('list-title');
+        const chartDescriptionEl = document.getElementById('chart-description');
+        const bubbleLegendContainer = document.getElementById('bubble-legend-container');
+
+
+        let chartInstance = null;
+        let currentFilter = 'all';
+        let currentScoreType = 'concernScore'; 
+        let currentChartType = 'bar';
+
+        const categoryColorMap = {
+            "経済・生活": "rgba(255, 99, 132, 0.7)",   // Red
+            "経済・税制": "rgba(255, 159, 64, 0.7)",  // Orange
+            "経済・外交": "rgba(255, 205, 86, 0.7)",  // Yellow
+            "社会保障": "rgba(75, 192, 192, 0.7)",    // Teal
+            "経済・労働": "rgba(54, 162, 235, 0.7)",   // Blue
+            "安全保障・財政": "rgba(153, 102, 255, 0.7)",// Purple
+            "エネルギー・環境": "rgba(129, 199, 132, 0.7)",// Light Green
+            "政治・行政": "rgba(250, 128, 114, 0.7)",// Salmon
+            "社会・制度": "rgba(60, 179, 113, 0.7)",   // Medium Sea Green
+            "社会基盤": "rgba(210, 105, 30, 0.7)",    // Chocolate
+            "社会・地域": "rgba(128, 0, 128, 0.7)",    // Purple (darker)
+            "情報・社会": "rgba(0, 128, 128, 0.7)",     // Teal (darker)
+            "文化・社会": "rgba(255, 140, 0, 0.7)",    // Dark Orange
+            "教育・社会": "rgba(0, 191, 255, 0.7)"     // Deep Sky Blue
+        };
+
+        function getScoreTypeName(scoreTypeKey) {
+            switch (scoreTypeKey) {
+                case 'concernScore': return '国民の関心度';
+                case 'politicalPriorityScore': return '政治的優先度';
+                case 'economicPriorityScore': return '経済的優先度';
+                case 'socialPriorityScore': return '社会的優先度';
+                default: return 'スコア';
+            }
+        }
+        
+        function getChartTypeName(chartTypeKey) {
+             switch (chartTypeKey) {
+                case 'bar': return 'ランキング（棒グラフ）';
+                case 'bubble': return 'マトリクス（バブル）';
+                case 'radar': return '多角的比較（レーダー）';
+                default: return 'グラフ';
+            }
+        }
+
+        function createIssueCard(issue) {
+            const card = document.createElement('div');
+            card.className = 'bg-white p-5 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer card-enter';
+            const displayScore = issue[currentScoreType];
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-2">
+                    <h3 class="text-lg font-semibold text-sky-700">${issue.rank}. ${issue.title}</h3>
+                    <span class="text-xl font-bold text-amber-500">${displayScore}</span>
+                </div>
+                <p class="text-sm text-slate-600 mb-1 truncate"><strong>理由:</strong> ${issue.reason}</p>
+                <p class="text-xs text-slate-500">カテゴリ: ${issue.category}</p>
+            `;
+            card.addEventListener('click', () => openModal(issue));
+            return card;
+        }
+        
+        function openModal(issue) {
+            modalTitleEl.textContent = issue.title;
+            modalConcernScoreEl.textContent = issue.concernScore;
+            modalPoliticalScoreEl.textContent = issue.politicalPriorityScore;
+            modalEconomicScoreEl.textContent = issue.economicPriorityScore;
+            modalSocialScoreEl.textContent = issue.socialPriorityScore;
+            modalEconomicScaleEl.textContent = issue.economicScale;
+            modalReasonEl.textContent = issue.reason;
+            modalImpactEl.textContent = issue.economicImpact;
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            modal.querySelector('.modal-content').classList.remove('scale-95');
+            modal.querySelector('.modal-content').classList.add('scale-100');
+        }
+
+        closeModalBtn.addEventListener('click', () => {
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            modal.querySelector('.modal-content').classList.add('scale-95');
+            modal.querySelector('.modal-content').classList.remove('scale-100');
+        });
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeModalBtn.click();
+            }
+        });
+        
+        function renderContent() {
+            const scoreTypeName = getScoreTypeName(currentScoreType);
+            const chartTypeName = getChartTypeName(currentChartType);
+            
+            chartTitleEl.textContent = `${scoreTypeName} / ${chartTypeName}`;
+            listTitleEl.textContent = `課題一覧（${scoreTypeName}順）`;
+            
+            let chartDescText = 'グラフの項目にマウスオーバー（またはタップ）すると詳細が表示される。';
+            if (currentChartType === 'bubble') {
+                chartDescText = `X軸: 経済規模（成長性）、Y軸: ${scoreTypeName}、バブルサイズ: ${scoreTypeName}。`;
+            } else if (currentChartType === 'radar') {
+                chartDescText = `上位5課題の4つのスコアを比較。中心からの距離がスコアの高さを示す。`;
+            }
+            chartDescriptionEl.textContent = chartDescText;
+
+
+            issuesGrid.innerHTML = '';
+            
+            let dataToDisplay = [...nationalIssuesData];
+
+            if (currentFilter !== 'all') {
+                dataToDisplay = dataToDisplay.filter(issue => issue.category === currentFilter);
+            }
+
+            dataToDisplay.sort((a, b) => b[currentScoreType] - a[currentScoreType]);
+            
+            dataToDisplay.forEach((issue, index) => {
+                issue.rank = index + 1; 
+            });
+
+            dataToDisplay.forEach((issue, index) => {
+                const card = createIssueCard(issue);
+                issuesGrid.appendChild(card);
+                setTimeout(() => card.classList.add('card-enter-active'), index * 50);
+            });
+            
+            updateChart(dataToDisplay); 
+            updateActiveFilterButton();
+            renderBubbleLegend(dataToDisplay);
+        }
+
+        function getUniqueCategories() {
+            const categories = new Set(nationalIssuesData.map(issue => issue.category));
+            return Array.from(categories).sort();
+        }
+
+        function renderCategoryFilters() {
+            categoryFiltersContainer.innerHTML = ''; // Clear previous buttons
+            const allButton = document.createElement('button');
+            allButton.dataset.category = 'all';
+            allButton.className = 'filter-btn px-4 py-2 rounded-md';
+            allButton.textContent = '全課題';
+            categoryFiltersContainer.appendChild(allButton);
+
+            const categories = getUniqueCategories();
+            categories.forEach(category => {
+                const button = document.createElement('button');
+                button.dataset.category = category;
+                button.className = 'filter-btn px-4 py-2 rounded-md';
+                button.textContent = category;
+                categoryFiltersContainer.appendChild(button);
+            });
+            updateActiveFilterButton(); // Ensure correct initial active state
+        }
+        
+        function updateActiveFilterButton() {
+            document.querySelectorAll('#category-filters .filter-btn').forEach(btn => {
+                if (btn.dataset.category === currentFilter) {
+                    btn.classList.add('active', 'bg-sky-600', 'text-white');
+                    btn.classList.remove('bg-slate-200', 'text-slate-700');
+                } else {
+                    btn.classList.remove('active', 'bg-sky-600', 'text-white');
+                    btn.classList.add('bg-slate-200', 'text-slate-700');
+                }
+            });
+        }
+        
+        function renderBubbleLegend(data) {
+            bubbleLegendContainer.innerHTML = '';
+            if (currentChartType !== 'bubble') {
+                return;
+            }
+
+            const legendTitle = document.createElement('h4');
+            legendTitle.className = 'text-sm font-semibold text-slate-600 mb-1 text-center';
+            legendTitle.textContent = '凡例（カテゴリー）:';
+            bubbleLegendContainer.appendChild(legendTitle);
+
+            const legendWrapper = document.createElement('div');
+            legendWrapper.className = 'flex flex-wrap justify-center gap-x-3 gap-y-1';
+            
+            const displayedCategories = new Set(data.map(item => item.category));
+            
+            Object.entries(categoryColorMap).forEach(([category, color]) => {
+                if (displayedCategories.has(category)) {
+                    const legendItem = document.createElement('div');
+                    legendItem.className = 'legend-item';
+                    legendItem.innerHTML = `
+                        <span class="legend-color-box" style="background-color: ${color};"></span>
+                        <span>${category}</span>
+                    `;
+                    legendWrapper.appendChild(legendItem);
+                }
+            });
+            bubbleLegendContainer.appendChild(legendWrapper);
+        }
+
+        function drawBarChart(data) {
+            const ctx = document.getElementById('issuesChart').getContext('2d');
+            const scoreTypeName = getScoreTypeName(currentScoreType);
+            const chartData = {
+                labels: data.map(issue => `${issue.rank}. ${issue.title.length > 16 ? issue.title.substring(0, 15) + '…' : issue.title}`),
+                datasets: [{
+                    label: `${scoreTypeName}スコア`,
+                    data: data.map(issue => issue[currentScoreType]),
+                    backgroundColor: 'rgba(2, 132, 199, 0.7)', 
+                    borderColor: 'rgba(2, 132, 199, 1)', 
+                    borderWidth: 1, borderRadius: 4, hoverBackgroundColor: 'rgba(2, 132, 199, 0.9)',
+                }]
+            };
+            const chartOptions = {
+                responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                scales: { x: { beginAtZero: true, grid: { color: 'rgba(203, 213, 225, 0.5)' }, ticks: { color: '#475569' } }, y: { grid: { display: false }, ticks: { color: '#475569', font: { size: 10 } } } },
+                plugins: { legend: { display: false }, tooltip: { backgroundColor: 'rgba(0,0,0,0.7)', titleFont: { size: 14 }, bodyFont: { size: 12 }, callbacks: { label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.x}`, title: (ctx) => data[ctx[0].dataIndex].title } } },
+                onClick: (event, elements) => { if (elements.length > 0) openModal(data[elements[0].index]); }
+            };
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, { type: 'bar', data: chartData, options: chartOptions });
+        }
+
+        function drawBubbleChart(data) {
+            const ctx = document.getElementById('issuesChart').getContext('2d');
+            const scoreTypeName = getScoreTypeName(currentScoreType);
+            const bubbleData = data.map(issue => ({
+                x: issue.economicScale,
+                y: issue[currentScoreType],
+                r: issue[currentScoreType] / 5 + 5, 
+                title: issue.title,
+                category: issue.category,
+                originalData: issue 
+            }));
+
+            const chartData = {
+                datasets: [{
+                    label: `${scoreTypeName} vs 経済規模`,
+                    data: bubbleData,
+                    backgroundColor: bubbleData.map(d => categoryColorMap[d.category] || 'rgba(128,128,128,0.7)'), 
+                    borderColor: bubbleData.map(d => (categoryColorMap[d.category] || 'rgba(128,128,128,1)').replace('0.7', '1')), 
+                }]
+            };
+            const chartOptions = {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    x: { title: { display: true, text: '経済規模（成長性）スコア' }, grid: { color: 'rgba(203, 213, 225, 0.5)' }, ticks: { color: '#475569' } },
+                    y: { title: { display: true, text: `${scoreTypeName}スコア` }, grid: { color: 'rgba(203, 213, 225, 0.5)' }, ticks: { color: '#475569' } }
+                },
+                plugins: {
+                    legend: { display: false }, 
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.7)', titleFont: { size: 14 }, bodyFont: { size: 12 },
+                        callbacks: {
+                            title: (tooltipItems) => tooltipItems[0].raw.title,
+                            label: (tooltipItem) => {
+                                const raw = tooltipItem.raw;
+                                return [
+                                    `カテゴリ: ${raw.category}`,
+                                    `${scoreTypeName}: ${raw.y}`,
+                                    `経済規模: ${raw.x}`,
+                                ];
+                            }
+                        }
+                    }
+                },
+                 onClick: (event, elements) => { if (elements.length > 0) openModal(elements[0].element.$context.raw.originalData); }
+            };
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, { type: 'bubble', data: chartData, options: chartOptions });
+        }
+
+        function drawRadarChart(data) {
+            const ctx = document.getElementById('issuesChart').getContext('2d');
+            const top5Data = [...data].sort((a,b) => b[currentScoreType] - a[currentScoreType]).slice(0, 5);
+
+            const radarLabels = ['国民の関心度', '政治的優先度', '経済的優先度', '社会的優先度'];
+            const datasets = top5Data.map((issue, index) => {
+                const baseColors = [
+                    [2, 132, 199],    
+                    [59, 130, 246],   
+                    [16, 185, 129],   
+                    [139, 92, 246],  
+                    [239, 68, 68]     
+                ];
+                const color = baseColors[index % baseColors.length];
+                return {
+                    label: issue.title.length > 15 ? issue.title.substring(0,14) + "…" : issue.title,
+                    data: [
+                        issue.concernScore,
+                        issue.politicalPriorityScore,
+                        issue.economicPriorityScore,
+                        issue.socialPriorityScore
+                    ],
+                    backgroundColor: `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.4)`,
+                    borderColor: `rgba(${color[0]}, ${color[1]}, ${color[2]}, 1)`,
+                    borderWidth: 1,
+                    pointBackgroundColor: `rgba(${color[0]}, ${color[1]}, ${color[2]}, 1)`
+                };
+            });
+
+            const chartData = { labels: radarLabels, datasets: datasets };
+            const chartOptions = {
+                responsive: true, maintainAspectRatio: false,
+                scales: { r: { angleLines: { display: true }, suggestedMin: 0, suggestedMax: 100, pointLabels: { font: {size: 10 } }, grid: { color: 'rgba(203, 213, 225, 0.5)'}, ticks: { backdropColor: 'rgba(255,255,255,0.7)', stepSize:20 } } },
+                plugins: {
+                    legend: { position: 'top', labels: { font: {size: 10} } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.raw}`;
+                            }
+                        }
+                    }
+                }
+            };
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, { type: 'radar', data: chartData, options: chartOptions });
+        }
+
+
+        function updateChart(data) {
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            switch (currentChartType) {
+                case 'bar':
+                    drawBarChart(data);
+                    break;
+                case 'bubble':
+                    drawBubbleChart(data);
+                    break;
+                case 'radar':
+                    drawRadarChart(data); 
+                    break;
+                default:
+                    drawBarChart(data);
+            }
+        }
+        
+        scoreTypeControls.addEventListener('change', (event) => {
+            if (event.target.name === 'scoreType') {
+                currentScoreType = event.target.value;
+                renderContent();
+            }
+        });
+
+        chartTypeControls.addEventListener('change', (event) => {
+            if (event.target.name === 'chartType') {
+                currentChartType = event.target.value;
+                renderContent();
+            }
+        });
+
+        categoryFiltersContainer.addEventListener('click', (event) => {
+            const targetButton = event.target.closest('.filter-btn');
+            if (targetButton && targetButton.dataset.category) {
+                currentFilter = targetButton.dataset.category;
+                renderContent();
+            }
+        });
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCategoryFilters(); // Build category buttons first
+            renderContent(); // Initial render
+            
+            const chartContainer = document.querySelector('.chart-container');
+            // Adjust chart height based on items and chart type, if needed for bar chart
+            if (currentChartType === 'bar') { 
+                if (nationalIssuesData.length > 20) {
+                    const newHeight = 400 + (nationalIssuesData.length - 20) * 20; 
+                    chartContainer.style.height = `${Math.min(newHeight, 800)}px`; 
+                     if (window.innerWidth <= 768) {
+                        chartContainer.style.height = `${Math.min(newHeight, 600)}px`; 
+                    }
+                } else {
+                     chartContainer.style.height = '600px';
+                     if (window.innerWidth <= 768) {
+                        chartContainer.style.height = '500px';
+                     }
+                }
+            } else { // Default height for other charts or fewer items
+                 chartContainer.style.height = '600px';
+                 if (window.innerWidth <= 768) {
+                    chartContainer.style.height = '500px';
+                 }
+            }
+        });
+    </script>
+</body>
+</html>

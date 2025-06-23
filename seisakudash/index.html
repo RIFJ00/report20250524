@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>政府方針ダッシュボード2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Serene Harmony -->
+    <!-- Application Structure Plan: The application is redesigned into a tab-based single-page experience to improve content organization and user navigation. The previous scroll-based structure is replaced with five distinct tabs: 1) ビジョン (Vision), 2) 新しい資本主義 (New Capitalism), 3) 地方創生2.0 (Regional Revitalization 2.0), 4) デジタル社会 (Digital Society), 5) 重点政策 (Priority Policies), and 6) 詳細レポート (Detailed Report). This tabbed architecture allows users to directly access specific policy areas without extensive scrolling, making information discovery more efficient. Each tab reveals the relevant content, including interactive charts and lists. The final tab provides the full, in-depth text report, offering a comprehensive resource for users who wish to delve deeper. This structure logically separates high-level overviews from detailed analysis, catering to different user needs within a unified interface. -->
+    <!-- Visualization & Content Choices: The visualization choices remain consistent with the previous version, utilizing Chart.js for dynamic charts (Line for wage trends, Doughnut for investment allocation, Bar for DX progress) and interactive HTML lists for policy exploration. The primary change is the containment of these elements within tab panels. Goal: Improve navigation -> Method: A tabbed interface (HTML/CSS/JS) to logically segment policy areas. Goal: Provide deep-dive content -> Method: A dedicated "Detailed Report" tab containing the full analytical text, converted from Markdown to styled HTML for readability. This maintains the interactive, data-driven approach while adding a layer of structured, in-depth textual analysis, all without using SVG or Mermaid.js. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #1e293b; /* slate-800 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+        .tab-link {
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        .tab-link.active, .tab-link:hover {
+            border-bottom-color: #2563eb; /* blue-600 */
+            color: #1d4ed8; /* blue-700 */
+        }
+        .tab-panel {
+            display: none;
+        }
+        .tab-panel.active {
+            display: block;
+        }
+        .kpi-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .policy-item {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .policy-item:hover {
+            background-color: #f1f5f9; /* slate-100 */
+        }
+        .report-content h1, .tab-panel h1.main-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #cbd5e1;
+        }
+        .report-content h2, .tab-panel h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            margin-top: 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+        }
+        .report-content h3, .tab-panel h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        .report-content h4, .tab-panel h4 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            margin-top: 1.25rem;
+        }
+         .report-content p, .report-content li, .tab-panel .intro-text {
+            margin-bottom: 1rem;
+            line-height: 1.75;
+            text-align: left;
+        }
+        .report-content ul, .tab-panel ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+         .report-content li, .tab-panel li {
+            margin-bottom: 0.5rem;
+         }
+        .report-content table, .tab-panel table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        .report-content th, .report-content td, .tab-panel th, .tab-panel td {
+            border: 1px solid #d1d5db;
+            padding: 0.75rem;
+            text-align: left;
+            vertical-align: top;
+        }
+        .report-content th, .tab-panel th {
+            background-color: #f3f4f6;
+        }
+        .report-content strong, .tab-panel strong {
+            font-weight: 700;
+        }
+        .policy-role-table {
+            table-layout: fixed;
+            width: 100%;
+        }
+        .report-content a {
+            color: #2563eb; /* blue-600 */
+            text-decoration: underline;
+        }
+        .report-content a:hover {
+            color: #1d4ed8; /* blue-700 */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-3xl font-bold text-slate-800">政府方針ダッシュボード2025</h1>
+            </div>
+            <div class="border-b border-slate-200">
+                <nav class="-mb-px flex space-x-6 overflow-x-auto" aria-label="Tabs">
+                    <button class="tab-link active whitespace-nowrap py-4 px-1 text-sm font-medium" data-target="vision">政策ビジョン</button>
+                    <button class="tab-link whitespace-nowrap py-4 px-1 text-sm font-medium" data-target="kotsubuto">骨太の方針</button>
+                    <button class="tab-link whitespace-nowrap py-4 px-1 text-sm font-medium" data-target="capitalism">新しい資本主義</button>
+                    <button class="tab-link whitespace-nowrap py-4 px-1 text-sm font-medium" data-target="regional">地方創生2.0</button>
+                    <button class="tab-link whitespace-nowrap py-4 px-1 text-sm font-medium" data-target="dx">デジタル社会</button>
+                    <button class="tab-link whitespace-nowrap py-4 px-1 text-sm font-medium" data-target="reform">規制改革</button>
+                    <button class="tab-link whitespace-nowrap py-4 px-1 text-sm font-medium" data-target="ranking">重点政策</button>
+                    <button class="tab-link whitespace-nowrap py-4 px-1 text-sm font-medium" data-target="report">詳細レポート</button>
+                    <button class="tab-link whitespace-nowrap py-4 px-1 text-sm font-medium" data-target="audio">音声概要</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div id="tab-content">
+            <div id="vision" class="tab-panel active">
+                <section>
+                    <h2 class="text-3xl md:text-5xl font-bold text-blue-600 mb-4 text-center">「今日より明日はよくなる」と実感できる社会へ</h2>
+                    <div class="intro-text">
+                        <p class="text-base md:text-lg text-slate-600 mb-8">
+                            本ダッシュボードは、日本政府が決定し推進する主要政策の全体像を、一つの画面で俯瞰できるように構成したものである。その司令塔となる「<a href="https://www5.cao.go.jp/keizai-shimon/kaigi/cabinet/honebuto/2025/2025_basicpolicies_ja.pdf" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">経済財政運営と改革の基本方針（骨太の方針）</a>」を筆頭に、「<a href="https://www.cas.go.jp/jp/seisaku/atarashii_sihonsyugi/pdf/ap2025.pdf" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">新しい資本主義実行計画</a>」「<a href="https://www.cas.go.jp/jp/seisaku/atarashii_chihousousei/pdf/20250613_honbun.pdf" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">地方創生2.0基本構想</a>」「<a href="https://www.cas.go.jp/jp/seisaku/digital_gyozaikaikaku/index.html" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">デジタル行財政改革</a>」といった複数の重要方針を網羅的に整理している。30年続いたデフレ経済から完全に脱却し、賃上げと投資が牽引する成長型経済への移行を目指すという政府の強固な意志と、各政策がどのように連携し、日本の未来を形作っていくのかを、具体的な目標数値と共に示すものである。
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-7xl mx-auto">
+                        <div class="kpi-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-500">
+                            <h3 class="text-lg font-semibold text-slate-500">実質賃金上昇ノルム</h3>
+                            <p class="text-4xl font-bold text-green-600 mt-2">年1<span class="text-2xl">%</span>程度</p>
+                            <p class="text-xs text-slate-400 mt-2">2029年度までの5年間で定着目標</p>
+                        </div>
+                        <div class="kpi-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-blue-500">
+                            <h3 class="text-lg font-semibold text-slate-500">国内投資目標</h3>
+                            <p class="text-4xl font-bold text-blue-600 mt-2">200<span class="text-2xl">兆円</span></p>
+                            <p class="text-xs text-slate-400 mt-2">2040年度目標</p>
+                        </div>
+                        <div class="kpi-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-orange-500">
+                            <h3 class="text-lg font-semibold text-slate-500">名目GDP目標</h3>
+                            <p class="text-4xl font-bold text-orange-600 mt-2">1,000<span class="text-2xl">兆円</span></p>
+                            <p class="text-xs text-slate-400 mt-2">2040年頃の視野</p>
+                        </div>
+                        <div class="kpi-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-purple-500">
+                            <h3 class="text-lg font-semibold text-slate-500">スタートアップ投資額</h3>
+                            <p class="text-4xl font-bold text-purple-600 mt-2">10<span class="text-2xl">兆円</span></p>
+                            <p class="text-xs text-slate-400 mt-2">2027年度目標</p>
+                        </div>
+                         <div class="kpi-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-pink-500">
+                            <h3 class="text-lg font-semibold text-slate-500">訪日客消費額</h3>
+                            <p class="text-4xl font-bold text-pink-600 mt-2">15<span class="text-2xl">兆円</span></p>
+                            <p class="text-xs text-slate-400 mt-2">2030年目標</p>
+                        </div>
+                        <div class="kpi-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-teal-500">
+                            <h3 class="text-lg font-semibold text-slate-500">地方への若者移住</h3>
+                            <p class="text-4xl font-bold text-teal-600 mt-2">倍増</p>
+                            <p class="text-xs text-slate-400 mt-2">10年後の目標</p>
+                        </div>
+                        <div class="kpi-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-cyan-500">
+                            <h3 class="text-lg font-semibold text-slate-500">関係人口の創出</h3>
+                            <p class="text-4xl font-bold text-cyan-600 mt-2">1,000<span class="text-2xl">万人</span></p>
+                            <p class="text-xs text-slate-400 mt-2">実人数目標</p>
+                        </div>
+                        <div class="kpi-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-lime-500">
+                            <h3 class="text-lg font-semibold text-slate-500">農林水産物輸出等</h3>
+                            <p class="text-4xl font-bold text-lime-600 mt-2">3<span class="text-2xl">倍</span></p>
+                            <p class="text-xs text-slate-400 mt-2">2030年目標（輸出・食関連消費）</p>
+                        </div>
+                        <div class="kpi-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-amber-500">
+                            <h3 class="text-lg font-semibold text-slate-500">最低賃金</h3>
+                            <p class="text-4xl font-bold text-amber-600 mt-2">1,500<span class="text-2xl">円</span></p>
+                            <p class="text-xs text-slate-400 mt-2">2020年代に全国平均で</p>
+                        </div>
+                        <div class="kpi-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-red-500">
+                            <h3 class="text-lg font-semibold text-slate-500">防災・減災</h3>
+                            <p class="text-4xl font-bold text-red-600 mt-2">防災庁</p>
+                            <p class="text-xs text-slate-400 mt-2">2026年度中の設置目標</p>
+                        </div>
+                         <div class="kpi-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-rose-500">
+                            <h3 class="text-lg font-semibold text-slate-500">コンテンツ海外市場</h3>
+                            <p class="text-4xl font-bold text-rose-600 mt-2">20<span class="text-2xl">兆円</span></p>
+                            <p class="text-xs text-slate-400 mt-2">2033年目標</p>
+                        </div>
+                         <div class="kpi-card bg-white p-6 rounded-xl shadow-lg border-t-4 border-fuchsia-500">
+                            <h3 class="text-lg font-semibold text-slate-500">教育DX</h3>
+                            <p class="text-4xl font-bold text-fuchsia-600 mt-2">100<span class="text-2xl">%</span></p>
+                            <p class="text-xs text-slate-400 mt-2">次世代校務DX 2029年度導入目標</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-16 text-left max-w-6xl mx-auto">
+                        <h2 class="text-2xl font-bold text-center mb-6">主要戦略文書の連携と役割分担</h2>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white policy-role-table">
+                                <thead class="bg-slate-100">
+                                    <tr>
+                                        <th class="p-4 text-left font-semibold text-slate-700">戦略の柱 / 関連方針</th>
+                                        <th class="p-4 text-center font-semibold text-slate-700">骨太の方針</th>
+                                        <th class="p-4 text-center font-semibold text-slate-700">新しい資本主義</th>
+                                        <th class="p-4 text-center font-semibold text-slate-700">地方創生2.0</th>
+                                        <th class="p-4 text-center font-semibold text-slate-700">デジタル・データ戦略</th>
+                                        <th class="p-4 text-center font-semibold text-slate-700">規制改革</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b">
+                                        <td class="p-4 font-medium">司令塔・全体統括</td>
+                                        <td class="p-4 text-center text-2xl text-blue-600">●</td>
+                                        <td class="p-4 text-center">○</td>
+                                        <td class="p-4 text-center">○</td>
+                                        <td class="p-4 text-center">○</td>
+                                        <td class="p-4 text-center">○</td>
+                                    </tr>
+                                    <tr class="border-b bg-slate-50">
+                                        <td class="p-4 font-medium">賃上げ・労働市場改革</td>
+                                        <td class="p-4 text-center">✔</td>
+                                        <td class="p-4 text-center">✔</td>
+                                        <td class="p-4 text-center">△</td>
+                                        <td class="p-4 text-center"></td>
+                                        <td class="p-4 text-center">✔</td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="p-4 font-medium">投資促進（GX, DX, スタートアップ）</td>
+                                        <td class="p-4 text-center">✔</td>
+                                        <td class="p-4 text-center">✔</td>
+                                        <td class="p-4 text-center">△</td>
+                                        <td class="p-4 text-center">✔</td>
+                                        <td class="p-4 text-center">✔</td>
+                                    </tr>
+                                    <tr class="border-b bg-slate-50">
+                                        <td class="p-4 font-medium">地域経済活性化・インフラ整備</td>
+                                        <td class="p-4 text-center">✔</td>
+                                        <td class="p-4 text-center">△</td>
+                                        <td class="p-4 text-center">✔</td>
+                                        <td class="p-4 text-center">✔</td>
+                                        <td class="p-4 text-center">✔</td>
+                                    </tr>
+                                    <tr class="border-b">
+                                        <td class="p-4 font-medium">デジタル基盤・データ利活用</td>
+                                        <td class="p-4 text-center">✔</td>
+                                        <td class="p-4 text-center">✔</td>
+                                        <td class="p-4 text-center">✔</td>
+                                        <td class="p-4 text-center">✔</td>
+                                        <td class="p-4 text-center">△</td>
+                                    </tr>
+                                    <tr class="bg-slate-50">
+                                        <td class="p-4 font-medium">国民生活・社会保障</td>
+                                        <td class="p-4 text-center">✔</td>
+                                        <td class="p-4 text-center">△</td>
+                                        <td class="p-4 text-center">✔</td>
+                                        <td class="p-4 text-center">✔</td>
+                                        <td class="p-4 text-center">✔</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="text-xs text-slate-500">
+                                    <tr>
+                                        <td colspan="6" class="p-2">●: 中核的役割, ○: 全体調整, ✔: 主要な役割, △: 関連・支援的役割</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+
+            <div id="kotsubuto" class="tab-panel">
+                <section class="py-8 bg-white p-6 md:p-10 rounded-lg shadow-sm">
+                    <div class="max-w-4xl mx-auto report-content">
+                        <h1>骨太の方針 2025：全体像と主要戦略</h1>
+                         <p class="intro-text">「経済財政運営と改革の基本方針2025」（骨太の方針）は、日本経済の羅針盤となる最重要文書である。本方針は、30年続いたデフレ経済から完全に脱却し、「賃上げを起点とした成長型経済」への歴史的転換を目指すための包括的な戦略を示している。以下に、その構造と核心的な要素を図表で解説する。</p>
+
+                        <h3>骨太の方針2025の基本構造</h3>
+                        <div class="border-2 border-slate-300 rounded-lg p-6 my-6 bg-slate-50">
+                            <div class="text-center mb-4">
+                                <h4 class="font-bold text-lg bg-blue-600 text-white py-2 px-4 rounded-lg inline-block">骨太の方針2025：司令塔</h4>
+                                <p class="text-sm text-slate-600 mt-1">「今日より明日はよくなる」と実感できる社会へ</p>
+                            </div>
+                            <div class="grid md:grid-cols-3 gap-4 text-center">
+                                <div>
+                                    <div class="font-semibold p-3 bg-blue-100 rounded-md">マクロ経済運営</div>
+                                    <div class="text-sm text-slate-500 p-2">物価高対策、リスク対応</div>
+                                </div>
+                                <div>
+                                    <div class="font-semibold p-3 bg-green-100 rounded-md">成長型経済の実現</div>
+                                     <div class="text-sm text-slate-500 p-2">賃上げ・地方創生・投資</div>
+                                </div>
+                                <div>
+                                    <div class="font-semibold p-3 bg-orange-100 rounded-md">中長期的な持続可能性</div>
+                                     <div class="text-sm text-slate-500 p-2">財政健全化・社会保障</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3>成長戦略の三本柱</h3>
+                        <p>成長型経済の実現に向け、本方針は「賃上げ」「地方創生」「投資立国」を三本柱として位置づけ、それぞれに具体的な目標と施策を掲げている。</p>
+                        <div class="grid md:grid-cols-3 gap-6 my-6">
+                            <div class="border border-green-300 bg-green-50 rounded-lg p-4">
+                                <h4 class="font-bold text-green-800 text-center text-lg mb-2">① 賃上げ</h4>
+                                <ul class="list-none p-0 text-sm space-y-2">
+                                    <li class="flex items-start"><span class="text-green-600 mr-2">▶</span><span>実質賃金1%上昇のノルム化</span></li>
+                                    <li class="flex items-start"><span class="text-green-600 mr-2">▶</span><span>中小企業の価格転嫁支援</span></li>
+                                    <li class="flex items-start"><span class="text-green-600 mr-2">▶</span><span>三位一体の労働市場改革</span></li>
+                                </ul>
+                            </div>
+                            <div class="border border-teal-300 bg-teal-50 rounded-lg p-4">
+                                <h4 class="font-bold text-teal-800 text-center text-lg mb-2">② 地方創生2.0</h4>
+                                 <ul class="list-none p-0 text-sm space-y-2">
+                                    <li class="flex items-start"><span class="text-teal-600 mr-2">▶</span><span>令和の日本列島改造</span></li>
+                                    <li class="flex items-start"><span class="text-teal-600 mr-2">▶</span><span>関係人口1000万人創出</span></li>
+                                    <li class="flex items-start"><span class="text-teal-600 mr-2">▶</span><span>ワット・ビット連携</span></li>
+                                </ul>
+                            </div>
+                            <div class="border border-indigo-300 bg-indigo-50 rounded-lg p-4">
+                                <h4 class="font-bold text-indigo-800 text-center text-lg mb-2">③ 投資立国</h4>
+                                <ul class="list-none p-0 text-sm space-y-2">
+                                    <li class="flex items-start"><span class="text-indigo-600 mr-2">▶</span><span>GX（150兆円超）</span></li>
+                                    <li class="flex items-start"><span class="text-indigo-600 mr-2">▶</span><span>DX（AI・半導体等）</span></li>
+                                    <li class="flex items-start"><span class="text-indigo-600 mr-2">▶</span><span>スタートアップ支援</span></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h3>経済成長と財政健全化のバランス</h3>
+                        <p>本方針は、経済成長を最優先しつつも、財政健全化の目標を堅持する「二兎を追う」戦略である。「経済・財政新生計画」の下で、歳出・歳入両面の改革を継続し、難しいバランスの実現を目指す。</p>
+                         <div class="flex items-center justify-center my-6 flex-col">
+                             <div class="flex w-full max-w-lg justify-between items-end px-4">
+                                 <div class="text-center p-3 bg-green-100 rounded-lg">
+                                     <p class="font-bold">経済成長</p>
+                                     <p class="text-xs">（投資拡大）</p>
+                                 </div>
+                                 <div class="text-center p-3 bg-orange-100 rounded-lg">
+                                     <p class="font-bold">財政健全化</p>
+                                     <p class="text-xs">（PB黒字化目標）</p>
+                                 </div>
+                             </div>
+                             <div class="w-full max-w-lg h-2 bg-slate-400 rounded-full"></div>
+                             <div class="w-8 h-8 bg-slate-600" style="clip-path: polygon(50% 0%, 0% 100%, 100% 100%);"></div>
+                             <div class="text-center mt-2 p-2 bg-slate-200 rounded-md text-sm font-semibold">経済・財政新生計画</div>
+                         </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="capitalism" class="tab-panel">
+                 <section class="py-8 bg-white rounded-2xl shadow-sm">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="text-left">
+                            <h2 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl text-center">新しい資本主義：成長と分配の好循環</h2>
+                            <p class="mt-4 text-lg text-slate-600 intro-text">このセクションでは、「新しい資本主義」構想の核心である賃上げと投資促進の戦略を解説する。「賃上げこそ成長戦略の要」との考えの下、官民が連携して賃上げと投資を促進し、デフレマインドから完全に脱却した持続的な成長軌道を目指すための具体的な目標や施策を、複数の図表で多角的に示すものである。</p>
+                        </div>
+                        <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">賃上げの実現と定着</h3>
+                                <p class="text-slate-600 text-sm mb-4">物価上昇を上回る賃上げを社会全体の「ノルム（社会通念）」として定着させることを目指す。下のグラフは、過去の実績と将来の目標値を示すものである。</p>
+                                <div class="chart-container">
+                                    <canvas id="wageChart"></canvas>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">価格転嫁の実現</h3>
+                                <p class="text-slate-600 text-sm mb-4">中小企業の賃上げ原資確保に不可欠な、コスト上昇分の価格転嫁の状況を示す。政府は、この比率の向上を強力に推進している。</p>
+                                <div class="chart-container">
+                                    <canvas id="pricePassThroughChart"></canvas>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">「投資立国」の実現</h3>
+                                <p class="text-slate-600 text-sm mb-4">GX、DX、スタートアップといった成長分野への国内投資を大胆に推進する。グラフは、官民連携で目指す投資の内訳を示す。</p>
+                                <div class="chart-container">
+                                    <canvas id="investmentChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 p-6 rounded-lg flex flex-col">
+                                <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">三位一体の労働市場改革</h3>
+                                <p class="text-slate-600 text-sm mb-4">構造的な賃上げと生産性向上を実現するため、「リ・スキリング」「ジョブ型人事」「労働移動の円滑化」を一体的に推進する。</p>
+                                <div class="flex-grow flex flex-col items-center justify-center">
+                                    <div class="w-full text-center">
+                                        <div class="p-3 bg-blue-100 text-blue-800 rounded-lg shadow-sm">
+                                            <h4 class="font-bold">リ・スキリングによる人への投資</h4>
+                                            <p class="text-xs">（デジタル人材育成、学び直し支援）</p>
+                                        </div>
+                                        <div class="flex justify-center my-2">
+                                            <span class="text-2xl text-slate-400">↓</span>
+                                            <span class="text-2xl text-slate-400 mx-8">↓</span>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div class="p-3 bg-indigo-100 text-indigo-800 rounded-lg shadow-sm">
+                                                <h4 class="font-bold">ジョブ型人事</h4>
+                                                <p class="text-xs">（職務給への移行）</p>
+                                            </div>
+                                            <div class="p-3 bg-purple-100 text-purple-800 rounded-lg shadow-sm">
+                                                <h4 class="font-bold">労働移動の円滑化</h4>
+                                                <p class="text-xs">（転職支援、税制見直し）</p>
+                                            </div>
+                                        </div>
+                                         <div class="flex justify-center mt-2">
+                                            <span class="text-2xl text-slate-400 transform -rotate-45">↳</span>
+                                            <span class="text-2xl text-slate-400 transform rotate-45 ml-16">↲</span>
+                                        </div>
+                                        <div class="mt-1 p-4 bg-green-100 text-green-800 rounded-lg shadow-md">
+                                            <h4 class="font-bold text-lg">構造的賃上げの実現</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <div id="regional" class="tab-panel">
+                <section class="py-8">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="text-left">
+                            <h2 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl text-center">地方創生2.0：令和の日本列島改造</h2>
+                            <p class="mt-4 text-lg text-slate-600 intro-text">ここでは、人口減少時代に対応するための新たな国家戦略「地方創生2.0」を掘り下げる。各地域が独自の魅力と「稼ぐ力」を持つ「強く、豊かで、新しい・楽しい」地方を創出するための主要目標と、それを支える「5つの柱」をインタラクティブに確認できる。</p>
+                        </div>
+                        <div class="mt-12 grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+                            <div class="lg:col-span-2">
+                                <h3 class="text-xl font-bold text-slate-800 mb-4">主要目標</h3>
+                                <div class="space-y-4">
+                                    <div class="kpi-card bg-white p-4 rounded-lg shadow">
+                                        <p class="font-semibold">東京圏から地方への若者の流れ</p>
+                                        <p class="text-2xl font-bold text-blue-600">倍増</p>
+                                    </div>
+                                    <div class="kpi-card bg-white p-4 rounded-lg shadow">
+                                        <p class="font-semibold">関係人口の創出</p>
+                                        <p class="text-2xl font-bold text-blue-600">1,000万人</p>
+                                        <p class="text-xs text-slate-500">（実人数目標）</p>
+                                    </div>
+                                    <div class="kpi-card bg-white p-4 rounded-lg shadow">
+                                        <p class="font-semibold">農林水産物輸出・食関連消費</p>
+                                        <p class="text-2xl font-bold text-blue-600">3倍</p>
+                                        <p class="text-xs text-slate-500">（2030年目標）</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="lg:col-span-3">
+                                <h3 class="text-xl font-bold text-slate-800 mb-4">地方創生2.0を支える「5つの柱」</h3>
+                                <p class="text-sm text-slate-600 mb-6">以下の5つの柱を統合的に推進し、地域の潜在能力を最大限に引き出す。各項目をクリックして詳細を確認できる。</p>
+                                <div id="pillars-container" class="space-y-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="dx" class="tab-panel">
+                <section class="py-8 bg-white rounded-2xl shadow-sm">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="text-left">
+                            <h2 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl text-center">デジタル社会への変革</h2>
+                            <p class="mt-4 text-lg text-slate-600 intro-text">このセクションでは、AIとデータを社会の隅々まで実装し、行政・教育・医療等のサービスを抜本的に改革する「デジタル社会」への移行戦略を探る。行政手続きの効率化から、データ駆動社会の実現まで、主要な改革のロードマップと概念図を視覚的に理解できる。</p>
+                        </div>
+                        <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">データ駆動社会のサイクル</h3>
+                                <div class="bg-slate-50 p-6 rounded-lg h-full flex items-center justify-center">
+                                    <p class="text-slate-600 text-sm">質の高いデータがAIの性能を向上させ、高性能のAIが社会の様々な場面で活用されることで、さらに質の高いデータが生み出されるという好循環を目指す。</p>
+                                </div>
+                            </div>
+                             <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">デジタル公共インフラ</h3>
+                                <div class="bg-slate-50 p-6 rounded-lg h-full flex items-center justify-center">
+                                    <p class="text-slate-600 text-sm">マイナンバーカードを基盤に、GビズID（法人認証）、jGrants（補助金申請）などを連携させ、安全で効率的なデジタルサービスを提供する共通基盤を構築する。</p>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">デジタル行財政改革のロードマップ</h3>
+                                <p class="text-sm text-slate-600 mb-6">「作るより使う」を基本に、国と地方のシステムを標準化・共通化。国民や事業者の利便性を飛躍的に向上させるための主要なマイルストーンを示す。</p>
+                                <ul class="space-y-4">
+                                    <li class="flex items-start">
+                                        <span class="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 text-green-800 flex items-center justify-center font-bold text-sm">✓</span>
+                                        <p class="ml-3 text-slate-700"><strong>2025年度末：</strong>自治体基幹20業務システムを原則ガバメントクラウドへ移行完了</p>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <span class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-sm">→</span>
+                                        <p class="ml-3 text-slate-700"><strong>2026年3月：</strong>法人ベース・レジストリ（登記所、法務局等）の提供開始</p>
+                                    </li>
+                                     <li class="flex items-start">
+                                        <span class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 text-blue-800 flex items-center justify-center font-bold text-sm">→</span>
+                                        <p class="ml-3 text-slate-700"><strong>2026年夏：</strong>分野横断データ連携を支えるトラスト基盤のフレームワーク整備</p>
+                                    </li>
+                                     <li class="flex items-start">
+                                        <span class="flex-shrink-0 h-6 w-6 rounded-full bg-orange-100 text-orange-800 flex items-center justify-center font-bold text-sm">→</span>
+                                        <p class="ml-3 text-slate-700"><strong>2029年度：</strong>次世代校務DX環境の全自治体での導入完了</p>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">教育DX：「学ぶ」の未来</h3>
+                                <p class="text-sm text-slate-600 mb-6">GIGAスクール構想を深化させ、データとデジタル技術で「誰もが、自分らしく学べる社会」を実現する。グラフは、主要な取り組みの現状と目標達成度を示す。</p>
+                                 <div class="chart-container" style="height: 300px;">
+                                    <canvas id="educationDxChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="reform" class="tab-panel">
+                <section class="py-8">
+                    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="text-left">
+                            <h2 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl text-center">規制改革の推進</h2>
+                             <p class="mt-4 text-lg text-slate-600 intro-text">ここでは、経済社会の構造改革を制度面から下支えする「規制改革実施計画」の主要な内容を紹介する。新たな技術の社会実装や、国民生活の利便性向上を目的とした規制の見直しが、4つの柱に沿って進められる。各項目をクリックすると、具体的な改革事例が表示される。</p>
+                        </div>
+                        <div id="reform-pillars-container" class="mt-12 max-w-4xl mx-auto space-y-4"></div>
+
+                        <div class="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">ライドシェアの推進</h3>
+                                <div class="grid grid-cols-2 gap-4 items-center">
+                                    <div class="p-4 bg-red-100 rounded-lg text-center">
+                                        <p class="font-semibold text-red-700">改革前</p>
+                                        <p class="mt-2 text-sm">・タクシーが不足する地域・時間帯が限定</p>
+                                        <p class="text-sm">・ドライバー不足</p>
+                                    </div>
+                                    <div class="text-5xl text-center text-slate-400">→</div>
+                                    <div class="p-4 bg-green-100 rounded-lg text-center col-span-2">
+                                        <p class="font-semibold text-green-700">改革後</p>
+                                        <p class="mt-2 text-sm">対象地域・時間帯を拡大し、地方の足を確保</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">オンライン診療の推進</h3>
+                                <div class="grid grid-cols-2 gap-4 items-center">
+                                    <div class="p-4 bg-red-100 rounded-lg text-center">
+                                        <p class="font-semibold text-red-700">改革前</p>
+                                        <p class="mt-2 text-sm">・初診は原則対面</p>
+                                        <p class="text-sm">・利用できる疾患が限定的</p>
+                                    </div>
+                                    <div class="text-5xl text-center text-slate-400">→</div>
+                                    <div class="p-4 bg-green-100 rounded-lg text-center col-span-2">
+                                        <p class="font-semibold text-green-700">改革後</p>
+                                        <p class="mt-2 text-sm">初診からのオンライン診療を推進し、医療アクセスを向上</p>
+                                    </div>
+                                </div>
+                            </div>
+                             <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">ドローン物流の実現</h3>
+                                <div class="grid grid-cols-2 gap-4 items-center">
+                                    <div class="p-4 bg-red-100 rounded-lg text-center">
+                                        <p class="font-semibold text-red-700">改革前</p>
+                                        <p class="mt-2 text-sm">・レベル4飛行（有人地帯での目視外飛行）は制度化されず</p>
+                                        <p class="text-sm">・物流利用は限定的</p>
+                                    </div>
+                                    <div class="text-5xl text-center text-slate-400">→</div>
+                                    <div class="p-4 bg-green-100 rounded-lg text-center col-span-2">
+                                        <p class="font-semibold text-green-700">改革後</p>
+                                        <p class="mt-2 text-sm">レベル4飛行を可能にする制度を整備し、過疎地や離島への物資輸送を本格化</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">政府調達(ISMAP)の見直し</h3>
+                                <div class="grid grid-cols-2 gap-4 items-center">
+                                    <div class="p-4 bg-red-100 rounded-lg text-center">
+                                        <p class="font-semibold text-red-700">改革前</p>
+                                        <p class="mt-2 text-sm">・登録への負担が大きくスタートアップの参入が困難</p>
+                                    </div>
+                                    <div class="text-5xl text-center text-slate-400">→</div>
+                                    <div class="p-4 bg-green-100 rounded-lg text-center col-span-2">
+                                        <p class="font-semibold text-green-700">改革後</p>
+                                        <p class="mt-2 text-sm">制度を見直し、スタートアップの参入を促進。イノベーションを公共調達に活用</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div id="ranking" class="tab-panel">
+                 <section class="py-8">
+                     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div class="text-left">
+                            <h2 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl text-center">政府重点政策 TOP40</h2>
+                            <p class="mt-4 text-lg text-slate-600 intro-text">ここでは、政府全体の戦略的重要性や国民生活への影響度などを基に選定した40の重点政策を、インタラクティブなリストで提供する。キーワードでの検索や、重要度による並べ替えが可能である。各項目をクリックすると、政策の概要と潜在的な課題が表示される。</p>
+                        </div>
+                        <div class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
+                            <div class="relative w-full sm:w-auto">
+                                <input type="text" id="policy-search" placeholder="キーワードで検索..." class="w-full sm:w-64 pl-4 pr-10 py-2 border border-gray-300 rounded-full focus:ring-blue-500 focus:border-blue-500">
+                                <span class="absolute inset-y-0 right-0 flex items-center pr-3">
+                                    <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+                                    </svg>
+                                </span>
+                            </div>
+                            <div class="flex items-center space-x-2 text-sm">
+                                <label for="sort-by" class="font-medium text-slate-700">並び順:</label>
+                                <select id="sort-by" class="border border-gray-300 rounded-full py-2 px-3 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="rank">推奨順</option>
+                                    <option value="analytical">分析的重要度順</option>
+                                    <option value="public">世論的重要度順</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="policy-list" class="bg-white rounded-lg shadow overflow-hidden">
+                        </div>
+                     </div>
+                </section>
+            </div>
+            
+            <div id="report" class="tab-panel">
+                <section class="py-8 bg-white p-6 md:p-10 rounded-lg shadow-sm">
+                    <div id="full-report-content" class="max-w-4xl mx-auto report-content">
+                        <!-- Full report content will be injected here by JS -->
+                    </div>
+                </section>
+            </div>
+
+            <div id="audio" class="tab-panel">
+                <section class="py-8 bg-white p-6 md:p-10 rounded-lg shadow-sm">
+                    <div class="max-w-4xl mx-auto report-content">
+                        <h2 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl text-center">音声による概要解説</h2>
+                        <p class="mt-4 text-lg text-slate-600 intro-text">
+                            主要政策のポイントを、ポッドキャスト風に分かりやすく解説。
+                        </p>
+                        <div class="mt-8 flex justify-center">
+                            <audio controls class="w-full max-w-lg rounded-lg shadow-lg">
+                                <source src="https://www.rifj.jp/wp/wp-content/uploads/2025/06/2025年日本大変革：賃上げ起点の成長戦略、DXと地方創生で未来を拓くか？.mp3" type="audio/mpeg">
+                                お使いのブラウザは音声の再生に対応していません。
+                            </audio>
+                        </div>
+                         <div class="mt-6 text-center text-sm text-slate-500">
+                            <p>音声ファイルが再生されない場合は、<a href="https://www.rifj.jp/wp/wp-content/uploads/2025/06/2025年日本大変革：賃上げ起点の成長戦略、DXと地方創生で未来を拓くか？.mp3" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">こちらをクリックして直接ダウンロード</a>してお聞きください。</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="bg-slate-800 text-white">
+        <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-sm text-slate-300">本ダッシュボードは、2025年6月13日時点で公表された政府資料に基づき、一般社団法人日本みらい研が作成。</p>
+<p class="text-xs text-slate-400 mt-2">このダッシュボードは政策の理解を助けるための視覚化ツールであり、公式文書ではない。</p>
+        </div>
+    </footer>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const tabs = document.querySelectorAll('.tab-link');
+    const panels = document.querySelectorAll('.tab-panel');
+
+    const chartInitializers = new Map();
+
+    const initWageChart = () => {
+        const ctx = document.getElementById('wageChart')?.getContext('2d');
+        if (!ctx || ctx.chart) return;
+        ctx.chart = new Chart(ctx, {
+            type: 'line', data: { labels: ['2021', '2022', '2023', '2024(見込)', '2025(目標)', '2026(目標)', '2027(目標)'], datasets: [{ label: '実質賃金上昇率 (%)', data: [-0.7, -0.8, -2.5, 0.5, 1, 1, 1], borderColor: '#22c55e', backgroundColor: 'rgba(34, 197, 94, 0.1)', fill: true, tension: 0.3 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: false }, legend: { display: false } }, scales: { y: { beginAtZero: false, ticks: { callback: (v) => v + '%' } } } }
+        });
+    };
+
+    const initInvestmentChart = () => {
+        const ctx = document.getElementById('investmentChart')?.getContext('2d');
+        if (!ctx || ctx.chart) return;
+        ctx.chart = new Chart(ctx, {
+            type: 'doughnut', data: { labels: ['GX (グリーン)', 'DX (デジタル)', 'スタートアップ', 'その他成長分野'], datasets: [{ label: '投資分野', data: [150, 50, 10, 40], backgroundColor: ['#10b981', '#3b82f6', '#f97316', '#a855f7'], hoverOffset: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: false }, legend: { position: 'bottom' }, tooltip: { callbacks: { label: (c) => (c.label || '') + ': ' + c.parsed + '兆円超' } } } }
+        });
+    };
+    
+    const initPricePassThroughChart = () => {
+        const ctx = document.getElementById('pricePassThroughChart')?.getContext('2d');
+        if (!ctx || ctx.chart) return;
+        ctx.chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['2022年', '2023年', '2024年', '目標'],
+                datasets: [{
+                    label: '価格転嫁率 (%)',
+                    data: [36.8, 43.5, 47.2, 70],
+                    backgroundColor: ['#9ca3af', '#6b7280', '#4b5563', '#2563eb'],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: false },
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) { return `価格転嫁率: ${context.parsed.y}%`; }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { callback: function(value) { return value + '%'; } }
+                    }
+                }
+            }
+        });
+    };
+
+    const initEducationDxChart = () => {
+        const ctx = document.getElementById('educationDxChart')?.getContext('2d');
+        if (!ctx || ctx.chart) return;
+        ctx.chart = new Chart(ctx, {
+            type: 'bar', data: { labels: ['教員負担軽減', 'ネットワーク整備', 'デジタル教科書活用'], datasets: [{ label: '達成目標', data: [100, 100, 100], backgroundColor: 'rgba(219, 234, 254, 1)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1 }, { label: '現状（推定）', data: [20, 20, 15], backgroundColor: 'rgba(59, 130, 246, 1)' }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom' }, tooltip: { callbacks: { label: (c) => c.datasetIndex === 0 ? ` 目標: ${c.raw}%（${c.label}）` : ` 現状: ${c.raw}%（${['教員業務の12項目デジタル化完了率(推定)','推奨帯域達成校率(24年4月時点)','実践的活用校率(推定)'][c.dataIndex]}）` } } }, scales: { x: { max: 100, ticks: { callback: (v) => v + "%" } } } }
+        });
+    };
+    
+    chartInitializers.set('capitalism', [initWageChart, initInvestmentChart, initPricePassThroughChart]);
+    chartInitializers.set('dx', [initEducationDxChart]);
+
+    const initPillars = () => {
+        const pillars = [
+            { title: '生活環境の創生', detail: '若者や女性に選ばれる魅力的な地域を目指し、働き方改革や質の高いまちづくり（民主導の企業城下町形成など）を推進する。' },
+            { title: '新しい地方経済の創生', detail: '地域の食、文化、観光資源とデジタル技術などを「新結合」させ、高付加価値な産業を創出する「地方イノベーション」を推進する。' },
+            { title: '人や企業の地方分散', detail: '政府関係機関の地方移転や、多様な形で地域と関わる「関係人口」を増やす「ふるさと住民登録制度」で、人の流れを創出する。' },
+            { title: '新時代のインフラと新技術活用', detail: '電力網と通信網を一体整備する「ワット・ビット連携」や、自動運転、ドローンなどを活用し、地方の課題を解決する。' },
+            { title: '広域リージョン連携', detail: '都道府県の枠を超えた広域連携プロジェクトを支援し、ダイナミックな経済圏の形成を促進する。' }
+        ];
+        const container = document.getElementById('pillars-container');
+        if (!container || container.childElementCount > 0) return;
+        pillars.forEach((pillar, index) => {
+            const el = document.createElement('div');
+            el.className = 'bg-white rounded-lg shadow-sm overflow-hidden';
+            el.innerHTML = `<div class="p-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition" onclick="toggleAccordion('pillar', ${index})"><h4 class="font-semibold text-slate-800">${index + 1}. ${pillar.title}</h4><span id="pillar-arrow-${index}" class="transform transition-transform duration-300"><svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></span></div><div id="pillar-detail-${index}" class="px-4 pb-4 text-sm text-slate-600 hidden"><p>${pillar.detail}</p></div>`;
+            container.appendChild(el);
+        });
+    };
+    
+    const initReformDiagram = () => {
+        const reformPillars = [
+            { title: '地方創生', detail: '地域の交通課題解決（ライドシェア推進、自動運転実装加速）、医療アクセス改善（オンライン診療推進）、土地・農業の活性化（ロボット農機公道走行）など。' },
+            { title: '賃金向上・人手不足対応', detail: '多様な働き方の推進（副業・兼業円滑化）、人材流動性の向上（特定技能外国人の柔軟な活用）、各業界のデジタル化（不動産取引のAI活用、建設業の契約書面見直し）など。' },
+            { title: '投資大国', detail: 'GX投資の加速（水素・再エネ関連の規制緩和）、スタートアップ支援（株式対価M&A活性化、ISMAP見直し）、医療データ利活用（仮名加工情報の活用促進）など。' },
+            { title: '防災・減災', detail: '災害時の迅速な対応（公費解体の促進、災害廃棄物処理の円滑化）、新技術の活用（キッチンカーやドローンの活用円滑化）など。' }
+        ];
+        const container = document.getElementById('reform-pillars-container');
+        if (!container || container.childElementCount > 0) return;
+        reformPillars.forEach((pillar, index) => {
+            const el = document.createElement('div');
+            el.className = 'bg-white rounded-lg shadow-sm overflow-hidden';
+            el.innerHTML = `<div class="p-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition" onclick="toggleAccordion('reform-pillar', ${index})"><h4 class="font-semibold text-slate-800">${index + 1}. ${pillar.title}</h4><span id="reform-pillar-arrow-${index}" class="transform transition-transform duration-300"><svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></span></div><div id="reform-pillar-detail-${index}" class="px-4 pb-4 text-sm text-slate-600 hidden"><p>${pillar.detail}</p></div>`;
+            container.appendChild(el);
+        });
+    };
+
+    const initPolicyList = () => {
+        const policies = [
+            { rank: 1, analytical: 98, public: 99, title: '実質賃金年1%上昇ノルムの定着', detail: '持続的な物価上昇下で実質賃金を安定的に向上させ、国民の購買力向上と経済好循環の起点とする。', concern: '高インフレが続くと、名目賃金の上昇が実質賃金のマイナスをカバーしきれず、国民の生活実感は改善しない可能性がある。' },
+            { rank: 2, analytical: 97, public: 95, title: '地方創生2.0の推進', detail: '人口減少下でも持続可能で魅力ある地域を創造し、国全体の活力を向上させる。「令和の日本列島改造」と位置づけ、若者・女性の定着や「稼げる地方」の実現を目指す。', concern: '具体策の実行力不足や地域間格差の拡大が懸念される。都市部住民の関心が低く、国民的ムーブメントになりにくい側面もある。' },
+            { rank: 3, analytical: 96, public: 93, title: 'AIの社会実装とデータ駆動社会の構築', detail: 'AIとデータを活用し生産性向上、新サービス創出、社会課題解決を推進する。国際競争力強化や人手不足対応の鍵となる。', concern: 'データ標準化の遅れや人材不足に加え、個人情報保護やAI倫理に関する国民の懸念を払拭し、社会的な信頼を醸成することが不可欠である。' },
+            { rank: 4, analytical: 95, public: 92, title: 'DXによる生産性向上', detail: 'あらゆる分野でデジタル技術を活用し、業務効率化、新価値創造、競争力強化を実現する。特に中小企業の生産性向上が急務である。', concern: '中小企業におけるDXの取り組みの遅れやデジタル格差が、国全体の生産性向上の足かせとなる「2025年の崖」問題が深刻である。' },
+            { rank: 5, analytical: 94, public: 90, title: 'GXの推進と150兆円投資', detail: '脱炭素化と経済成長の両立を目指す。GX経済移行債などを通じ、再エネ、水素、蓄電池分野等への大規模投資を促す。', concern: '巨額投資の原資となるカーボンプライシングは、エネルギー価格上昇を通じて国民負担増に繋がるため、丁寧な合意形成が必要である。' },
+            { rank: 6, analytical: 93, public: 94, title: '中小企業の価格転嫁実現', detail: 'コスト上昇分を適切に価格に反映させ、中小企業の収益力改善と賃上げ原資を確保する。労務費転嫁指針の徹底などが柱である。', concern: '大企業との交渉力格差や旧来の商慣行が障壁となり、価格転嫁が計画通り進まない可能性がある。' },
+            { rank: 7, analytical: 92, public: 96, title: '少子化対策とこども・若者政策', detail: '「こども未来戦略」に基づき、児童手当拡充や保育サービス強化などを通じて、子育てしやすい社会環境を整備する。', concern: '財源として創設される「子ども・子育て支援金」が実質的な社会保険料の上乗せとなり、賃上げ効果を相殺しかねないとの批判がある。' },
+            { rank: 8, analytical: 91, public: 91, title: '全世代型社会保障の構築', detail: '高齢化に対応し、全ての世代が安心できる持続可能な社会保障制度を構築する。医療・介護DXの推進が鍵となる。', concern: '給付と負担のバランスを巡る世代間の利害対立が激しく、国民的な合意形成は極めて困難である。' },
+            { rank: 9, analytical: 90, public: 93, title: '防災・減災・国土強靱化の推進', detail: '頻発・激甚化する自然災害から国民の生命・財産を守る。2026年度中の「防災庁」設置が明記された。', concern: '対策に必要な巨額の財政負担と、公共事業の担い手である建設業界の人手不足が、計画通りの事業執行を困難にする可能性がある。' },
+            { rank: 10, analytical: 89, public: 88, title: '若者・女性に選ばれる魅力的な地方づくり', detail: '働き方改革やアンコンシャス・バイアスの解消などを通じ、若者や女性の地方定着・環流を促進する。', concern: '都市部との魅力格差や、保守的な地域文化の変革は容易ではなく、雇用のミスマッチ解消も大きな課題である。' },
+            { rank: 11, analytical: 88, public: 85, title: 'スタートアップ育成と10兆円投資目標', detail: '新産業創出とイノベーション加速のため、2027年度にスタートアップへの投資額を10兆円規模に拡大することを目指す。', concern: '世界的な金融引き締めの影響もあり、目標達成のハードルは非常に高い。リスクマネー供給不足が深刻な課題である。' },
+            { rank: 12, analytical: 87, public: 86, title: '三位一体の労働市場改革', detail: 'リスキリング、ジョブ型人事、労働移動円滑化により、構造的賃上げと生産性向上を実現する。', concern: '日本的雇用慣行との整合性が課題。特にジョブ型人事への移行は、従業員の抵抗感が強く、慎重な制度設計が求められる。' },
+            { rank: 13, analytical: 86, public: 87, title: '教育DXロードマップの実現', detail: 'デジタル技術を活用し、個別最適化された学びと協働的な学びを実現する。教員負担軽減も目指す。', concern: '地域・学校間のデジタル環境や教員スキルに大きな格差があり、教育格差をかえって拡大させるリスクがある。' },
+            { rank: 14, analytical: 85, public: 84, title: '資産運用立国の推進 (NISA拡充等)', detail: '「貯蓄から投資へ」の流れを加速し、国民の安定的な資産形成を支援する。', concern: '投資は元本割れリスクを伴うため、金融リテラシーの向上が不可欠。金融機関の顧客本位の業務運営も課題である。' },
+            { rank: 15, analytical: 84, public: 82, title: '国内投資200兆円目標 (2040年度)', detail: '企業の国内投資を活性化し、サプライチェーン強靱化と経済成長を実現する。', concern: '企業の投資マインド改善には、政策の予見可能性と安定性の確保が不可欠である。' },
+            { rank: 16, analytical: 83, public: 80, title: '経済安全保障の強化', detail: 'サプライチェーン強靱化、先端技術保護・育成を通じて国益を確保する。', concern: '安全保障を重視するあまり、自由な経済活動や国際的な研究協力が過度に制約されるリスクがある。' },
+            { rank: 17, analytical: 82, public: 83, title: 'デジタル行財政改革', detail: 'デジタル技術で行政プロセスを変革し、国民・事業者の利便性向上と行政コスト削減を目指す。', concern: '国・地方のシステム刷新コストと、職員のデジタル対応能力の向上が大きな課題である。' },
+            { rank: 18, analytical: 81, public: 78, title: 'データ利活用制度の整備', detail: '安全・安心なデータ流通・活用環境を整備し、イノベーションを促進する。', concern: 'プライバシー侵害への国民の懸念は根強く、信頼醸成なくしてデータの「共有資源」化は進まない。' },
+            { rank: 19, analytical: 80, public: 75, title: 'マイナンバーカードの利活用推進', detail: 'マイナンバーカードをデジタル社会の基盤とし、行政・民間サービスでの利用を拡大する。', concern: '相次ぐトラブルで国民の信頼が揺らいでおり、セキュリティ対策の徹底と利用メリットの訴求が急務である。' },
+            { rank: 20, analytical: 79, public: 85, title: '医療DXの推進', detail: '医療情報の共有・活用を進め、医療の質向上、効率化、患者中心の医療を実現する。', concern: '医療機関のシステム導入負担が大きく、異なるベンダー間の相互接続が困難な状況である。' },
+            { rank: 21, analytical: 78, public: 81, title: '次世代校務DX環境の全国整備', detail: '教員の働き方改革と教育の質向上のため、校務システムをクラウドベースに刷新する。', concern: '自治体間の足並み、導入コスト、教員の研修・サポート体制が課題である。' },
+            { rank: 22, analytical: 77, public: 76, title: '自動運転の社会実装 (レベル4実現等)', detail: '交通課題解決（運転手不足、交通弱者支援）、新産業創出を目指す。', concern: '技術的信頼性、法的責任、社会受容性、高コストが課題である。' },
+            { rank: 23, analytical: 76, public: 72, title: 'ワット・ビット連携による新時代のインフラ整備', detail: '電力網と通信網を一体整備し、データセンター地方分散やGX・DXを支える。', concern: '巨額の投資、省庁間・事業者間連携、地域住民の理解が課題である。' },
+            { rank: 24, analytical: 75, public: 84, title: '介護DXと生産性向上', detail: '介護現場の負担軽減とサービス質向上のため、ICT・ロボット等を導入する。', concern: '事業所の導入コスト・ノウハウ不足、職員のICTスキル、効果的な機器選定が課題である。' },
+            { rank: 25, analytical: 74, public: 70, title: '関係人口1000万人創出と「ふるさと住民登録制度」', detail: '都市住民等と地域との多様な関わりを促進し、地方活性化に繋げる。', concern: '制度設計、実効性のあるインセンティブ、都市住民の関心喚起が課題である。' },
+            { rank: 26, analytical: 73, public: 79, title: '農林水産業の構造転換と食料安全保障', detail: '生産性向上、スマート化、輸出促進により、持続可能で強い農林水産業を構築する。', concern: '担い手不足・高齢化、耕作放棄地、気候変動、国際価格変動が課題である。' },
+            { rank: 27, analytical: 72, public: 77, title: 'コンテンツ産業の海外展開支援 (20兆円市場目標)', detail: 'アニメ、ゲーム等の日本コンテンツの国際競争力を高め、輸出を拡大する。', concern: '人材育成、資金調達、グローバルなビジネス展開ノウハウが課題である。' },
+            { rank: 28, analytical: 71, public: 74, title: '観光立国推進 (訪日客6000万人、消費額15兆円目標)', detail: 'インバウンド誘致と国内観光振興により、地域経済活性化と国際交流を促進する。', concern: 'オーバーツーリズム対策、人材不足、地方への誘客分散が課題である。' },
+            { rank: 29, analytical: 70, public: 68, title: '規制改革の断行とイノベーション促進', detail: '岩盤規制を含め、成長を阻害する規制を撤廃・緩和し、新技術・新サービスの社会実装を加速する。', concern: '既得権益との調整、安全・安心とのバランス、改革のスピードが課題である。' },
+            { rank: 30, analytical: 69, public: 89, title: '公定価格分野の賃上げ (医療・介護・保育等)', detail: '医療・介護・保育・障害福祉分野の職員の処遇を改善し、人材確保とサービス質向上を図る。', concern: '財源確保（保険料・税負担増への懸念）、他産業との賃金格差是正が課題である。' },
+            { rank: 31, analytical: 68, public: 82, title: '最低賃金全国平均1500円目標', detail: '全国的なボトムアップと地域間格差是正により、ワーキングプア問題に対応する。', concern: '中小企業の支払い能力、雇用への影響、物価上昇とのバランスが課題である。' },
+            { rank: 32, analytical: 67, public: 73, title: 'アンコンシャス・バイアスの解消と多様な人材活躍', detail: '性別、年齢等に関わらない公正な評価と機会提供により、全ての人が能力を発揮できる社会を実現する。', concern: '根深い意識・慣行の変革、実効性のある施策の展開が課題である。' },
+            { rank: 33, analytical: 66, public: 65, title: '循環経済（サーキュラーエコノミー）への移行', detail: '資源の効率的・循環的な利用を進め、環境負荷低減と経済成長を両立する。', concern: '技術開発、社会システム変革、国民・企業の意識改革が課題である。' },
+            { rank: 34, analytical: 65, public: 64, title: '科学技術・イノベーション力の強化', detail: '基礎研究から応用開発、社会実装まで一貫して支援し、国際競争力を高める。', concern: '研究資金の安定的確保、人材育成、成果の社会実装が課題である。' },
+            { rank: 35, analytical: 64, public: 62, title: '企業版ふるさと納税の活用促進', detail: '企業の地方への資金の流れを拡大し、地方創生プロジェクトを支援する。', concern: '制度認知度向上、大都市圏企業への偏り是正、効果的な事業形成が課題である。' },
+            { rank: 36, analytical: 63, public: 67, title: 'デジタル田園都市国家構想の推進', detail: 'デジタル技術を活用し、地方の課題解決と魅力向上を一体的に推進する。', concern: '構想の具体化と実効性、持続可能なビジネスモデルの構築が課題である。' },
+            { rank: 37, analytical: 62, public: 70, title: '官公需における価格転嫁の徹底', detail: '公共調達において、労務費等のコスト上昇分を適切に反映させ、受注企業の経営安定を図る。', concern: '自治体の財政状況、入札制度の透明性・公正性確保が課題である。' },
+            { rank: 38, analytical: 61, public: 60, title: '所有者不明土地問題の解消促進', detail: '相続登記促進や土地利用円滑化により、管理不全な土地を減らし、有効活用を図る。', concern: '関係者の合意形成、登記費用の負担、専門人材の不足が課題である。' },
+            { rank: 39, analytical: 60, public: 66, title: 'ドローン物流等の新技術活用', detail: 'ドローンや自動配送ロボットを活用し、物流効率化や過疎地の課題解決に貢献する。', concern: '安全性確保、プライバシー保護、社会受容性の醸成が課題である。' },
+            { rank: 40, analytical: 59, public: 97, title: '「新しい日本・楽しい日本」の国民的実感の醸成', detail: '経済成長や社会変革の成果を国民が幅広く享受し、将来への希望を持てる状況を創出する。', concern: '政策効果の波及と実感のタイムラグ、情報発信力、政治不信の払拭が課題である。' },
+        ];
+        const container = document.getElementById('policy-list');
+        const searchInput = document.getElementById('policy-search');
+        const sortBySelect = document.getElementById('sort-by');
+        if (!container || !searchInput || !sortBySelect) return;
+        
+        let currentPolicies = [...policies];
+        
+        const renderPolicies = () => {
+            container.innerHTML = '';
+            if (currentPolicies.length === 0) {
+                container.innerHTML = `<div class="p-8 text-center text-slate-500">該当する政策が見つからない。</div>`;
+                return;
+            }
+            currentPolicies.forEach((policy, index) => {
+                const item = document.createElement('div');
+                item.className = 'policy-item border-b border-slate-200';
+                item.innerHTML = `
+                    <div class="flex items-center p-4">
+                        <span class="text-xl font-bold text-slate-400 w-10 text-center">${policy.rank}</span>
+                        <div class="flex-grow ml-4"><h4 class="font-bold text-slate-800">${policy.title}</h4></div>
+                        <div class="hidden sm:flex items-center space-x-4 text-sm">
+                            <div><span class="font-semibold">分析:</span> <span class="font-bold text-blue-600">${policy.analytical}点</span></div>
+                            <div><span class="font-semibold">世論:</span> <span class="font-bold text-green-600">${policy.public}点</span></div>
+                        </div>
+                        <span id="policy-arrow-${index}" class="ml-4 transform transition-transform duration-300"><svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></span>
+                    </div>
+                    <div id="policy-detail-${index}" class="hidden px-4 sm:px-8 pb-4 ml-14">
+                        <p class="text-sm text-slate-600">${policy.detail}</p>
+                        <p class="mt-2 text-sm text-red-700 bg-red-50 p-3 rounded-md"><strong class="font-semibold">懸念事項:</strong> ${policy.concern}</p>
+                    </div>`;
+                item.addEventListener('click', () => {
+                    document.getElementById(`policy-detail-${index}`).classList.toggle('hidden');
+                    document.getElementById(`policy-arrow-${index}`).classList.toggle('rotate-180');
+                });
+                container.appendChild(item);
+            });
+        };
+
+        const filterAndSortPolicies = () => {
+            const searchTerm = searchInput.value.toLowerCase();
+            const sortBy = sortBySelect.value;
+            let filtered = policies.filter(p => p.title.toLowerCase().includes(searchTerm) || p.detail.toLowerCase().includes(searchTerm) || p.concern.toLowerCase().includes(searchTerm));
+            switch (sortBy) {
+                case 'analytical': filtered.sort((a, b) => b.analytical - a.analytical); break;
+                case 'public': filtered.sort((a, b) => b.public - a.public); break;
+                default: filtered.sort((a, b) => a.rank - b.rank); break;
+            }
+            currentPolicies = filtered;
+            renderPolicies();
+        };
+
+        searchInput.addEventListener('input', filterAndSortPolicies);
+        sortBySelect.addEventListener('change', filterAndSortPolicies);
+        renderPolicies();
+    };
+    
+    const initFullReport = () => {
+        const reportContent = `
+            <h1 class="main-title text-center">主要政策の統合分析レポート</h1>
+            <h2>I. エグゼクティブ・サマリー</h2>
+            <p>本レポートは、日本政府が推進する主要政策文書及び内閣総理大臣の発言に基づき、その戦略的方向性、重点施策、目標、そして未来図を多角的に分析するものである。分析対象は、「<a href="https://www5.cao.go.jp/keizai-shimon/kaigi/cabinet/honebuto/2025/decision0613.html" target="_blank" rel="noopener noreferrer">経済財政運営と改革の基本方針2025（骨太の方針）</a>」、「<a href="https://www8.cao.go.jp/kisei-kaikaku/kisei/publication/p_plan.html" target="_blank" rel="noopener noreferrer">規制改革実施計画</a>」、「<a href="https://www.cas.go.jp/jp/seisaku/atarashii_sihonsyugi/pdf/ap2025.pdf" target="_blank" rel="noopener noreferrer">新しい資本主義のグランドデザイン及び実行計画2025年改訂版</a>」、「<a href="https://www.cas.go.jp/jp/seisaku/atarashii_chihousousei/pdf/20250613_honbun.pdf" target="_blank" rel="noopener noreferrer">地方創生2.0基本構想</a>」、「<a href="https://www.cas.go.jp/jp/seisaku/digital_gyozaikaikaku/pdf/torimatome_honbun2025.pdf" target="_blank" rel="noopener noreferrer">デジタル行財政改革取りまとめ2025</a>」、「<a href="https://www.cas.go.jp/jp/seisaku/digital_gyozaikaikaku/pdf/data_houshin_honbun.pdf" target="_blank" rel="noopener noreferrer">データ利活用制度の在り方に関する基本方針</a>」、「<a href="https://www.cas.go.jp/jp/seisaku/digital_gyozaikaikaku/kaigi11/kaigi11_sankousiryou2.pdf" target="_blank" rel="noopener noreferrer">教育DXロードマップ</a>」であり、これらに石破総理大臣の関連発言を加味した。</p>
+            <h2>II. 首相のビジョンと政府全体の戦略</h2>
+            <p>石破総理大臣は、直近の重要会議における発言を通じて、現政権が目指す国家の将来像と、その実現に向けた基本戦略を明確に示している。これらの発言は、各政策文書に示された個別施策を束ね、方向づける指導理念となっている。</p>
+            <h3>中核理念:</h3>
+            <p>総理が示すビジョンの中核には、いくつかの重要な理念が存在する。第一に、「地方創生2.0」を「令和の日本列島改造」と位置づけ、単なる地域活性化を超えた国家構造の再設計を目指す意志が示されている。これは、人口減少を正面から受け止めつつ、各地域が独自の魅力を活かして自立的に発展できる社会を目指すものである。第二に、「賃上げこそ成長戦略の要」との認識の下、経済の好循環を賃金上昇から起動させ、国民生活の向上と持続的成長の両立を図る「新しい資本主義」の推進が強調されている。第三に、デジタル技術を社会変革の駆動力と捉え、「地方創生2.0の加速」「各分野のイノベーションに即した規制・制度改革とDX推進」「データとAIが好循環するデータ駆動社会の構築」を3本柱とするデジタル社会変革を推進するとしている。</p>
+            <h3>指導原則:</h3>
+            <p>これらの理念を支える指導原則として、まず「民の力を最大限にいかす」という官民連携の重視が挙げられる。これは、規制改革や「新しい資本主義」における民間投資の促進、「地方創生2.0」における多様な地域主体の参画といった形で具体化されている。また、<strong>EBPM（根拠に基づく政策立案）</strong>の推進やデータ利活用の重視は、政策決定プロセスの合理化と透明性向上を目指す姿勢を示す。さらに、「誰一人取り残されない、人に優しいデジタル化」という理念は、デジタル化の恩恵が全国民に行き渡ることを目指す包摂的なアプローチを強調している。</p>
+            <h3>政策間の相互連携:</h3>
+            <p>総理は、これらの主要政策が相互に連携し、相乗効果を生み出すことの重要性を説いている。「新しい資本主義」の下での賃上げや投資促進は、地方における「稼ぐ力」の向上と直結し、その実現にはDXが不可欠であるとの認識が示されている。また、「デジタル行財政改革」は、「地方創生2.0」を加速させる手段として位置づけられ、教育DXや医療DXといった分野別DXの推進基盤となる。</p>
+            <p>過去の「コストカット型経済」からの脱却や、「人財尊重社会」の構築といった表現には、これまでの改革が必ずしも国民の共感や公平な成果分配に繋がらなかったことへの反省と、より包摂的で質の高い成長を目指す戦略的転換の意図が読み取れる。「新しい資本主義」実行計画や骨太方針2025が成長と分配の両面を重視していること、そして「地方創生2.0」が経済指標だけでなく生活の質やウェルビーイング向上を目指していることは、この戦略転換を裏付けている。</p>
+            <p>さらに、総理の発言からは「実行」と「具体的な成果」への強いこだわりがうかがえる。これは、国民の政策への期待と現実との間に存在するギャップ（内閣支持率の低迷など）を認識し、「新しい資本主義」のような大規模計画が賃上げといった具体的な生活改善に繋がることを示す必要性を反映していると考えられる。このため、各政策の着実な推進と成果の可視化が、今後の政権運営における重要な課題となるであろう。</p>
+            <h2>III. 主要政策イニシアティブの深掘り分析</h2>
+            <h3>A. 経済財政運営と改革の基本方針2025（骨太の方針）の構造分析</h3>
+            <h4>文脈の中の「骨太の方針2025」</h4>
+            <p>「骨太の方針2025」は、日本経済が直面する30年間の「コストカット型経済」からの脱却と、「賃上げを起点とした成長型経済」への転換という歴史的な好機を捉えることを目的とする、石破内閣の経済政策の基軸である。本方針の核心は、実質賃金で年1%程度の上昇を新たな社会通念（ノルム）として定着させることであり、これはデフレマインドからの根本的なパラダイムシフトを意味する。賃金上昇を経済成長の「結果」ではなく「起点」と位置づけることで、賃金抑制と需要低迷の悪循環を断ち切ることを目指す。</p>
+            <h3>B. 規制改革実施計画の構造分析</h3>
+            <h4>4つの柱に基づく改革項目</h4>
+            <p>本計画は、「地方創生」「賃金向上、人手不足対応」「投資大国」「防災・減災」という4つの柱で構成され、それぞれが他の主要政策と連携する形で具体的な改革項目を提示している。</p>
+            <h4>総括と課題</h4>
+            <p>本計画は、新技術の社会実装や生産性向上を阻害する「岩盤規制」に切り込む意欲を示すものであり、多くの項目で具体的な実施時期が明記されている点は評価できる。しかし、その実効性には課題も残る。多くの改革が「検討し、結論を得次第、速やかに措置」とされており、省庁間の調整や業界団体との折衝過程で改革が骨抜きにされるリスクは常に存在する。また、国レベルの規制が緩和されても、自治体独自の「ローカルルール」が障壁となるケースも想定され、国と地方の連携した取り組みが不可欠である。</p>
+            <h3>C. 新しい資本主義のグランドデザイン及び実行計画2025年改訂版</h3>
+            <p>（※このセクションは、骨太の方針との重複が多いため、主要なポイントに絞って記述する）</p>
+            <ul><li>核心: 「賃上げこそ成長戦略の要」と位置づけ、2029年度までの5年間で実質賃金年1%程度上昇をノルムとして定着させる目標を掲げる。</li><li>中小企業支援5か年計画: 「官公需も含めた価格転嫁・取引適正化」「サービス業を中心とした中小企業の生産性向上（5年で60兆円の生産性向上投資目標）」「事業承継・M&A等の経営基盤強化」などを柱とする。</li><li>投資立国: <strong>国内投資200兆円目標（2040年度）</strong>を掲げ、GX（150兆円超）、DX（AI・半導体50兆円超）といった分野への投資を強力に推進する。</li><li>その他: 「スタートアップ育成5か年計画」の強化（2027年度10兆円投資目標）、「三位一体の労働市場改革」の加速、「資産運用立国」の推進などを網羅する、経済成長戦略の具体策集である。</li></ul>
+            <h3>D. 地方創生2.0基本構想</h3>
+            <ul><li>コンセプト: 石破総理が「令和の日本列島改造」と位置づける、今後10年間を見据えた国家戦略。人口減少を直視し、地方を「強く」「豊か」で「新しい・楽しい」ものへと変革することを目指す。</li><li>政策の5本柱: 「生活環境の創生」「稼ぐ力を高める地方イノベーション」「人や企業の地方分散」「新時代のインフラと新技術活用」「広域リージョン連携」を推進する。</li><li>主要目標: 「東京圏から地方への若者の流れ倍増」「関係人口1,000万人創出」「農林水産物・食品輸出額とインバウンド食関連消費額の合計3倍」などを掲げる。</li><li>特徴: 過去の反省を踏まえ、「若者や女性」への強い焦点と「アンコンシャス・バイアス」の解消への言及、多様な地域資源を掛け合わせる「新結合」によるイノベーション創出を重視している点が特徴的である。</li></ul>
+            <h3>E. デジタル行財政改革取りまとめ2025案</h3>
+            <ul><li>3つの新たな視点: 「地方創生2.0の強力な後押し」「AI活用とデータ利活用による効率化・価値創出」「『行政そのものを新たに創り替える』行革への転換」を掲げる。</li><li>分野別改革: 教育、子育て、医療、介護、モビリティ、インフラ・防災など、国民生活に密接な分野におけるDXを加速させるための具体的なロードマップを示す。</li><li>共通基盤構築: 自治体情報システムの標準化・共通化（基幹20業務システムは原則2025年度末までにガバメントクラウドへ移行完了目標）、国・地方デジタル共通基盤の整備、ベース・レジストリの整備などを推進する。</li></ul>
+            <h3>F. データ利活用制度の在り方に関する基本方針</h3>
+            <ul><li>目的: 日本のデータ利活用の遅れを克服し、データを「内部資産」から社会全体の「共有資源」へと転換することで、データ駆動社会を構築する。</li><li>重点施策: トラスト基盤の整備（2026年夏までにフレームワーク整備）、データ連携基盤の整備、データ標準化の推進、分野別のデータスペース（医療、金融、教育、モビリティ、産業）の整備などを掲げる。</li><li>戦略的意義: AIの社会実装と一体で進められ、政府全体のDX戦略の「燃料」を供給する役割を担う。官民データ活用推進基本法の改正など、新たな法制度の整備も視野に入れる。</li></ul>
+            <h3>G. 教育DXロードマップ</h3>
+            <ul><li>ミッション: 「誰もが、いつでもどこからでも、誰とでも、自分らしく学べる社会」の実現。</li><li>4つの柱: 「デジタル化による教職員の負担軽減」「多様な学びのための学習環境の整備」「データによる学習者の自己理解・教師の見取りの充実」「生涯を通じて学びのデータを活かせる環境の整備」を推進する。</li><li>主要目標: 必要なネットワーク環境の100%整備（2025年度末）、デジタル教科書の実践的活用100%（2028年度）、<strong>次世代校務DX環境の全自治体での導入完了（2029年度）</strong>などを掲げる。GIGAスクール構想第2期の端末整備と効果的活用も重要施策である。</li></ul>
+            <h2>Ⅳ. 分野別政策の成果と課題</h2>
+            <h3>A. デジタル変革 (DX) 推進</h3>
+            <ul><li>成果: GIGAスクール構想による1人1台端末整備、マイナンバーカードの普及、アナログ規制の見直し（約97%完了）、先端半導体への大型投資などが進展。</li><li>課題: 教員のICTスキルと多忙化、国と地方のシステム標準化の遅れ（基幹20業務の移行完了目標は2025年度末）、中小企業のDX推進の遅れ（「2025年の崖」問題）、高度デジタル人材の不足が依然として深刻。</li></ul>
+            <h3>B. 経済再生</h3>
+            <ul><li>成果: 2年連続で5%を超える春季労使交渉賃上げ率の達成。</li><li>課題: 物価高騰により実質賃金は依然としてマイナスの状況。賃上げの<strong>中小企業への波及</strong>と、その前提となる<strong>価格転嫁</strong>の完全な定着が最大の課題。</li></ul>
+            <h3>C. 地方創生</h3>
+            <ul><li>成果: デジタル田園都市国家構想交付金などを通じたデジタル実装の進展。「関係人口」という新たな視点の導入。</li><li>課題: <strong>東京一極集中の是正には至らず</strong>、若者・女性の地方流出が継続。地方における医療、交通など<strong>生活必須サービスの維持が困難化</strong>。過去の好事例が「普遍化」されなかった反省をどう克服するかが問われる。</li></ul>
+            <h3>D. 規制改革</h3>
+            <ul><li>成果: 多岐にわたる分野で具体的な改革項目と実施時期が明示され、改革の継続性が示されている。</li><li>課題: 改革の「<strong>スピード</strong>」と「<strong>実効性</strong>」の確保。省庁間の縦割りや既得権益との調整、地方自治体独自の「<strong>ローカルルール</strong>」が改革の障壁となる可能性。</li></ul>
+            <h2>V. 結論</h2>
+            <p>本レポートで分析した一連の政策文書および総理大臣の発言は、日本が直面する複合的な課題に対し、政府が包括的かつ野心的な戦略で臨もうとしていることを示している。その核心は、「新しい資本主義」を経済再生のエンジンとし、「地方創生2.0」を通じて国土の均衡ある発展を図り、これら全ての基盤として「デジタル変革（DX）」と「データ利活用」を徹底的に推進するというものである。そして、これらの変革を円滑に進めるために「規制改革」が断行される。</p>
+            <p>これらの政策群は、相互に密接に関連し、相乗効果を狙って設計されている。しかし、その壮大なビジョンの実現には、<strong>①実行力（現場への実装力）</strong>、<strong>②国民の実感（成果の可視化と信頼醸成）</strong>、<strong>③人材（育成と確保）</strong>という共通の大きな課題が存在する。</p>
+            <p>これらの課題を克服し、政府が掲げる「今日より明日はよくなる」と実感できる社会を実現するためには、政策間連携の深化と現場へのきめ細かい支援、透明性の高い情報開示と双方向のコミュニケーション、そして持続可能な財政運営との両立が不可欠である。日本は今、大きな岐路に立たされている。その成否は、これらの政策が国民一人ひとりの力と創造性を最大限に引き出し、社会全体の変革へと繋げられるかにかかっている。</p>
+        `;
+        const reportTabContent = document.getElementById('full-report-content');
+        if(reportTabContent) {
+            reportTabContent.innerHTML = reportContent;
+        }
+    }
+
+    chartInitializers.set('regional', [initPillars]);
+    chartInitializers.set('ranking', [initPolicyList]);
+    chartInitializers.set('reform', [initReformDiagram]);
+    chartInitializers.set('report', [initFullReport]);
+
+    const activeInitializers = new Set();
+    
+    function switchTab(targetId) {
+        panels.forEach(panel => {
+            panel.classList.toggle('active', panel.id === targetId);
+        });
+        tabs.forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.target === targetId);
+        });
+
+        if (chartInitializers.has(targetId) && !activeInitializers.has(targetId)) {
+            setTimeout(() => {
+                chartInitializers.get(targetId).forEach(initFunc => initFunc());
+                activeInitializers.add(targetId);
+            }, 50);
+        }
+    }
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            switchTab(tab.dataset.target);
+        });
+    });
+
+    // Initialize first tab
+    switchTab('vision');
+
+
+    window.toggleAccordion = function(prefix, index) {
+        document.getElementById(`${prefix}-detail-${index}`).classList.toggle('hidden');
+        document.getElementById(`${prefix}-arrow-${index}`).classList.toggle('rotate-180');
+    }
+});
+</script>
+
+</body>
+</html>

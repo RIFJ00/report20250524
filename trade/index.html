@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>世界の貿易ダッシュボード (長期推移説明更新)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 350px;
+            width: 100%;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .tab-button {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 0.875rem;
+        }
+        @media (min-width: 768px) {
+            .tab-button {
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+        .tab-button.active {
+            border-color: #4f46e5;
+            color: #4f46e5;
+            font-weight: 600;
+        }
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1f2937;
+        }
+         @media (min-width: 768px) {
+            .section-title {
+                font-size: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+         @media (min-width: 768px) {
+            .card {
+                padding: 1.5rem;
+            }
+        }
+        .country-checkbox-group {
+            max-height: 200px; 
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+        }
+        .country-checkbox-group label, .long-term-country-radio-group label {
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            background-color: #e5e7eb;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 0.875rem;
+        }
+        .country-checkbox-group input[type="checkbox"], .long-term-country-radio-group input[type="radio"] {
+            margin-right: 0.25rem;
+        }
+        .country-checkbox-group label:hover, .long-term-country-radio-group label:hover {
+            background-color: #d1d5db;
+        }
+        .country-checkbox-group input[type="checkbox"]:checked + span, .long-term-country-radio-group input[type="radio"]:checked + span {
+            font-weight: 600;
+            color: #4f46e5;
+        }
+        select, .year-select, .chart-type-select {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            border: 1px solid #d1d5db;
+            background-color: white;
+        }
+        .prose {
+            color: #374151;
+            line-height: 1.6;
+        }
+        .prose h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: #1e40af;
+        }
+        .prose p, .data-source-note {
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+        .prose ul {
+            list-style-type: disc;
+            margin-left: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .action-button {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            border-radius: 0.25rem;
+            margin-left: 0.5rem;
+            transition: background-color 0.2s;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 p-2 md:p-6">
+
+    <header class="mb-6 md:mb-8">
+        <h1 class="text-2xl md:text-4xl font-bold text-center text-indigo-700 mb-2">世界の貿易ダッシュボード</h1>
+        <p class="text-center text-gray-600 text-md md:text-lg">詳細分析と時系列推移</p>
+    </header>
+
+    <nav class="flex flex-wrap justify-center mb-6 md:mb-8 bg-white shadow-md rounded-lg p-2">
+        <button class="tab-button active" onclick="showTab('global-overview')">世界の貿易概況</button>
+        <button class="tab-button" onclick="showTab('goods-trade')">財貿易分析</button>
+        <button class="tab-button" onclick="showTab('services-trade')">サービス貿易分析</button>
+        <button class="tab-button" onclick="showTab('long-term-trends')">主要国 長期推移</button>
+    </nav>
+
+    <main>
+        <section id="global-overview" class="tab-content card">
+            <h2 class="section-title">世界の貿易概況 (主に2023年データ)</h2>
+            <div class="prose max-w-none mb-6">
+                <p>2023年の世界貿易は、RIFJ資料によると総輸出額・総輸入額ともに約24.43兆ドルに達しました。地政学的リスクやサプライチェーンの変動など複雑な要因が影響しています。本ダッシュボードは主にRIFJ提供の2023年データに基づき、一部推計や主要国の限定的な過去データを用いて傾向を示しています。</p>
+                <h3 class="text-xl font-semibold mt-4 mb-2">財貿易の動向</h3>
+                <p>中国が約8,227億ドルの貿易黒字で世界最大。アメリカは約1兆1,519億ドルの赤字。日本は約685億ドルの赤字でしたが、赤字幅は縮小しました。</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-1 text-green-700">財貿易 黒字国 トップ10 (2023年)</h3>
+                    <p class="data-source-note">出典: RIFJ提供資料 (2023年)</p>
+                    <div class="chart-container"><canvas id="goodsSurplusChart"></canvas></div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-1 text-red-700">財貿易 赤字国 トップ10 (2023年)</h3>
+                    <p class="data-source-note">出典: RIFJ提供資料 (2023年)</p>
+                    <div class="chart-container"><canvas id="goodsDeficitChart"></canvas></div>
+                </div>
+            </div>
+            <div class="prose max-w-none mt-8 mb-6">
+                <h3 class="text-xl font-semibold mt-4 mb-2">サービス貿易の動向</h3>
+                <p>RIFJ資料によると2023年のサービス貿易は約8兆ドル規模。アメリカが約2,784億ドルの黒字で最大。イギリス、インドも大幅黒字。中国は約2,078億ドルの赤字。日本は旅行収支が約257億ドルの黒字となったものの、デジタル赤字（約393億ドル）が影響し、全体で約210億ドルの赤字でした。</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-lg font-semibold mb-1 text-blue-700">サービス貿易 黒字国 トップ5 (2023年)</h3>
+                    <p class="data-source-note">出典: RIFJ提供資料 (2023年)</p>
+                    <div class="chart-container"><canvas id="servicesSurplusChart"></canvas></div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-1 text-orange-700">サービス貿易 赤字国 トップ5 (2023年)</h3>
+                     <p class="data-source-note">出典: RIFJ提供資料 (2023年)</p>
+                    <div class="chart-container"><canvas id="servicesDeficitChart"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="goods-trade" class="tab-content card" style="display: none;">
+            <h2 class="section-title">財貿易分析</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="goods-year-select" class="block mb-1 font-semibold">表示年:</label>
+                    <select id="goods-year-select" class="year-select w-full">
+                        <option value="2023">2023年</option>
+                        <option value="2022">2022年 (主要国のみデータ有)</option>
+                        <option value="2021">2021年 (主要国のみデータ有)</option>
+                        <option value="2020">2020年 (主要国のみデータ有)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="goods-data-type-select" class="block mb-1 font-semibold">表示データ:</label>
+                    <select id="goods-data-type-select" class="w-full">
+                        <option value="balance">貿易収支</option>
+                        <option value="exports">輸出額</option>
+                        <option value="imports">輸入額</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-4">
+                <div class="flex items-center mb-2">
+                    <label class="block font-semibold">国・地域を選択:</label>
+                    <button id="selectAllGoods" class="action-button bg-blue-500 hover:bg-blue-600 text-white">全て選択</button>
+                    <button id="deselectAllGoods" class="action-button bg-gray-500 hover:bg-gray-600 text-white">全て解除</button>
+                </div>
+                <div id="goods-country-checkboxes" class="country-checkbox-group grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2"></div>
+            </div>
+            <p class="data-source-note">グラフ出典: RIFJ提供資料(2023年)。過去年は主要国以外データなし。</p>
+            <div class="chart-container mb-8"><canvas id="goodsCompareChart"></canvas></div>
+            <div id="goods-country-details" class="grid md:grid-cols-2 gap-6 prose max-w-none"></div>
+            
+            <div class="mt-8">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-lg font-semibold">選択国・地域の財貿易推移</h3>
+                    <div>
+                        <label for="goodsTrendChartType" class="text-sm font-medium">グラフタイプ:</label>
+                        <select id="goodsTrendChartType" class="chart-type-select ml-2">
+                            <option value="line">折れ線</option>
+                            <option value="bar">棒</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="data-source-note">推移グラフ出典: 2023年はRIFJ資料、過去年は主要国以外データなし。</p>
+                <div class="chart-container mb-8"><canvas id="goodsTrendChart"></canvas></div>
+            </div>
+        </section>
+
+        <section id="services-trade" class="tab-content card" style="display: none;">
+            <h2 class="section-title">サービス貿易分析</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="services-year-select" class="block mb-1 font-semibold">表示年:</label>
+                    <select id="services-year-select" class="year-select w-full">
+                        <option value="2023">2023年</option>
+                        <option value="2022">2022年 (主要国のみデータ有)</option>
+                        <option value="2021">2021年 (主要国のみデータ有)</option>
+                        <option value="2020">2020年 (主要国のみデータ有)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="services-data-type-select" class="block mb-1 font-semibold">表示データ:</label>
+                    <select id="services-data-type-select" class="w-full">
+                        <option value="total">サービス収支全体</option>
+                        <option value="travel">旅行サービス</option>
+                        <option value="digital">デジタル関連</option>
+                        <option value="ip">知的財産権使用料</option>
+                        <option value="transport">輸送サービス (日本のみ)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-4">
+                 <div class="flex items-center mb-2">
+                    <label class="block font-semibold">国・地域を選択:</label>
+                    <button id="selectAllServices" class="action-button bg-blue-500 hover:bg-blue-600 text-white">全て選択</button>
+                    <button id="deselectAllServices" class="action-button bg-gray-500 hover:bg-gray-600 text-white">全て解除</button>
+                </div>
+                <div id="services-country-checkboxes" class="country-checkbox-group grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2"></div>
+            </div>
+            <p class="data-source-note">グラフ出典: RIFJ提供資料(2023年)。過去年は主要国以外データなし。</p>
+            <div class="chart-container mb-8"><canvas id="servicesCompareChart"></canvas></div>
+            <div id="services-country-details" class="grid md:grid-cols-2 gap-6 prose max-w-none"></div>
+
+            <div class="mt-8">
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-lg font-semibold">選択国・地域のサービス貿易推移</h3>
+                    <div>
+                        <label for="servicesTrendChartType" class="text-sm font-medium">グラフタイプ:</label>
+                        <select id="servicesTrendChartType" class="chart-type-select ml-2">
+                            <option value="line">折れ線</option>
+                            <option value="bar">棒</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="data-source-note">推移グラフ出典: 2023年はRIFJ資料、過去年は主要国以外データなし。</p>
+                <div class="chart-container mb-8"><canvas id="servicesTrendChart"></canvas></div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6 mt-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-1">日本のサービス貿易収支推移</h3>
+                    <p class="data-source-note">出典: RIFJ提供資料</p>
+                    <div class="chart-container"><canvas id="japanServiceBalanceTrendChart"></canvas></div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-1">世界のデジタルサービス貿易推移</h3>
+                    <p class="data-source-note">出典: RIFJ提供資料</p>
+                    <div class="chart-container"><canvas id="digitalServiceTrendChart"></canvas></div>
+                </div>
+            </div>
+             <div class="mt-8">
+                <h3 class="text-lg font-semibold mb-1">主要国の旅行サービス収支 (2023年)</h3>
+                <p class="data-source-note">出典: RIFJ提供資料 (2023年)</p>
+                <div class="chart-container"><canvas id="travelServiceBalanceChart"></canvas></div>
+            </div>
+            <div class="mt-8">
+                <h3 class="text-lg font-semibold mb-1">主要国の知的財産権使用料収支 (2023年)</h3>
+                <p class="data-source-note">出典: RIFJ提供資料 (2023年)</p>
+                <div class="chart-container"><canvas id="ipServiceBalanceChart"></canvas></div>
+            </div>
+        </section>
+
+        <section id="long-term-trends" class="tab-content card" style="display: none;">
+            <h2 class="section-title">主要国 長期推移（財貿易）</h2>
+            <div class="prose max-w-none mb-6">
+                <p>このセクションでは、主要国（日本、アメリカ、中国、インド）の財貿易に関する長期的な推移を表示します。</p>
+                <p class="font-bold text-red-600">【重要】現在表示されているグラフのデータは、主にRIFJ資料に基づく直近数年分（2020年～2023年）のものです。ご要望のあった「少なくとも過去40年」（例：日本は1945年以降、アメリカは過去80年間、中国・インドは過去40年間など）にわたる網羅的なデータは、現時点ではこのダッシュボードに組み込まれていません。これは、そのような長期間のデータをリアルタイムで外部から取得・統合する機能が本ダッシュボードにはないため、機能のデモンストレーションとして直近データを使用しているものです。</p>
+                <p>より詳細な長期分析（例：過去40年間）を行うためには、IMF、世界銀行、UN Comtrade、各国の統計局（例：日本の財務省貿易統計）などの公的データベースから、ユーザーご自身で対象国の該当年数分のデータを収集・整形し、本ダッシュボードのJavaScriptコード内のデータ構造（具体的には `goodsTradeDataByYear` オブジェクトと `longTermTrendYears` 配列）に合わせて更新していただく必要があります。</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <label class="block mb-1 font-semibold">国を選択:</label>
+                    <div id="longTermCountryRadio" class="long-term-country-radio-group">
+                        </div>
+                </div>
+                <div>
+                    <label for="longTermDataTypeSelect" class="block mb-1 font-semibold">表示データ:</label>
+                    <select id="longTermDataTypeSelect" class="w-full">
+                        <option value="balance">貿易収支</option>
+                        <option value="exports">輸出額</option>
+                        <option value="imports">輸入額</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="longTermTrendChartType" class="block mb-1 font-semibold">グラフタイプ:</label>
+                    <select id="longTermTrendChartType" class="chart-type-select w-full">
+                        <option value="line">折れ線</option>
+                        <option value="bar">棒</option>
+                    </select>
+                </div>
+            </div>
+            <p class="data-source-note">グラフ出典: 主にRIFJ提供資料(2020-2023年)。これより過去のデータは含まれていません。</p>
+            <div class="chart-container"><canvas id="longTermTrendChart"></canvas></div>
+        </section>
+    </main>
+
+    <footer class="mt-12 text-center text-sm text-gray-500">
+        <p>データソース: 主にRIFJ提供資料 (2023年データ)。過去年は主要国以外データなし。一部推計を含む。</p>
+        <p>&copy; 2024 世界貿易ダッシュボード（一般社団法人日本みらい研作成）</p>
+    </footer>
+
+    <script>
+        const availableYears = [2023, 2022, 2021, 2020]; 
+        const longTermTrendYears = [2020, 2021, 2022, 2023]; 
+
+        const goodsTradeDataByYear = {
+            2023: {
+                '中国': { exports: 3379.26, imports: 2556.57, balance: 822.69, mainExports: "電子機器, 工業機械, 衣料品", mainImports: "半導体, 原油, 鉄鉱石" },
+                'ドイツ': { exports: 1718.25, imports: 1476.66, balance: 241.60, mainExports: "自動車, 機械設備, 化学製品", mainImports: "データ処理機器, 電子製品, 石油ガス" },
+                'ロシア': { balance: 120.92, mainExports: "原油, 天然ガス", mainImports: "機械設備" },
+                'サウジアラビア': { balance: 113.08, mainExports: "原油", mainImports: "機械設備" },
+                'オランダ': { balance: 94.06, mainExports: "機械設備 (中継貿易)", mainImports: "原油" },
+                'ブラジル': { balance: 86.98, mainExports: "鉄鉱石, 大豆", mainImports: "機械設備" },
+                'オーストラリア': { balance: 83.87, mainExports: "鉄鉱石, 石炭", mainImports: "自動車" },
+                'ノルウェー': { balance: 78.62, mainExports: "原油, 天然ガス", mainImports: "機械設備" },
+                '台湾': { balance: 73.38, mainExports: "集積回路", mainImports: "集積回路製造装置" },
+                'カタール': { balance: 65.80, mainExports: "LNG", mainImports: "機械設備" },
+                'アメリカ': { exports: 2020.61, imports: 3172.48, balance: -1151.87, mainExports: "資本財, 食品", mainImports: "消費財, 自動車" },
+                'イギリス': { exports: 510.00, imports: 780.48, balance: -270.48, mainExports: "機械, 金融サービス", mainImports: "自動車, 食料品" },
+                'インド': { exports: 489.40, imports: 730.06, balance: -240.66, mainExports: "石油製品, 医薬品", mainImports: "原油, 電子機器" },
+                'フランス': { balance: -137.59, mainExports: "航空機, 食品・飲料", mainImports: "自動車, 原油" },
+                'トルコ': { balance: -106.33, mainExports: "自動車, 衣料品", mainImports: "機械設備, 原油" },
+                '香港': { balance: -79.82, mainExports: "電子機器 (再輸出)", mainImports: "電子機器" },
+                '日本': { exports: 717.30, imports: 785.84, balance: -68.54, mainExports: "自動車, 機械設備", mainImports: "原油, LNG" },
+                'フィリピン': { balance: -60.28, mainExports: "電子製品", mainImports: "電子部品", note: "ASEANメンバー。電子部品の輸出入が活発。" },
+                'スペイン': { balance: -47.10, mainExports: "自動車, 食品", mainImports: "原油, 機械" },
+                'エジプト': { balance: -41.11, mainExports: "原油, 衣料品", mainImports: "小麦, 機械" },
+                'EU': { note: "EU(2023年): 域内貿易活発。ドイツが牽引。エネルギーは輸入依存。" },
+                'ASEAN': { note: "ASEAN(2023年): 地域全体として貿易拡大。電子部品、農産物等が主要輸出。" },
+                'インドネシア': { balance: null, mainExports: "石炭, パーム油, 天然ガス", mainImports: "石油製品, 機械類", note: "ASEANメンバー。資源輸出国だが、国内需要も大きい。" },
+                'マレーシア': { balance: null, mainExports: "電気・電子製品, パーム油, LNG", mainImports: "電気・電子製品, 機械類", note: "ASEANメンバー。工業化が進展、輸出志向。" },
+                'シンガポール': { balance: null, mainExports: "集積回路, 石油製品(中継貿易)", mainImports: "集積回路, 原油", note: "ASEANメンバー。中継貿易拠点、金融・物流ハブ。" },
+                'タイ': { balance: null, mainExports: "自動車・部品, コンピュータ部品, ゴム製品", mainImports: "原油, 機械類, 電子部品", note: "ASEANメンバー。自動車産業が集積、観光も主要産業。" },
+                'ベトナム': { balance: null, mainExports: "電話機・部品, 衣類・繊維, コンピュータ部品", mainImports: "電子部品, 機械類, プラスチック", note: "ASEANメンバー。近年急速に工業化、輸出拠点として成長。" },
+                'ブルネイ': { balance: null, mainExports: "原油, LNG", mainImports: "機械類, 食料品", note: "ASEANメンバー。石油・ガス資源に大きく依存。" },
+                'カンボジア': { balance: null, mainExports: "衣類・履物, 自転車", mainImports: "繊維原料, 石油製品", note: "ASEANメンバー。縫製品輸出が経済を支える。" },
+                'ラオス': { balance: null, mainExports: "電力, 銅鉱石, 農産物", mainImports: "石油製品, 機械類", note: "ASEANメンバー。水力発電による電力輸出が特徴。" },
+                'ミャンマー': { balance: null, mainExports: "天然ガス, 衣類, 農産物", mainImports: "石油製品, 機械類", note: "ASEANメンバー。政治情勢が経済に影響。" },
+            },
+            2022: { 
+                '日本': { exports: 700, imports: 800, balance: -100 }, 'アメリカ': { exports: 1900, imports: 3000, balance: -1100 },
+                '中国': { exports: 3200, imports: 2400, balance: 800 }, 'ドイツ': { exports: 1600, imports: 1400, balance: 200 },
+                'イギリス': { exports: 480, imports: 750, balance: -270 },
+                'インド': { exports: 450, imports: 670, balance: -220 },
+            },
+            2021: { 
+                '日本': { exports: 650, imports: 700, balance: -50 }, 'アメリカ': { exports: 1700, imports: 2800, balance: -1100 },
+                '中国': { exports: 3000, imports: 2200, balance: 800 }, 'ドイツ': { exports: 1500, imports: 1300, balance: 200 },
+                'イギリス': { exports: 450, imports: 700, balance: -250 },
+                'インド': { exports: 400, imports: 600, balance: -200 },
+            },
+            2020: { 
+                '日本': { exports: 600, imports: 650, balance: -50 }, 'アメリカ': { exports: 1500, imports: 2500, balance: -1000 },
+                '中国': { exports: 2800, imports: 2000, balance: 800 }, 'ドイツ': { exports: 1400, imports: 1200, balance: 200 },
+                'イギリス': { exports: 400, imports: 650, balance: -250 },
+                'インド': { exports: 350, imports: 530, balance: -180 },
+            }
+        };
+
+        const servicesTradeDataByYear = {
+            2023: { 
+                'アメリカ': { total: 278.4, travel: 10, digital: null, ip: 95.0, note: "デジタル、金融、IPでリード。" },
+                'イギリス': { total: 190.3, travel: -25, digital: null, ip: 10.0, note: "金融・ビジネスサービス強み。" },
+                'インド': { total: 159.1, travel: null, digital: null, ip: -10.0, note: "IT・BPOで急成長。" },
+                'スペイン': { total: 100.6, travel: 50.5, note: "観光大国。" },
+                'トルコ': { total: 56.7, travel: 40, note: "輸送・旅行サービス中心。" },
+                '中国': { total: -207.8, travel: -105.2, digital: null, ip: -70.0, note: "旅行、IP等で大幅赤字。" },
+                'ドイツ': { total: -70.0, travel: -45, digital: null, ip: 25.0, note: "サービス貿易は赤字。" },
+                '日本': { total: -21.0, travel: 25.7, digital: -39.3, ip: 22.0, transport: -4.6, note: "旅行黒字化もデジタル赤字大。" },
+                'EU': { note: "EU(2023年): デジタル赤字が課題の国多い。" },
+                'ASEAN': { note: "ASEAN(2023年): 観光回復、一部IT成長。" },
+                'アイルランド': { total: null, digital: null, note: "RIFJ資料で通信・コンピュータ関連で強みと記載。多国籍IT企業の欧州拠点。" },
+                'シンガポール': { total: null, travel: null, note: "RIFJ資料で金融・輸送ハブとして黒字と記載。ASEANメンバー。" },
+                'タイ': { total: null, travel: 35, note: "RIFJ資料で観光で黒字を維持と記載。ASEANメンバー。" },
+                'マレーシア': { total: null, travel: null, note: "RIFJ資料で観光で黒字を維持と記載。ASEANメンバー。" },
+                '香港': { total: null, note: "RIFJ資料で国際金融センターが優位と記載。" },
+                'スイス': { total: null, note: "一般的に金融、医薬品関連のサービス貿易が強い。" },
+                '韓国': { total: null, note: "デジタルコンテンツ輸出（K-POP、ドラマ等）が成長。" },
+                'オーストラリア': { total: null, note: "RIFJ資料で教育・観光サービスで競争力と記載。" },
+                'ニュージーランド': { total: null, note: "RIFJ資料で教育・観光サービスで競争力と記載。" },
+                '中東産油国': { total: null, note: "RIFJ資料でサービス全般で赤字（サウジアラビア等）と記載。サウジアラビアは個別計上。" },
+                'インドネシア': { note: "ASEANメンバー。観光収入あるが、他サービス輸入も多い。" },
+                'フィリピン': { note: "ASEANメンバー。BPO産業が成長、海外労働者からの送金もサービス収支に影響。" },
+                'ベトナム': { note: "ASEANメンバー。ITアウトソーシングや観光が成長途上。" },
+                'ブルネイ': { note: "ASEANメンバー。サービス部門は限定的。" },
+                'カンボジア': { note: "ASEANメンバー。観光が主要サービス収入源。" },
+                'ラオス': { note: "ASEANメンバー。観光と電力関連サービス。" },
+                'ミャンマー': { note: "ASEANメンバー。観光にポテンシャルあるが現状は限定的。" },
+            },
+            2022: { 
+                '日本': { total: -42.5, travel: 5, digital: -35, ip: 20 }, 'アメリカ': { total: 250, travel: 5, ip: 90 },
+                '中国': { total: -200, travel: -100, ip: -60 }, 'ドイツ': { total: -60, travel: -40, ip: 22 },
+                'イギリス': { total: 180, travel: -20, ip: 8 },
+                'インド': { total: 140, ip: -8.0 },
+            },
+            2021: {
+                '日本': { total: -50, travel: 0, digital: -32, ip: 18 }, 'アメリカ': { total: 220, travel: -10, ip: 85 },
+                '中国': { total: -180, travel: -80, ip: -50 }, 'ドイツ': { total: -50, travel: -30, ip: 20 },
+                'イギリス': { total: 160, travel: -30, ip: 7 },
+                'インド': { total: 120, ip: -7.0 },
+            },
+            2020: {
+                '日本': { total: -40, travel: -5, digital: -28, ip: 15 }, 'アメリカ': { total: 200, travel: -50, ip: 80 },
+                '中国': { total: -150, travel: -100, ip: -40 }, 'ドイツ': { total: -40, travel: -50, ip: 18 },
+                'イギリス': { total: 150, travel: -60, ip: 5 },
+                'インド': { total: 100, ip: -6.0 },
+            }
+        };
+        
+        const japanServiceBalanceTrendRIFJ = {
+            years: [2019, 2020, 2021, 2022, 2023],
+            total: [-10, -40, -50, -42.5, -21],
+            travel: [25, -5, 0, 5, 25.7],
+            digital: [-25, -28, -32, -35, -39.3]
+        };
+        const digitalServiceTrendRIFJ = {
+            years: [2010, 2012, 2014, 2016, 2018, 2020, 2022, 2023],
+            worldTrade: [0.7, 0.9, 1.2, 1.5, 2.0, 2.3, 2.8, 3.0],
+            usExports: [0.15, 0.25, 0.35, 0.45, 0.6, 0.7, 0.9, 1.0],
+            japanDeficit: [-0.15, -0.18, -0.203, -0.22, -0.25, -0.30, -0.35, -0.393]
+        };
+        const travelServiceBalance2023 = { 
+            'スペイン': 50.5, 'アメリカ': 10, 'トルコ': 40, 'タイ': 35, '日本': 25.7, 
+            'イタリア': 40, 'ギリシャ': 20, '中国': -105.2, 'ドイツ': -45, 'イギリス': -25
+        };
+        const ipServiceBalance2023 = {
+            'アメリカ': 95, 'ドイツ': 25, '日本': 22, 'イギリス': 10, 'フランス': 5,
+            'オランダ': 2, 'スウェーデン': 1, '中国': -70, 'インド': -10, 'ブラジル': -5
+        };
+
+        let charts = {}; 
+        function createOrUpdateChart(canvasId, type, data, options) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if (charts[canvasId]) { charts[canvasId].destroy(); }
+            charts[canvasId] = new Chart(ctx, { type, data, options });
+        }
+        
+        const commonChartOptions = (unit = '10億USドル', indexAxis = 'y', beginAtZero = true, titleText = null) => ({
+            responsive: true, maintainAspectRatio: false, indexAxis: indexAxis,
+            scales: {
+                x: { beginAtZero: indexAxis === 'y' ? beginAtZero : true, title: { display: true, text: indexAxis === 'y' ? `金額 (${unit})` : '年' } },
+                y: { beginAtZero: indexAxis === 'x' ? beginAtZero : true, title: { display: true, text: indexAxis === 'x' ? `金額 (${unit})` : '国・地域' } }
+            },
+            plugins: {
+                title: { display: !!titleText, text: titleText, font: { size: 14 }, padding: { top:10, bottom:10 } },
+                tooltip: { callbacks: {
+                    label: function(context) {
+                        let label = context.dataset.label || '';
+                        if (label) { label += ': '; }
+                        const value = indexAxis === 'y' ? context.parsed.x : context.parsed.y;
+                        if (value !== null && typeof value !== 'undefined') { label += parseFloat(value).toFixed(2) + ` ${unit}`; }
+                        else { label += 'N/A'; }
+                        return label;
+                    }
+                }},
+                legend: { labels: { boxWidth: 20 } }
+            }
+        });
+        
+        function renderGlobalOverviewCharts() {
+            const year = 2023;
+            const currentGoodsData = goodsTradeDataByYear[year] || {};
+            const currentServicesData = servicesTradeDataByYear[year] || {};
+
+            const goodsSurplus = Object.entries(currentGoodsData).filter(([k,d])=>d.balance>0 && !['EU','ASEAN'].includes(k)).sort((a,b)=>b[1].balance-a[1].balance).slice(0,10);
+            createOrUpdateChart('goodsSurplusChart', 'bar', {
+                labels: goodsSurplus.map(c=>c[0]),
+                datasets: [{label:'貿易黒字額',data:goodsSurplus.map(c=>c[1].balance),backgroundColor:'rgba(75,192,192,0.7)'}]
+            }, commonChartOptions());
+
+            const goodsDeficit = Object.entries(currentGoodsData).filter(([k,d])=>d.balance<0 && !['EU','ASEAN'].includes(k)).sort((a,b)=>a[1].balance-b[1].balance).slice(0,10);
+            createOrUpdateChart('goodsDeficitChart', 'bar', {
+                labels: goodsDeficit.map(c=>c[0]),
+                datasets: [{label:'貿易赤字額',data:goodsDeficit.map(c=>c[1].balance),backgroundColor:'rgba(255,99,132,0.7)'}]
+            }, commonChartOptions('10億USドル','y',false));
+
+            const servicesSurplus = Object.entries(currentServicesData).filter(([k,d])=>d.total>0 && !['EU','ASEAN'].includes(k)).sort((a,b)=>b[1].total-a[1].total).slice(0,5);
+            createOrUpdateChart('servicesSurplusChart', 'bar', {
+                labels: servicesSurplus.map(c=>c[0]),
+                datasets: [{label:'サービス貿易黒字額',data:servicesSurplus.map(c=>c[1].total),backgroundColor:'rgba(54,162,235,0.7)'}]
+            }, commonChartOptions());
+
+            const servicesDeficit = Object.entries(currentServicesData).filter(([k,d])=>d.total<0 && !['EU','ASEAN'].includes(k)).sort((a,b)=>a[1].total-b[1].total).slice(0,5);
+            createOrUpdateChart('servicesDeficitChart', 'bar', {
+                labels: servicesDeficit.map(c=>c[0]),
+                datasets: [{label:'サービス貿易赤字額',data:servicesDeficit.map(c=>c[1].total),backgroundColor:'rgba(255,159,64,0.7)'}]
+            }, commonChartOptions('10億USドル','y',false));
+        }
+
+        function populateCountryCheckboxes(containerId, dataByYear, groupName, changeHandler, defaultCountry = null) {
+            const container = document.getElementById(containerId);
+            const allCountries = Object.keys(dataByYear[2023] || {});
+            
+            const preferredOrder = ['日本', 'アメリカ', '中国', 'インド'];
+            
+            const preferredCountriesInList = preferredOrder.filter(pc => allCountries.includes(pc));
+            const otherCountries = allCountries.filter(c => !preferredOrder.includes(c)).sort();
+            
+            const sortedCountries = [...preferredCountriesInList, ...otherCountries];
+
+            container.innerHTML = '';
+            sortedCountries.forEach(country => {
+                const label = document.createElement('label');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox'; checkbox.value = country; checkbox.name = groupName;
+                if (country === defaultCountry) {
+                    checkbox.checked = true;
+                }
+                checkbox.addEventListener('change', changeHandler);
+                const span = document.createElement('span'); span.textContent = country;
+                label.appendChild(checkbox); label.appendChild(span);
+                container.appendChild(label);
+            });
+        }
+        
+        function populateLongTermCountryRadios() {
+            const container = document.getElementById('longTermCountryRadio');
+            const majorCountries = ['日本', 'アメリカ', '中国', 'インド']; 
+            container.innerHTML = ''; 
+            majorCountries.forEach((country, index) => {
+                const label = document.createElement('label');
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = 'longTermCountry';
+                radio.value = country;
+                if (index === 0) { 
+                    radio.checked = true;
+                }
+                radio.addEventListener('change', updateLongTermTrendChart);
+                const span = document.createElement('span');
+                span.textContent = country;
+                label.appendChild(radio);
+                label.appendChild(span);
+                container.appendChild(label);
+            });
+        }
+
+
+        function updateCompareChart(yearSelectId, dataTypeSelectId, checkboxContainerId, chartId, detailsContainerId, dataByYear, trendChartId, trendChartTypeSelectId) {
+            const selectedYear = document.getElementById(yearSelectId).value;
+            const dataType = document.getElementById(dataTypeSelectId).value;
+            const selectedCountries = Array.from(document.querySelectorAll(`#${checkboxContainerId} input:checked`)).map(cb => cb.value);
+            
+            const currentYearData = dataByYear[selectedYear] || {};
+
+            if (selectedCountries.length === 0) {
+                if (charts[chartId]) charts[chartId].destroy();
+                document.getElementById(detailsContainerId).innerHTML = '<p class="text-gray-500">国・地域を選択してください。</p>';
+                if (charts[trendChartId]) charts[trendChartId].destroy();
+                return;
+            }
+
+            const chartDataValues = selectedCountries.map(country => {
+                const countryData = currentYearData[country];
+                return countryData && countryData[dataType] !== null && typeof countryData[dataType] !== 'undefined' ? countryData[dataType] : null;
+            });
+
+            createOrUpdateChart(chartId, 'bar', { 
+                labels: selectedCountries,
+                datasets: [{
+                    label: document.getElementById(dataTypeSelectId).options[document.getElementById(dataTypeSelectId).selectedIndex].text,
+                    data: chartDataValues,
+                    backgroundColor: selectedCountries.map((_, i) => `hsl(${i * (360 / Math.max(selectedCountries.length,1))}, 70%, 60%)`),
+                }]
+            }, commonChartOptions('10億USドル', 'x', dataType !== 'balance' && dataType !== 'total'));
+            
+            updateCountryDetails(detailsContainerId, selectedCountries, currentYearData, selectedYear);
+            updateTrendChart(trendChartId, selectedCountries, dataType, dataByYear, trendChartTypeSelectId);
+        }
+        
+        function updateCountryDetails(containerId, selectedItems, yearData, selectedYear) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            selectedItems.forEach(item => {
+                const data = yearData[item]; 
+                const detailCard = document.createElement('div');
+                detailCard.className = 'p-4 border rounded-lg bg-gray-50';
+                let content = `<h4 class="font-semibold text-lg mb-2 text-indigo-600">${item} (${selectedYear}年)</h4>`;
+
+                if (!data || Object.keys(data).length === 0 || (Object.keys(data).length === 1 && data.note && !Object.values(data).some(v => v !== null && v !== data.note && typeof v !== 'object'))) {
+                     content += `<p class="text-sm text-gray-500">この年の詳細データはありません。</p>`;
+                     if(data && data.note) content += `<p class="text-sm italic text-gray-600">一般的な情報: ${data.note}</p>`;
+                } else {
+                    if (data.note) content += `<p class="text-sm italic text-gray-600">${data.note}</p>`;
+                    
+                    if (containerId.includes('goods')) {
+                        if (data.balance !== undefined && data.balance !== null) content += `<p><strong>財貿易収支:</strong> ${data.balance.toFixed(2)}億ドル</p>`;
+                        if (data.exports !== undefined && data.exports !== null) content += `<p><strong>輸出額:</strong> ${data.exports.toFixed(2)}億ドル</p>`;
+                        if (data.imports !== undefined && data.imports !== null) content += `<p><strong>輸入額:</strong> ${data.imports.toFixed(2)}億ドル</p>`;
+                        const data2023 = goodsTradeDataByYear[2023][item];
+                        if (data2023 && data2023.mainExports) content += `<p><strong>主要輸出品 (2023年参考):</strong> ${data2023.mainExports}</p>`;
+                        if (data2023 && data2023.mainImports) content += `<p><strong>主要輸入品 (2023年参考):</strong> ${data2023.mainImports}</p>`;
+                    } else { 
+                        if (data.total !== undefined && data.total !== null) content += `<p><strong>サービス収支全体:</strong> ${data.total.toFixed(2)}億ドル</p>`;
+                        if (data.travel !== undefined && data.travel !== null) content += `<p><strong>旅行サービス:</strong> ${data.travel.toFixed(2)}億ドル</p>`;
+                        if (data.digital !== undefined && data.digital !== null) content += `<p><strong>デジタル関連:</strong> ${data.digital.toFixed(2)}億ドル</p>`;
+                        if (data.ip !== undefined && data.ip !== null) content += `<p><strong>知的財産権使用料:</strong> ${data.ip.toFixed(2)}億ドル</p>`;
+                        if (data.transport !== undefined && data.transport !== null) content += `<p><strong>輸送サービス:</strong> ${data.transport.toFixed(2)}億ドル</p>`;
+                    }
+                }
+                detailCard.innerHTML = content;
+                container.appendChild(detailCard);
+            });
+            if (selectedItems.length === 0) container.innerHTML = '<p class="text-gray-500 col-span-full">国・地域を選択してください。</p>';
+        }
+
+        function updateTrendChart(chartId, selectedCountries, dataType, dataByYear, chartTypeSelectId) {
+            if (selectedCountries.length === 0) {
+                if (charts[chartId]) charts[chartId].destroy();
+                return;
+            }
+            const chartType = document.getElementById(chartTypeSelectId).value;
+
+            const datasets = selectedCountries.map((country, index) => {
+                const countryDataPoints = availableYears.map(year => { 
+                    const yearData = dataByYear[year] && dataByYear[year][country];
+                    return yearData && yearData[dataType] !== null && typeof yearData[dataType] !== 'undefined' ? yearData[dataType] : null;
+                }).reverse(); 
+                return {
+                    label: country,
+                    data: countryDataPoints,
+                    borderColor: chartType === 'line' ? `hsl(${index * (360 / selectedCountries.length)}, 70%, 50%)` : undefined,
+                    backgroundColor: chartType === 'bar' ? `hsl(${index * (360 / selectedCountries.length)}, 70%, 60%)` : undefined,
+                    tension: 0.1,
+                    fill: false,
+                    spanGaps: true 
+                };
+            });
+
+            createOrUpdateChart(chartId, chartType, {
+                labels: availableYears.slice().reverse(), 
+                datasets: datasets
+            }, commonChartOptions('10億USドル', 'x', false, `選択国・地域の${document.getElementById(chartId.includes('goods') ? 'goods-data-type-select' : 'services-data-type-select').options[document.getElementById(chartId.includes('goods') ? 'goods-data-type-select' : 'services-data-type-select').selectedIndex].text} 推移`));
+        }
+        
+        function updateLongTermTrendChart() {
+            const selectedCountryRadio = document.querySelector('input[name="longTermCountry"]:checked');
+            if (!selectedCountryRadio) {
+                if(charts['longTermTrendChart']) charts['longTermTrendChart'].destroy();
+                return;
+            }
+            const selectedCountry = selectedCountryRadio.value;
+            const dataType = document.getElementById('longTermDataTypeSelect').value;
+            const chartType = document.getElementById('longTermTrendChartType').value;
+
+            const countryDataPoints = longTermTrendYears.map(year => { 
+                const yearData = goodsTradeDataByYear[year] && goodsTradeDataByYear[year][selectedCountry]; 
+                return yearData && yearData[dataType] !== null && typeof yearData[dataType] !== 'undefined' ? yearData[dataType] : null;
+            });
+
+            createOrUpdateChart('longTermTrendChart', chartType, {
+                labels: longTermTrendYears,
+                datasets: [{
+                    label: `${selectedCountry} - ${document.getElementById('longTermDataTypeSelect').options[document.getElementById('longTermDataTypeSelect').selectedIndex].text}`,
+                    data: countryDataPoints,
+                    borderColor: chartType === 'line' ? 'rgb(75, 192, 192)' : undefined,
+                    backgroundColor: chartType === 'bar' ? 'rgba(75, 192, 192, 0.7)' : undefined,
+                    tension: 0.1,
+                    fill: false,
+                    spanGaps: true
+                }]
+            }, commonChartOptions('10億USドル', 'x', false, `${selectedCountry}の財貿易 ${document.getElementById('longTermDataTypeSelect').options[document.getElementById('longTermDataTypeSelect').selectedIndex].text} 長期推移 (2020-2023年データ)`));
+        }
+
+
+        function renderJapanServiceBalanceTrendChart() {
+            createOrUpdateChart('japanServiceBalanceTrendChart', 'line', {
+                labels: japanServiceBalanceTrendRIFJ.years,
+                datasets: [
+                    { label: 'サービス収支全体', data: japanServiceBalanceTrendRIFJ.total, borderColor: 'rgb(255,99,132)', fill:false },
+                    { label: '旅行サービス', data: japanServiceBalanceTrendRIFJ.travel, borderColor: 'rgb(54,162,235)', fill:false },
+                    { label: 'デジタル関連', data: japanServiceBalanceTrendRIFJ.digital, borderColor: 'rgb(75,192,192)', fill:false }
+                ]
+            }, commonChartOptions('10億USドル', 'x', false));
+        }
+        function renderDigitalServiceTrendChart() {
+            createOrUpdateChart('digitalServiceTrendChart', 'line', {
+                labels: digitalServiceTrendRIFJ.years,
+                datasets: [
+                    { label: '世界のデジタル関連サービス貿易額', data: digitalServiceTrendRIFJ.worldTrade, borderColor: 'rgb(153,102,255)', fill:false },
+                    { label: '米国のデジタルサービス輸出', data: digitalServiceTrendRIFJ.usExports, borderColor: 'rgb(255,159,64)', fill:false },
+                    { label: '日本のデジタル赤字', data: digitalServiceTrendRIFJ.japanDeficit, borderColor: 'rgb(255,205,86)', fill:false }
+                ]
+            }, commonChartOptions('兆USドル', 'x', false));
+        }
+        function renderTravelServiceBalanceChart() {
+            const data = Object.entries(travelServiceBalance2023).filter(([k,_])=>!['EU','ASEAN'].includes(k)).sort((a,b)=>b[1]-a[1]);
+            createOrUpdateChart('travelServiceBalanceChart', 'bar', {
+                labels: data.map(item=>item[0]),
+                datasets: [{label:'旅行サービス収支',data:data.map(item=>item[1]),backgroundColor:data.map(item=>item[1]>=0?'rgba(75,192,192,0.7)':'rgba(255,99,132,0.7)')}]
+            }, commonChartOptions());
+        }
+        function renderIpServiceBalanceChart() {
+            const data = Object.entries(ipServiceBalance2023).filter(([k,_])=>!['EU','ASEAN'].includes(k)).sort((a,b)=>b[1]-a[1]);
+            createOrUpdateChart('ipServiceBalanceChart', 'bar', {
+                labels: data.map(item=>item[0]),
+                datasets: [{label:'知的財産権使用料収支',data:data.map(item=>item[1]),backgroundColor:data.map(item=>item[1]>=0?'rgba(153,102,255,0.7)':'rgba(255,159,64,0.7)')}]
+            }, commonChartOptions('10億USドル','y',false));
+        }
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+            document.getElementById(tabId).style.display = 'block';
+            document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+            document.querySelector(`.tab-button[onclick="showTab('${tabId}')"]`).classList.add('active');
+            if (tabId === 'long-term-trends') { 
+                updateLongTermTrendChart();
+            }
+        }
+        
+        function setupSelectDeselectButtons(selectAllId, deselectAllId, checkboxesContainerId, updateFn) {
+            document.getElementById(selectAllId).addEventListener('click', () => {
+                document.querySelectorAll(`#${checkboxesContainerId} input[type="checkbox"]`).forEach(cb => cb.checked = true);
+                updateFn();
+            });
+            document.getElementById(deselectAllId).addEventListener('click', () => {
+                document.querySelectorAll(`#${checkboxesContainerId} input[type="checkbox"]`).forEach(cb => cb.checked = false);
+                updateFn();
+            });
+        }
+
+        window.onload = () => {
+            renderGlobalOverviewCharts();
+            
+            const goodsUpdateFunction = () => updateCompareChart('goods-year-select', 'goods-data-type-select', 'goods-country-checkboxes', 'goodsCompareChart', 'goods-country-details', goodsTradeDataByYear, 'goodsTrendChart', 'goodsTrendChartType');
+            populateCountryCheckboxes('goods-country-checkboxes', goodsTradeDataByYear, 'goods-country', goodsUpdateFunction, '日本'); 
+            document.getElementById('goods-year-select').addEventListener('change', goodsUpdateFunction);
+            document.getElementById('goods-data-type-select').addEventListener('change', goodsUpdateFunction);
+            document.getElementById('goodsTrendChartType').addEventListener('change', goodsUpdateFunction);
+            goodsUpdateFunction(); 
+            setupSelectDeselectButtons('selectAllGoods', 'deselectAllGoods', 'goods-country-checkboxes', goodsUpdateFunction);
+
+            const servicesUpdateFunction = () => updateCompareChart('services-year-select', 'services-data-type-select', 'services-country-checkboxes', 'servicesCompareChart', 'services-country-details', servicesTradeDataByYear, 'servicesTrendChart', 'servicesTrendChartType');
+            populateCountryCheckboxes('services-country-checkboxes', servicesTradeDataByYear, 'services-country', servicesUpdateFunction, '日本'); 
+            document.getElementById('services-year-select').addEventListener('change', servicesUpdateFunction);
+            document.getElementById('services-data-type-select').addEventListener('change', servicesUpdateFunction);
+            document.getElementById('servicesTrendChartType').addEventListener('change', servicesUpdateFunction);
+            servicesUpdateFunction(); 
+            setupSelectDeselectButtons('selectAllServices', 'deselectAllServices', 'services-country-checkboxes', servicesUpdateFunction);
+            
+            populateLongTermCountryRadios(); 
+            document.querySelectorAll('input[name="longTermCountry"]').forEach(radio => {
+                radio.addEventListener('change', updateLongTermTrendChart);
+            });
+            document.getElementById('longTermDataTypeSelect').addEventListener('change', updateLongTermTrendChart);
+            document.getElementById('longTermTrendChartType').addEventListener('change', updateLongTermTrendChart);
+            
+            renderJapanServiceBalanceTrendChart();
+            renderDigitalServiceTrendChart();
+            renderTravelServiceBalanceChart();
+            renderIpServiceBalanceChart();
+            
+            showTab('global-overview'); 
+        };
+    </script>
+</body>
+</html>
