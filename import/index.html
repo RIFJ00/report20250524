@@ -60,9 +60,9 @@
         <div id="results-screen" style="display: none;" class="flex-grow flex flex-col">
             <header class="flex-shrink-0 flex flex-col sm:flex-row justify-between items-end mb-4">
                    <!-- 検索入力とボタン群のコンテナ -->
-                   <div class="flex flex-col sm:flex-row items-center w-full sm:justify-between sm:space-x-4 mb-4 sm:mb-0">
+                   <div class="flex flex-col sm:flex-row items-center w-full sm:justify-between sm:gap-x-4 mb-4 sm:mb-0">
                        <input type="text" id="searchInput" placeholder="検索（省庁名は略称でも可）..." class="border border-gray-300 p-2 rounded-lg mb-4 sm:mb-0 w-full sm:w-80 focus:ring-blue-500 focus:border-blue-500">
-                       <div class="flex flex-wrap justify-center sm:justify-start gap-x-2">
+                       <div class="flex flex-wrap justify-center sm:justify-start gap-x-2 w-full sm:w-auto">
                            <button id="clearSearchButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors mb-2 sm:mb-0 sm:flex-grow">
                                <i class="fas fa-times mr-2"></i>
                                <span>クリア</span>
@@ -247,7 +247,7 @@
                     const kaigiColumn = item['会議'] || ''; // Meeting column
                     const isBookmarked = item.isBookmarked || false; // Get bookmark status
 
-                    // Apply red bold style if "（更新）" is found in bikou
+                    // Apply red style if "（更新）" is found in bikou
                     if (bikou.includes('（更新）')) {
                         bikou = bikou.replace('（更新）', '<span class="text-red-500">（更新）</span>'); // Removed font-bold here, as per request: standard font
                     }
@@ -295,7 +295,7 @@
                             '<div>' +
                                 '<div class="flex items-center">' + 
                                     titlePrefixHtml +
-                                    '<a href="' + (url2 || '#') + '" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-bold hover:underline" title="' + originalTitle + '">' + displayTitle + '</a>' + // Use originalTitle for title attribute, displayTitle for innerHTML
+                                    '<a href="' + (url2 || '#') + '" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-bold hover:underline" title="' + originalTitle + '">' + displayTitle + '</a>' + 
                                 '</div>' +
                                 '<p class="text-xs text-gray-500 mt-1">' + bikou + '</p>' + // Use modified bikou
                             '</div>' +
@@ -839,6 +839,7 @@
                     currentData = []; // Clear data when going back to upload screen
                     lastUploadTimestamp = ''; // Clear timestamp when going back to upload screen
                     populateTable([]); // Reset the count display
+                    window.scrollTo(0, 0); // スクロール位置を一番上に戻す
                 });
 
                 exportButton.addEventListener('click', exportHTML);
