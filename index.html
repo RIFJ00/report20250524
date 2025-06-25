@@ -121,6 +121,27 @@
                     最新情報を確認
                 </p>
             </div>
+
+            <!-- 開発者のブログ セクション -->
+            <div class="flex-1 bg-gradient-to-tr from-red-50 to-red-100 p-6 md:p-8 rounded-2xl shadow-lg flex flex-col items-center justify-between transition-transform transform hover:scale-105 duration-300 ease-in-out border border-red-200">
+                <!-- 素敵なイラスト：コードアイコン（開発、ブログを示唆） -->
+                <div class="mb-6 flex-shrink-0">
+                    <svg class="w-24 h-24 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                </div>
+                <button
+                    id="developerBlogButton"
+                    data-target-url="https://report.rifj.jp//blog"
+                    data-password="blog"
+                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:translate-y-1 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-red-300 mb-4 w-full md:w-auto"
+                >
+                    開発者のブログ
+                </button>
+                <p class="text-lg text-red-700 mt-2">
+                    最新情報を確認
+                </p>
+            </div>
         </div>
     </div>
 
@@ -149,6 +170,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             const todayPointsButton = document.getElementById('todayPointsButton');
             const policyReportButton = document.getElementById('policyReportButton');
+            const developerBlogButton = document.getElementById('developerBlogButton');
+
             const passwordModal = document.getElementById('passwordModal');
             const closeModalButton = document.getElementById('closeModalButton');
             const passwordInput = document.getElementById('passwordInput');
@@ -191,6 +214,15 @@
                 policyReportButton.addEventListener('click', () => {
                     const targetUrl = policyReportButton.dataset.targetUrl;
                     const password = policyReportButton.dataset.password;
+                    openModal(targetUrl, password);
+                });
+            }
+
+            // 開発者のブログボタンのクリックイベントリスナー
+            if (developerBlogButton) {
+                developerBlogButton.addEventListener('click', () => {
+                    const targetUrl = developerBlogButton.dataset.targetUrl;
+                    const password = developerBlogButton.dataset.password;
                     openModal(targetUrl, password);
                 });
             }
