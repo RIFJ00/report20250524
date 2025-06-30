@@ -14,6 +14,7 @@ function initializeApp(files) {
     const listContainer = getEl('list'), preview = getEl('preview'), search = getEl('search'), itemCountEl = getEl('itemCount');
     const paginationControls = getEl('pagination-controls'), paginationControlsTop = getEl('pagination-controls-top');
     const sortKeySelect = getEl('sortKeyExport'), sortOrderSelect = getEl('sortOrderExport');
+    const clearSearchBtn = getEl('clearSearchBtnExport');
     let currentFilteredFiles = [];
     let currentPage = 1;
     const itemsPerPage = 10;
@@ -133,7 +134,19 @@ function initializeApp(files) {
         }
     });
     
-    search.addEventListener('input', () => { currentPage = 1; renderListInExport(); });
+    search.addEventListener('input', () => { 
+        currentPage = 1; 
+        renderListInExport(); 
+        clearSearchBtn.classList.toggle('hidden', !search.value);
+    });
+    clearSearchBtn.addEventListener('click', () => {
+        search.value = '';
+        clearSearchBtn.classList.add('hidden');
+        currentPage = 1;
+        renderListInExport();
+        search.focus();
+    });
+
     sortKeySelect.addEventListener('change', (e) => { currentSort.key = e.target.value; currentPage = 1; renderListInExport(); });
     sortOrderSelect.addEventListener('change', (e) => { currentSort.order = e.target.value; currentPage = 1; renderListInExport(); });
 
