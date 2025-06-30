@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>直近の内閣・政党支持率ダッシュボード</title>
+    
+    <!-- スタイルシートとフォント -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Noto Sans JP', sans-serif; 
+        }
+    </style>
+
+    <!-- 必要なJavaScriptライブラリの読み込み -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+</head>
+<body class="bg-gray-50">
+    
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        const App = () => {
+            // データの最終更新日時を固定で設定
+            const lastUpdatedDate = '2025年6月30日';
+            const surveyPeriodText = `各社平均（${lastUpdatedDate}）`;
+
+            // ベースとなる支持率データ
+            const baseData = {
+                '調査期間': surveyPeriodText,
+                '内閣支持率': 33.6,
+                '内閣不支持率': 52.3,
+                '自民党': 25.5,
+                '立憲民主党': 8.1,
+                '維新': 3.2,
+                '公明党': 3.1,
+                '国民民主党': 8.1,
+                '共産党': 2.7,
+                'れいわ': 3.1,
+                '参政党': 6.0,
+                '支持なし': 35.1,
+            };
+            
+            // 「その他」の値を計算
+            const partiesToSum = ['自民党', '立憲民主党', '維新', '公明党', '国民民主党', '共産党', 'れいわ', '参政党', '支持なし'];
+            const totalSupport = partiesToSum.reduce((sum, key) => sum + (baseData[key] || 0), 0);
+            const otherSupport = (100 - totalSupport).toFixed(1);
+
+            // 最終的なデータオブジェクトを作成
+            const staticSupportData = {
+                ...baseData,
+                'その他': otherSupport,
+            };
+            
+            const [supportData] = useState(staticSupportData);
+            const [view, setView] = useState('dashboard');
+            
+            // 表示する政党のリストと表示順を調整
+            const partyData = [
+                { displayName: '自民党', dataKey: '自民党', color: 'bg-blue-600' }, 
+                { displayName: '立憲民主党', dataKey: '立憲民主党', color: 'bg-green-600' },
+                { displayName: '国民民主党', dataKey: '国民民主党', color: 'bg-indigo-500' },
+                { displayName: '公明党', dataKey: '公明党', color: 'bg-red-600' },
+                { displayName: '共産党', dataKey: '共産党', color: 'bg-pink-600' },
+                { displayName: '維新', dataKey: '維新', color: 'bg-yellow-500' },
+                { displayName: 'れいわ', dataKey: 'れいわ', color: 'bg-purple-600' },
+                { displayName: '参政党', dataKey: '参政党', color: 'bg-teal-500' },
+                { displayName: 'その他', dataKey: 'その他', color: 'bg-gray-400' },
+                { displayName: '無党派', dataKey: '支持なし', color: 'bg-gray-700' },
+            ];
+            
+            const renderDashboard = () => (
+                <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
+                    <header className="text-center mb-6">
+                        <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
+                            直近の内閣・政党支持率ダッシュボード
+                        </h1>
+                    </header>
+                    
+                    <div className="text-center mb-8">
+                         <p className="text-gray-600">{supportData['調査期間']}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div className="bg-white p-6 rounded-xl shadow-md">
+                            <h2 className="text-xl font-semibold text-center mb-2">内閣支持率</h2>
+                            <p className="text-6xl font-bold text-center text-green-500">{supportData['内閣支持率']}<span className="text-3xl ml-2">%</span></p>
+                        </div>
+                        <div className="bg-white p-6 rounded-xl shadow-md">
+                            <h2 className="text-xl font-semibold text-center mb-2">内閣不支持率</h2>
+                            <p className="text-6xl font-bold text-center text-red-500">{supportData['内閣不支持率']}<span className="text-3xl ml-2">%</span></p>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-xl shadow-md">
+                        <h2 className="text-xl font-semibold text-center mb-6">各党支持率</h2>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-6">
+                            {partyData.map(party => (
+                                <div key={party.displayName} className="border rounded-lg">
+                                    <div className={`p-2 text-center text-white font-bold ${party.color} rounded-t-md truncate`}>
+                                        {party.displayName}
+                                    </div>
+                                    <div className="p-4 text-center">
+                                        <p className="text-3xl font-bold">{supportData[party.dataKey]}<span className="text-lg ml-1">%</span></p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <footer className="mt-12 text-center">
+                        <div className="flex justify-center gap-4">
+                            <button onClick={() => setView('opinion')} className="bg-blue-600 text-white font-bold py-3 px-12 rounded-lg hover:bg-blue-700 transition-transform transform hover:scale-105 shadow-lg">支持率分析</button>
+                            <button onClick={() => setView('election')} className="bg-green-600 text-white font-bold py-3 px-12 rounded-lg hover:bg-green-700 transition-transform transform hover:scale-105 shadow-lg">参院選分析</button>
+                        </div>
+                    </footer>
+
+                    {/* フッター情報 */}
+                    <div className="mt-16 pt-8 border-t text-center text-sm text-gray-500">
+                        <p className="mb-2 px-4">
+                            このダッシュボードは、報道機関各社の世論調査の結果等をベースに、一般社団法人日本みらい研が独自にまとめたものとなる（更新: {lastUpdatedDate}）。
+                        </p>
+                        <p>
+                            ©️一般社団法人日本みらい研 2025
+                        </p>
+                    </div>
+                </div>
+            );
+            
+            const renderAnalysisView = (url) => (
+                <div className="w-full h-screen flex flex-col bg-gray-100">
+                    <header className="p-4 bg-white shadow-md flex items-center">
+                        <button onClick={() => setView('dashboard')} className="bg-gray-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-700">&larr; ダッシュボードに戻る</button>
+                    </header>
+                    <iframe src={url} className="w-full flex-grow border-none" title="Analysis View"></iframe>
+                </div>
+            );
+            
+            switch (view) {
+                case 'opinion': return renderAnalysisView('https://report.rifj.jp/opinion');
+                case 'election': return renderAnalysisView('https://report.rifj.jp/election');
+                default: return renderDashboard();
+            }
+        };
+
+        const container = document.getElementById('root');
+        const root = ReactDOM.createRoot(container);
+        root.render(<React.StrictMode><App /></React.StrictMode>);
+    </script>
+</body>
+</html>
