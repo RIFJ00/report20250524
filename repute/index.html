@@ -34,8 +34,8 @@
             const lastUpdatedDate = '2025年6月30日';
             const surveyPeriodText = `各社平均（${lastUpdatedDate}）`;
 
-            // ベースとなる支持率データ
-            const baseData = {
+            // ベースとなる当月データ
+            const currentData = {
                 '調査期間': surveyPeriodText,
                 '内閣支持率': 33.6,
                 '内閣不支持率': 52.3,
@@ -49,16 +49,40 @@
                 '参政党': 6.0,
                 '支持なし': 35.1,
             };
+
+            // 前月のデータ（仮）
+            const previousData = {
+                '内閣支持率': 34.7,
+                '内閣不支持率': 50.3,
+                '自民党': 25.8,
+                '立憲民主党': 8.1,
+                '国民民主党': 10.5,
+                '公明党': 3.2,
+                '共産党': 2.1,
+                '維新': 3.0,
+                'れいわ': 3.5,
+                '参政党': 3.9,
+                '支持なし': 35.1,
+            };
             
+            // 差分を計算してデータに含める
+            const dataWithDiff = { ...currentData };
+            for (const key in previousData) {
+                if (currentData[key] !== undefined) {
+                    const diff = (currentData[key] - previousData[key]).toFixed(1);
+                    dataWithDiff[`${key}_diff`] = diff;
+                }
+            }
+
             // 「その他」の値を計算
             const partiesToSum = ['自民党', '立憲民主党', '維新', '公明党', '国民民主党', '共産党', 'れいわ', '参政党', '支持なし'];
-            const totalSupport = partiesToSum.reduce((sum, key) => sum + (baseData[key] || 0), 0);
+            const totalSupport = partiesToSum.reduce((sum, key) => sum + (currentData[key] || 0), 0);
             const otherSupport = (100 - totalSupport).toFixed(1);
 
             // 最終的なデータオブジェクトを作成
             const staticSupportData = {
-                ...baseData,
-                'その他': otherSupport,
+                ...dataWithDiff,
+                'その他': otherSupport > 0 ? otherSupport : 0, // マイナスにならないように調整
             };
             
             const [supportData] = useState(staticSupportData);
@@ -78,6 +102,28 @@
                 { displayName: '無党派', dataKey: '支持なし', color: 'bg-gray-700' },
             ];
             
+            // 前月比を描画するヘルパーコンポーネント
+            const DiffLabel = ({ diff }) => {
+                if (diff === undefined || diff === null || isNaN(diff)) {
+                    return null;
+                }
+                const value = parseFloat(diff);
+                const isNegative = value < 0;
+                const isPositive = value > 0;
+                
+                let colorClass = 'text-gray-500';
+                if (isNegative) colorClass = 'text-red-500';
+                if (isPositive) colorClass = 'text-green-500';
+                
+                const sign = isPositive ? '+' : '';
+
+                return (
+                    <span className={`ml-2 text-lg font-normal ${colorClass}`}>
+                        ({sign}{value.toFixed(1)})
+                    </span>
+                );
+            };
+
             const renderDashboard = () => (
                 <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
                     <header className="text-center mb-6">
@@ -91,13 +137,21 @@
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                        <div className="bg-white p-6 rounded-xl shadow-md">
+                        <div className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center">
                             <h2 className="text-xl font-semibold text-center mb-2">内閣支持率</h2>
-                            <p className="text-6xl font-bold text-center text-green-500">{supportData['内閣支持率']}<span className="text-3xl ml-2">%</span></p>
+                            <p className="text-6xl font-bold text-center text-green-500 flex items-baseline justify-center">
+                                {supportData['内閣支持率']}
+                                <span className="text-3xl ml-2">%</span>
+                                <DiffLabel diff={supportData['内閣支持率_diff']} />
+                            </p>
                         </div>
-                        <div className="bg-white p-6 rounded-xl shadow-md">
+                        <div className="bg-white p-6 rounded-xl shadow-md flex flex-col items-center justify-center">
                             <h2 className="text-xl font-semibold text-center mb-2">内閣不支持率</h2>
-                            <p className="text-6xl font-bold text-center text-red-500">{supportData['内閣不支持率']}<span className="text-3xl ml-2">%</span></p>
+                            <p className="text-6xl font-bold text-center text-red-500 flex items-baseline justify-center">
+                                {supportData['内閣不支持率']}
+                                <span className="text-3xl ml-2">%</span>
+                                <DiffLabel diff={supportData['内閣不支持率_diff']} />
+                            </p>
                         </div>
                     </div>
 
@@ -110,7 +164,11 @@
                                         {party.displayName}
                                     </div>
                                     <div className="p-4 text-center">
-                                        <p className="text-3xl font-bold">{supportData[party.dataKey]}<span className="text-lg ml-1">%</span></p>
+                                        <div className="flex items-baseline justify-center">
+                                            <p className="text-3xl font-bold">{supportData[party.dataKey]}</p>
+                                            <span className="text-lg ml-1">%</span>
+                                            <DiffLabel diff={supportData[`${party.dataKey}_diff`]} />
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -124,7 +182,6 @@
                         </div>
                     </footer>
 
-                    {/* フッター情報 */}
                     <div className="mt-16 pt-8 border-t text-center text-sm text-gray-500">
                         <p className="mb-2 px-4">
                             このダッシュボードは、報道機関各社の世論調査の結果等をベースに、一般社団法人日本みらい研が独自にまとめたものとなる（更新: {lastUpdatedDate}）。
