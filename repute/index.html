@@ -50,27 +50,19 @@
                 '支持なし': 35.1,
             };
 
-            // 前月のデータ（仮）
-            const previousData = {
-                '内閣支持率': 34.7,
-                '内閣不支持率': 50.3,
-                '自民党': 25.8,
-                '立憲民主党': 8.1,
-                '国民民主党': 10.5,
-                '公明党': 3.2,
-                '共産党': 2.1,
-                '維新': 3.0,
-                'れいわ': 3.5,
-                '参政党': 3.9,
-                '支持なし': 35.1,
+            // === 直前の1ヶ月前のデータ（5月分） ===
+            const previousData = { 
+                '内閣支持率': 34.7, '内閣不支持率': 50.3, '自民党': 25.8, '立憲民主党': 8.1, 
+                '国民民主党': 10.5, '公明党': 3.2, '共産党': 2.1, '維新': 3.0, 'れいわ': 3.5, 
+                '参政党': 3.9, '支持なし': 35.1 
             };
             
             // 差分を計算してデータに含める
             const dataWithDiff = { ...currentData };
             for (const key in previousData) {
                 if (currentData[key] !== undefined) {
-                    const diff = (currentData[key] - previousData[key]).toFixed(1);
-                    dataWithDiff[`${key}_diff`] = diff;
+                    const diff = (currentData[key] - previousData[key]);
+                    dataWithDiff[`${key}_diff`] = diff.toFixed(1);
                 }
             }
 
@@ -119,7 +111,7 @@
 
                 return (
                     <span className={`ml-2 text-lg font-normal ${colorClass}`}>
-                        ({sign}{value.toFixed(1)})
+                        ({sign}{value})
                     </span>
                 );
             };
