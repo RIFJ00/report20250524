@@ -11,7 +11,10 @@
     <!-- SheetJS (Excel解析ライブラリ) を読み込み -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        /* フォント設定 */
+        /* Google FontsからInterとNoto Sans JPを読み込み */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap');
+
+        /* 基本フォント設定 */
         body {
             font-family: 'Inter', 'Noto Sans JP', sans-serif;
         }
@@ -29,26 +32,50 @@
             50% { transform: scale(1.25); }
             100% { transform: scale(1); }
         }
+        /* 会議日列を非表示にするためのスタイル */
+        .hide-kaigi-date .kaigi-date-col {
+            display: none;
+        }
+        /* ソート可能なヘッダーのスタイル */
+        .sortable-header {
+            cursor: pointer;
+            user-select: none;
+        }
+        .sortable-header:hover {
+            background-color: #4a5568; /* Tailwindのgray-700 */
+        }
+        .sort-icon {
+            margin-left: 0.5rem;
+            color: #a0aec0; /* Tailwindのgray-500 */
+            width: 1em;
+            display: inline-block;
+        }
+        .sortable-header.asc .sort-icon::after {
+            content: '▲';
+        }
+        .sortable-header.desc .sort-icon::after {
+            content: '▼';
+        }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 flex flex-col h-screen">
+<body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
 
     <div class="container mx-auto px-4 py-8 flex-grow flex flex-col">
         <!-- ファイルアップロード画面 -->
         <div id="upload-screen" class="flex-grow flex flex-col">
             <header class="text-center mb-8 flex-shrink-0">
-                <h1 class="text-4xl font-bold text-gray-900 inline-flex items-center justify-center">
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900 inline-flex items-center justify-center">
                     政策リサーチ政策関連情報一覧
-                    <span id="mainTitleAudioIcon" class="audio-icon text-blue-500 hover:text-blue-700 text-3xl ml-3">
+                    <span id="mainTitleAudioIcon" class="audio-icon text-blue-500 hover:text-blue-700 text-2xl md:text-3xl ml-3" title="クリック効果音">
                         <i class="fas fa-volume-up"></i>
                     </span>
                 </h1>
-                <p class="text-lg text-gray-600 mt-2">政策リサーチに関する記事や音声解説の一覧です。</p>
+                <p class="text-base md:text-lg text-gray-600 mt-2">政策リサーチに関する記事や音声解説の一覧です。</p>
             </header>
             <main class="flex-grow flex items-center justify-center">
                 <div class="w-full max-w-lg mb-6 bg-white p-6 rounded-lg shadow-md">
                     <label for="fileInput" class="block text-lg font-medium text-gray-700 mb-3">
-                        1. Excel または CSVファイルを選択してください
+                        1. Excel または CSVファイルを選択
                     </label>
                     <input type="file" id="fileInput" accept=".csv, .xlsx, .xls" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200 transition-colors duration-200 cursor-pointer"/>
                     <div id="upload-error" class="text-red-500 text-sm mt-2"></div>
@@ -58,39 +85,40 @@
 
         <!-- 読み込み結果画面（初期状態では非表示） -->
         <div id="results-screen" style="display: none;" class="flex-grow flex flex-col">
-            <header class="flex-shrink-0 flex flex-col sm:flex-row justify-between items-end mb-4">
-                   <!-- 検索入力とボタン群のコンテナ -->
-                   <div class="flex flex-col sm:flex-row items-center w-full sm:justify-between sm:gap-x-4 mb-4 sm:mb-0">
-                       <input type="text" id="searchInput" placeholder="検索（省庁名は略称でも可）..." class="border border-gray-300 p-2 rounded-lg mb-4 sm:mb-0 w-full sm:w-80 focus:ring-blue-500 focus:border-blue-500">
-                       <div class="flex flex-wrap justify-center sm:justify-start gap-x-2 w-full sm:w-auto">
-                           <button id="clearSearchButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors mb-2 sm:mb-0 sm:flex-grow">
-                               <i class="fas fa-times mr-2"></i>
-                               <span>クリア</span>
-                           </button>
-                           <button id="back-button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors mb-2 sm:mb-0 sm:flex-grow">
-                               <i class="fas fa-arrow-left mr-2"></i>
-                               <span>別ファイル</span>
-                           </button>
-                           <button id="export-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors mb-2 sm:mb-0 sm:flex-grow">
-                               <i class="fas fa-file-export mr-2"></i>
-                               <span>HTML出力</span>
-                           </button>
-                       </div>
-                   </div>
-                   <!-- 件数表示要素を元の配置に戻す -->
-                   <div id="dataCountDisplay" class="text-gray-600 text-sm mt-4 sm:mt-2 w-full text-center sm:text-right"></div>
+            <header class="flex-shrink-0 flex flex-col sm:flex-row justify-between items-end mb-4 gap-4">
+                 <!-- 検索入力とボタン群のコンテナ -->
+                <div class="flex flex-col sm:flex-row items-center w-full sm:justify-start gap-2">
+                    <input type="text" id="searchInput" placeholder="検索（省庁名は略称でも可）" class="border border-gray-300 p-2 rounded-lg w-full sm:w-80 focus:ring-blue-500 focus:border-blue-500">
+                    <div class="flex items-center gap-2">
+                         <button id="clearSearchButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors">
+                            <i class="fas fa-times mr-2"></i>
+                            <span>クリア</span>
+                        </button>
+                        <button id="back-button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            <span>別ファイル</span>
+                        </button>
+                        <button id="export-button" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors">
+                            <i class="fas fa-file-export mr-2"></i>
+                            <span>HTML出力</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- 件数表示 -->
+                <div id="dataCountDisplay" class="text-gray-600 text-sm w-full sm:w-auto text-center sm:text-right flex-shrink-0"></div>
             </header>
             <div id="results-table-container" class="bg-white shadow-lg rounded-lg overflow-auto flex-grow">
                 <table class="min-w-full leading-normal table-fixed">
-                    <thead class="bg-gray-800 text-white sticky top-0">
+                    <thead id="table-header" class="bg-gray-800 text-white sticky top-0 z-10">
                         <tr>
-                            <th class="w-8 sm:w-16 px-2 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold uppercase tracking-wider"><i class="fas fa-bookmark"></i></th>
-                            <th class="w-20 sm:w-28 px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">日付</th>
-                            <th class="px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">政策関連情報概要</th>
-                            <th class="w-8 sm:w-16 px-2 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold uppercase tracking-wider"><i class="fas fa-volume-up"></i></th>
+                            <th class="w-12 sm:w-16 px-2 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold uppercase tracking-wider" title="ブックマーク"><i class="fas fa-bookmark"></i></th>
+                            <th class="w-24 sm:w-28 px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider sortable-header" data-sort-key="日付">日付<span class="sort-icon"></span></th>
+                            <th class="kaigi-date-col w-24 sm:w-28 px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider sortable-header" data-sort-key="開催日">会議日<span class="sort-icon"></span></th>
+                            <th class="px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider sortable-header" data-sort-key="タイトル名">政策関連情報概要<span class="sort-icon"></span></th>
+                            <th class="w-12 sm:w-16 px-2 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold uppercase tracking-wider" title="音声"><i class="fas fa-volume-up"></i></th>
                         </tr>
                     </thead>
-                    <tbody id="data-table-body"></tbody>
+                    <tbody id="data-table-body" class="divide-y divide-gray-200"></tbody>
                 </table>
                 <div id="loading" class="text-center p-8 text-gray-500"></div>
             </div>
@@ -101,760 +129,536 @@
         </footer>
     </div>
     
+    <!-- 音声再生用の非表示要素 -->
     <audio id="audioPlayer" style="display: none;"></audio>
 
     <script>
-        // Wrap the entire script in an Immediately Invoked Function Expression (IIFE)
-        // This helps to prevent conflicts with other scripts and creates a clear scope.
-        (function() {
-            let audioContext;
-            let currentData = []; // Store the parsed data globally within the IIFE for searching
-            let lastUploadTimestamp = ''; // Stores the timestamp of the last successful file upload
+    // スクリプト全体を即時実行関数 (IIFE) で囲むことで、グローバルスコープの汚染を防ぎます。
+    (function() {
+        // --- アプリケーションの状態 ---
+        let audioContext;
+        let currentData = []; // 解析された元のデータ
+        let lastUploadTimestamp = ''; // 最終アップロード日時
+        let currentlyPlayingIcon = null; // 現在再生中の音声アイコン
+        let sortState = { key: '日付', direction: 'desc' }; // 初期ソート状態
 
-            // Common abbreviations mapping for search
-            const ABBREVIATIONS = {
-                "国土交通省": "国交省",
-                "国交省": "国土交通省",
-                "文部科学省": "文科省",
-                "文科省": "文部科学省",
-                "経済産業省": "経産省",
-                "経産省": "経済産業省",
-                "農林水産省": "農水省",
-                "農水省": "農林水産省",
-                "厚生労働省": "厚労省",
-                "厚労省": "厚生労働省",
-                "資源エネルギー庁": "エネ庁",
-                "エネ庁": "資源エネルギー庁"
-            };
+        // --- DOM要素 ---
+        const fileInput = document.getElementById('fileInput');
+        const uploadScreen = document.getElementById('upload-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const backButton = document.getElementById('back-button');
+        const exportButton = document.getElementById('export-button');
+        const uploadError = document.getElementById('upload-error');
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchButton = document.getElementById('clearSearchButton');
+        const mainTitleAudioIcon = document.getElementById('mainTitleAudioIcon');
+        const tableBody = document.getElementById('data-table-body');
+        const tableHeader = document.getElementById('table-header');
+        const loadingIndicator = document.getElementById('loading');
+        const dataCountDisplay = document.getElementById('dataCountDisplay');
+        const tableElement = document.querySelector('#results-table-container table');
+        const audioPlayer = document.getElementById('audioPlayer');
 
-            // Function to play a short crackling sound effect
-            function playCrackSound() {
-                if (!audioContext) {
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                const bufferSize = audioContext.sampleRate * 0.1;
-                const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-                const output = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) {
-                    output[i] = Math.random() * 2 - 1;
-                }
-                const source = audioContext.createBufferSource();
-                source.buffer = buffer;
-                const gainNode = audioContext.createGain();
-                gainNode.gain.setValueAtTime(1, audioContext.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08);
-                source.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                source.start(0);
+        // --- 定数 ---
+        const ABBREVIATIONS = {
+            "国土交通省": "国交省", "国交省": "国土交通省",
+            "文部科学省": "文科省", "文科省": "文部科学省",
+            "経済産業省": "経産省", "経産省": "経済産業省",
+            "農林水産省": "農水省", "農水省": "農林水産省",
+            "厚生労働省": "厚労省", "厚労省": "厚生労働省",
+            "資源エネルギー庁": "エネ庁", "エネ庁": "資源エネルギー庁"
+        };
+        
+        // --- 関数 ---
+
+        /**
+         * 短いノイズ音を再生します。
+         */
+        function playCrackSound() {
+            if (!audioContext) { try { audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { console.error('AudioContext is not supported.', e); return; } }
+            if (audioContext.state === 'suspended') { audioContext.resume(); }
+            const bufferSize = audioContext.sampleRate * 0.1; const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const output = buffer.getChannelData(0); for (let i = 0; i < bufferSize; i++) { output[i] = (Math.random() * 2 - 1) * 0.5; }
+            const source = audioContext.createBufferSource(); source.buffer = buffer;
+            const gainNode = audioContext.createGain(); gainNode.gain.setValueAtTime(0.5, audioContext.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08);
+            source.connect(gainNode); gainNode.connect(audioContext.destination);
+            source.start(0);
+        }
+
+        /**
+         * 音声の再生/停止をトグルします。
+         */
+        function toggleAudioPlayback(clickedIcon) {
+            playCrackSound();
+            const audioSrc = clickedIcon.dataset.src; if (!audioSrc) return;
+            if (currentlyPlayingIcon === clickedIcon && !audioPlayer.paused) {
+                audioPlayer.pause();
+            } else {
+                if (currentlyPlayingIcon) { currentlyPlayingIcon.classList.remove('playing'); }
+                audioPlayer.src = audioSrc;
+                audioPlayer.play().catch(e => console.error("Audio play failed:", e));
+                currentlyPlayingIcon = clickedIcon;
             }
+        }
+        
+        /**
+         * 検索、ソート、描画の一連のプロセスを実行します。
+         */
+        function renderTable() {
+            const searchQuery = searchInput.value;
+            let dataToRender = [...currentData];
+
+            dataToRender = filterData(dataToRender, searchQuery);
+            sortData(dataToRender);
+            updateSortIcons();
+
+            tableBody.innerHTML = '';
+            loadingIndicator.style.display = 'none';
             
-            // Function to populate the table with data
-            // Now accepts data and an optional search query for filtering
-            function populateTable(siteData, searchQuery = '') {
+            const updateText = lastUploadTimestamp ? `（${lastUploadTimestamp} 更新）` : '';
+            dataCountDisplay.innerHTML = `${dataToRender.length}件 ${updateText}`;
+
+            if (dataToRender.length === 0) {
+                loadingIndicator.textContent = searchQuery ? '検索条件に一致するデータがありません。' : '表示するデータがありません。';
+                loadingIndicator.style.display = 'block';
+            } else {
+                const fragment = document.createDocumentFragment();
+                dataToRender.forEach(item => fragment.appendChild(createTableRow(item)));
+                tableBody.appendChild(fragment);
+            }
+        }
+        
+        /**
+         * 検索クエリに基づいてデータをフィルタリングします。
+         */
+        function filterData(data, searchQuery) {
+            if (!searchQuery) return data;
+            const lowerCaseSearchQuery = searchQuery.toLowerCase().trim();
+            const searchTerms = new Set([lowerCaseSearchQuery]);
+            const abbreviation = ABBREVIATIONS[searchQuery.trim()];
+            if (abbreviation) { searchTerms.add(abbreviation.toLowerCase()); }
+            for (const [full, abbr] of Object.entries(ABBREVIATIONS)) {
+                if (abbr.toLowerCase() === lowerCaseSearchQuery) { searchTerms.add(full.toLowerCase()); }
+            }
+            return data.filter(item => {
+                const title = item['タイトル名'] || '';
+                const bikou = item['備考'] || '';
+                const date = item['日付'] || '';
+                const kaigiDate = item['開催日'] || '';
+                const contentToSearch = `${title} ${bikou} ${date} ${kaigiDate}`.toLowerCase();
+                return Array.from(searchTerms).some(term => contentToSearch.includes(term));
+            });
+        }
+        
+        /**
+         * `sortState`に基づいてデータをソートします。
+         */
+        function sortData(data) {
+            const { key, direction } = sortState;
+            const modifier = direction === 'asc' ? 1 : -1;
+            const isDateKey = key === '日付' || key === '開催日';
+
+            data.sort((a, b) => {
+                // ブックマークを最優先
+                if (a.isBookmarked !== b.isBookmarked) return b.isBookmarked - a.isBookmarked;
+
+                const valA = a[key] || '';
+                const valB = b[key] || '';
+                
+                if (isDateKey) {
+                    // 日付の比較（無効な日付は最後尾に）
+                    const dateA = valA ? new Date(valA) : null;
+                    const dateB = valB ? new Date(valB) : null;
+                    if (!dateA && !dateB) return 0;
+                    if (!dateA) return 1;
+                    if (!dateB) return -1;
+                    return (dateA - dateB) * modifier;
+                } else {
+                    // 文字列の比較
+                    return valA.localeCompare(valB, 'ja') * modifier;
+                }
+            });
+        }
+
+        /**
+         * ヘッダーのソートアイコンを更新します。
+         */
+        function updateSortIcons() {
+            document.querySelectorAll('.sortable-header').forEach(header => {
+                header.classList.remove('asc', 'desc');
+                if (header.dataset.sortKey === sortState.key) {
+                    header.classList.add(sortState.direction);
+                }
+            });
+        }
+        
+        /**
+         * データアイテムから単一のテーブル行を生成します。
+         */
+        function createTableRow(item) {
+            const date = item['日付'] || '';
+            const kaigiDate = item['開催日'] || '';
+            const originalTitle = item['タイトル名'] || 'タイトルなし';
+            let displayTitle = originalTitle;
+            const url2 = String(item['URL2'] || '');
+            let bikou = item['備考'] || '';
+            
+            if (bikou.includes('（更新）')) { bikou = bikou.replace(/（更新）/g, '<span class="text-red-500 font-bold">（更新）</span>'); }
+            if (displayTitle.includes('（更新）')) { displayTitle = displayTitle.replace(/（更新）/g, '<span class="text-red-500 font-bold">（更新）</span>'); }
+
+            const today = new Date().toLocaleDateString('ja-JP', {year: 'numeric', month: '2-digit', day: '2-digit'});
+            const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('ja-JP', {year: 'numeric', month: '2-digit', day: '2-digit'});
+            
+            let dateClass = 'text-gray-900';
+            if (date === today) dateClass = 'text-red-500 font-bold';
+            else if (date === yesterday) dateClass = 'text-red-500';
+
+            let titlePrefixHtml = '';
+            if (item['会議'] === '会議') { titlePrefixHtml = '<span class="inline-block bg-purple-100 text-purple-800 text-xs font-bold mr-3 px-2.5 py-1 rounded-full flex-shrink-0">会議</span>'; } 
+            else if (url2) { titlePrefixHtml = url2.toLowerCase().includes('.pdf') ? '<span class="inline-block bg-red-100 text-red-800 text-xs font-bold mr-3 px-2.5 py-1 rounded-full flex-shrink-0">PDF</span>' : '<span class="inline-block bg-blue-100 text-blue-800 text-xs font-bold mr-3 px-2.5 py-1 rounded-full flex-shrink-0">WEB</span>'; }
+
+            const audioIconHtml = item['URL1'] ? `<span data-src="${item['URL1']}" title="音声を再生" aria-label="音声を再生" class="audio-icon text-gray-600 hover:text-blue-600 text-lg"><i class="fas fa-volume-up"></i></span>` : '';
+
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-gray-50 transition-colors duration-200';
+            row.innerHTML = `
+                <td class="w-12 sm:w-16 px-2 py-3 text-sm text-center"><input type="checkbox" class="bookmark-checkbox form-checkbox h-4 w-4 text-blue-600 rounded cursor-pointer" data-index="${item._originalIndex}" ${item.isBookmarked ? 'checked' : ''} aria-label="ブックマーク"></td>
+                <td class="w-24 sm:w-28 px-2 py-3 text-sm"><p class="whitespace-nowrap ${dateClass}">${date}</p></td>
+                <td class="kaigi-date-col w-24 sm:w-28 px-2 py-3 text-sm"><p class="whitespace-nowrap text-gray-900">${kaigiDate}</p></td>
+                <td class="px-2 py-3 text-sm min-w-0"><div><div class="flex items-center">${titlePrefixHtml}<a href="${url2 || '#'}" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-bold hover:underline" title="${originalTitle}">${displayTitle}</a></div><p class="text-xs text-gray-500 mt-1">${bikou}</p></div></td>
+                <td class="w-12 sm:w-16 px-2 py-3 text-sm text-center">${audioIconHtml}</td>
+            `;
+            return row;
+        }
+
+        /**
+         * ファイル選択時の処理です。
+         */
+        function handleFileSelect(event) {
+            const file = event.target.files[0]; if (!file) return;
+            uploadError.textContent = ''; loadingIndicator.textContent = '読み込み中...'; loadingIndicator.style.display = 'block';
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = e.target.result; const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0]; const worksheet = workbook.Sheets[firstSheetName];
+                    const headers = XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0] || [];
+                    const hasKaigiDateColumn = headers.includes('開催日');
+                    tableElement.classList.toggle('hide-kaigi-date', !hasKaigiDateColumn);
+
+                    let parsedData = XLSX.utils.sheet_to_json(worksheet);
+                    const formatDate = (serial) => { if (serial && typeof serial === 'number' && serial > 1) { const date = new Date(Math.round((serial - 25569) * 86400 * 1000)); return date.toLocaleDateString('ja-JP', {year: 'numeric', month: '2-digit', day: '2-digit'}); } return serial; }
+                    parsedData.forEach((row, index) => {
+                        row['日付'] = formatDate(row['日付']);
+                        if (hasKaigiDateColumn) { row['開催日'] = formatDate(row['開催日']); }
+                        row.isBookmarked = false; row._originalIndex = index;
+                    });
+                    
+                    currentData = parsedData;
+                    lastUploadTimestamp = new Date().toLocaleString('ja-JP', { dateStyle: 'short', timeStyle: 'short' });
+                    sortState = { key: '日付', direction: 'desc' }; // ソート状態をリセット
+                    
+                    renderTable();
+                    uploadScreen.style.display = 'none'; resultsScreen.style.display = 'flex';
+                    searchInput.value = '';
+                } catch (error) {
+                    console.error('File processing error:', error);
+                    uploadError.textContent = 'ファイルの処理中にエラーが発生しました。ファイル形式を確認してください。';
+                    loadingIndicator.style.display = 'none';
+                }
+            };
+            reader.onerror = () => { uploadError.textContent = 'ファイルの読み込みに失敗しました。'; loadingIndicator.style.display = 'none'; };
+            reader.readAsArrayBuffer(file);
+        }
+
+        /**
+         * HTMLファイルを出力します。
+         */
+        function exportHTML() {
+            const hasKaigiDateColumn = !tableElement.classList.contains('hide-kaigi-date');
+            
+            // This function will be stringified and embedded in the exported HTML.
+            // It contains all the logic needed for the exported page to be interactive.
+            const exportedAppLogic = function(APP_DATA) {
+                // --- STATE ---
+                let audioContext;
+                let currentlyPlayingIcon = null;
+                let currentData = [...APP_DATA.tableData];
+                let sortState = { ...APP_DATA.initialSortState };
+
+                // --- DOM ELEMENTS ---
+                const audioPlayer = document.getElementById('audioPlayer');
                 const tableBody = document.getElementById('data-table-body');
                 const loadingIndicator = document.getElementById('loading');
                 const dataCountDisplay = document.getElementById('dataCountDisplay');
-                tableBody.innerHTML = ''; // Clear existing table rows
-
-                let filteredData = siteData;
-
-                // Enhanced search logic
-                if (searchQuery) {
-                    const lowerCaseSearchQuery = searchQuery.toLowerCase();
-                    const searchTerms = new Set([lowerCaseSearchQuery]); // Use Set to avoid duplicates
-
-                    // Add abbreviation if exists
-                    if (ABBREVIATIONS[searchQuery]) { // Use original searchQuery for lookup in ABBREVIATIONS
-                        searchTerms.add(ABBREVIATIONS[searchQuery].toLowerCase());
-                    }
-                    // Also check if the abbreviation itself is searched to include the full form
-                    for (const fullForm in ABBREVIATIONS) {
-                        if (ABBREVIATIONS[fullForm].toLowerCase() === lowerCaseSearchQuery && fullForm.toLowerCase() !== lowerCaseSearchQuery) {
-                            searchTerms.add(fullForm.toLowerCase());
-                        }
-                    }
-
-                    filteredData = siteData.filter(function(item) {
-                        const title = item['タイトル名'] || '';
-                        let bikou = item['備考'] || ''; // Changed to let to allow modification
-                        const kaigiColumn = item['会議'] || '';
-                        
-                        let titlePrefixText = '';
-                        if (kaigiColumn === '会議') {
-                            titlePrefixText = '会議';
-                        } else { // No else if here, default to empty or process url2 later
-                            const url2 = (item && item['URL2']) ? String(item['URL2']) : ''; // Safely access url2
-                            if (url2.toLowerCase().includes('.pdf')) {
-                                titlePrefixText = 'PDF';
-                            } else if (url2) { // Check if url2 exists after .pdf check
-                                titlePrefixText = 'WEB';
-                            }
-                        }
-                        
-                        const searchableContent = Array.from(searchTerms).some(term => 
-                            (titlePrefixText + ' ' + title + ' ' + bikou).toLowerCase().includes(term)
-                        );
-                        return searchableContent;
-                    });
-                }
-
-                // Sort by bookmark status (bookmarked first), then by date (descending)
-                filteredData.sort(function(a, b) {
-                    const isBookmarkedA = a.isBookmarked ? 1 : 0;
-                    const isBookmarkedB = b.isBookmarked ? 1 : 0;
-
-                    if (isBookmarkedA !== isBookmarkedB) {
-                        return isBookmarkedB - isBookmarkedA; // Bookmarked comes first
-                    }
-
-                    // If bookmark status is the same, sort by date
-                    return new Date(b['日付']) - new Date(a['日付']);
-                });
-
-                // Update data count display using lastUploadTimestamp
-                if (filteredData.length === 0) {
-                    loadingIndicator.textContent = '検索条件に一致するデータがありません。';
-                    loadingIndicator.style.display = 'block';
-                } else {
-                    loadingIndicator.style.display = 'none';
-                }
+                const searchInput = document.getElementById('searchInput');
+                const clearSearchButton = document.getElementById('clearSearchButton');
+                const tableHeader = document.getElementById('table-header');
                 
-                // Format the "更新" text in dataCountDisplay with default styling
-                const updateText = lastUploadTimestamp ? `（${lastUploadTimestamp} 更新）` : '';
-                dataCountDisplay.innerHTML = `${filteredData.length}件${updateText}`;
-
-
-                // Get today's and yesterday's date for styling
-                const today = new Date();
-                const todayString = today.getFullYear() + '/' + ('0' + (today.getMonth() + 1)).slice(-2) + '/' + ('0' + today.getDate()).slice(-2);
-                
-                const yesterday = new Date();
-                yesterday.setDate(today.getDate() - 1);
-                const yesterdayString = yesterday.getFullYear() + '/' + ('0' + (yesterday.getMonth() + 1)).slice(-2) + '/' + ('0' + yesterday.getDate()).slice(-2);
-
-                if (filteredData.length === 0) {
-                    // Already handled loading indicator and count display above
-                    return;
-                }
-
-                filteredData.forEach(function(item, index) { // Add index to access original item in currentData
-                    const date = item['日付'] || '';
-                    const originalTitle = item['タイトル名'] || 'タイトルなし'; // Store original title for the title attribute
-                    let displayTitle = originalTitle; // Use a mutable variable for display
-                    const url1 = (item && item['URL1']) ? String(item['URL1']) : ''; // Safely access url1
-                    const url2 = (item && item['URL2']) ? String(item['URL2']) : ''; // Safely access url2
-                    let bikou = item['備考'] || ''; // Changed to let to allow modification
-                    const kaigiColumn = item['会議'] || ''; // Meeting column
-                    const isBookmarked = item.isBookmarked || false; // Get bookmark status
-
-                    // Apply red style if "（更新）" is found in bikou
-                    if (bikou.includes('（更新）')) {
-                        bikou = bikou.replace('（更新）', '<span class="text-red-500">（更新）</span>'); // Removed font-bold here, as per request: standard font
-                    }
-                    // Apply red style if "（更新）" is found in title
-                    if (displayTitle.includes('（更新）')) {
-                        displayTitle = displayTitle.replace('（更新）', '<span class="text-red-500">（更新）</span>'); // Apply red, standard font
-                    }
-
-                    let dateClass = 'text-gray-900';
-                    // Apply specific styling for today's and yesterday's dates
-                    if (date === todayString) {
-                        dateClass = 'text-red-500 font-bold';
-                    } else if (date === yesterdayString) {
-                        dateClass = 'text-red-500';
-                    }
-
-                    let titlePrefixHtml = ''; // HTML for display
-                    // Add badges based on '会議' column or URL2 type
-                    if (kaigiColumn === '会議') {
-                        titlePrefixHtml = '<span class="inline-block bg-purple-100 text-purple-800 text-xs font-bold mr-3 px-2.5 py-1 rounded-full flex-shrink-0">会議</span>';
-                    } else if (url2) { // url2 is already a string here
-                        if (url2.toLowerCase().includes('.pdf')) {
-                            titlePrefixHtml = '<span class="inline-block bg-red-100 text-red-800 text-xs font-bold mr-3 px-2.5 py-1 rounded-full flex-shrink-0">PDF</span>';
-                        } else {
-                            titlePrefixHtml = '<span class="inline-block bg-blue-100 text-blue-800 text-xs font-bold mr-3 px-2.5 py-1 rounded-full flex-shrink-0">WEB</span>';
-                        }
-                    }
-                    
-                    let audioIconHtml = '';
-                    // Add audio icon if URL1 is present
-                    if (url1) { // url1 is already a string here
-                        audioIconHtml = '<span data-src="' + url1 + '" title="音声を再生" class="audio-icon text-gray-600 hover:text-blue-600 text-lg"><i class="fas fa-volume-up"></i></span>';
-                    }
-
-                    // Create table row and populate with data
-                    const row = document.createElement('tr');
-                    row.className = 'border-b border-gray-200 hover:bg-gray-100 transition-colors duration-200';
-                    
-                    row.innerHTML =
-                        '<td class="w-8 sm:w-16 px-2 py-3 text-sm text-center">' +
-                            '<input type="checkbox" class="bookmark-checkbox form-checkbox h-4 w-4 text-blue-600 rounded" data-index="' + item._originalIndex + '" ' + (isBookmarked ? 'checked' : '') + '>' + // Use _originalIndex
-                        '</td>' +
-                        '<td class="w-20 sm:w-28 px-2 py-3 text-sm"><p class="whitespace-nowrap ' + dateClass + '">' + date + '</p></td>' +
-                        '<td class="px-2 py-3 text-sm min-w-0">' + // This column will expand to fill remaining space
-                            '<div>' +
-                                '<div class="flex items-center">' + 
-                                    titlePrefixHtml +
-                                    '<a href="' + (url2 || '#') + '" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-bold hover:underline" title="' + originalTitle + '">' + displayTitle + '</a>' + 
-                                '</div>' +
-                                '<p class="text-xs text-gray-500 mt-1">' + bikou + '</p>' + // Use modified bikou
-                            '</div>' +
-                        '</td>' +
-                        '<td class="w-8 sm:w-16 px-2 py-3 text-sm text-center">' + audioIconHtml + '</td>';
-                    tableBody.appendChild(row);
-                });
-                
-                const audioPlayer = document.getElementById('audioPlayer');
-                let currentlyPlayingIcon = null;
-
-                // Add event listeners for audio playback
-                document.querySelectorAll('.audio-icon').forEach(function(icon) {
-                    icon.addEventListener('click', function(e) {
-                        playCrackSound(); // Play crack sound on click
-                        const clickedIcon = e.currentTarget;
-                        const audioSrc = clickedIcon.dataset.src;
-
-                        // Toggle play/pause
-                        if (currentlyPlayingIcon === clickedIcon && !audioPlayer.paused) {
-                            audioPlayer.pause();
-                        } else {
-                            // Pause previous playing audio and remove 'playing' class
-                            if (currentlyPlayingIcon) {
-                                currentlyPlayingIcon.classList.remove('playing');
-                            }
-                            audioPlayer.src = audioSrc;
-                            audioPlayer.play();
-                            currentlyPlayingIcon = clickedIcon;
-                        }
-                    });
-                });
-
-                // Add event listeners for audio player state changes
-                audioPlayer.addEventListener('play', function() {
-                    if (currentlyPlayingIcon) {
-                        currentlyPlayingIcon.classList.add('playing');
-                    }
-                });
-                audioPlayer.addEventListener('pause', function() {
-                    if (currentlyPlayingIcon) {
-                        currentlyPlayingIcon.classList.remove('playing');
-                    }
-                });
-                audioPlayer.addEventListener('ended', function() {
-                    if (currentlyPlayingIcon) {
-                        currentlyPlayingIcon.classList.remove('playing');
-                        currentlyPlayingIcon = null;
-                    }
-                });
-                audioPlayer.addEventListener('error', function() {
-                    if (currentlyPlayingIcon) {
-                        currentlyPlayingIcon.classList.remove('playing');
-                        currentlyPlayingIcon = null;
-                    }
-                    // Use a custom modal or message box instead of alert()
-                    const errorMessage = "音声ファイルの読み込みに失敗しました。";
-                    const messageBox = document.createElement('div');
-                    messageBox.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-                    messageBox.innerHTML = `
-                        <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
-                            <p class="text-lg text-red-600 mb-4">\${errorMessage}</p>
-                            <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg" onclick="this.closest('.fixed').remove()">OK</button>
-                        </div>
-                    `;
-                    document.body.appendChild(messageBox);
-                });
-
-                // Add event listener for bookmark checkboxes
-                document.querySelectorAll('.bookmark-checkbox').forEach(function(checkbox) {
-                    checkbox.addEventListener('change', function(e) {
-                        const originalIndex = parseInt(e.target.dataset.index);
-                        const item = currentData.find(d => d._originalIndex === originalIndex); // Find by original index
-                        if (item) {
-                            item.isBookmarked = e.target.checked;
-                        }
-                        // Re-populate the table to apply sorting based on new bookmark status
-                        populateTable(currentData, searchInput.value);
-                    });
-                });
-            }
-            
-            // Function to export the table content as an HTML file
-            function exportHTML() {
-                // Stringify the data to JSON
-                const exportedDataJsonRaw = JSON.stringify(currentData);
-
-                // Helper function to encode UTF-8 to Base64 (safely handling multi-byte characters)
-                function utf8ToBase64(str) {
-                    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
-                        function toSolidBytes(match, p1) {
-                            return String.fromCharCode('0x' + p1);
-                        }));
-                }
-
-                const exportedDataB64 = utf8ToBase64(exportedDataJsonRaw);
-                // JSON.stringify() to ensure the Base64 string is properly escaped for embedding in a JS string literal
-                // Then, further escape backticks to ensure it works correctly within a template literal
-                const finalEscapedDataB64 = JSON.stringify(exportedDataB64).replace(/`/g, '\\`');
-
-                // Get current date and time for footer, formatted to minutes only
-                // This will use the timestamp recorded in the main app, or current time if not yet recorded
-                const generatedDateTimeForExport = lastUploadTimestamp || ''; // Remove timestamp for exported HTML if not explicitly needed in main app
-
-                // The script content for the exported HTML file
-                const scriptContent = `
-            (function() { // Wrap in IIFE for the exported HTML
-                let audioContext;
-                // Helper function to decode Base64 to UTF-8
-                function base64ToUtf8(str) {
-                    return decodeURIComponent(atob(str).split('').map(function(c) {
-                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                    }).join(''));
-                }
-
-                // Decode Base64 and parse JSON data embedded from the parent application
-                const globalExportedData = JSON.parse(base64ToUtf8(${finalEscapedDataB64}));
-                const exportedFileTimestamp = ${JSON.stringify(generatedDateTimeForExport)}; // Embed the timestamp
-
-                const ABBREVIATIONS_EXPORTED = {
-                    "国土交通省": "国交省",
-                    "国交省": "国土交通省",
-                    "文部科学省": "文科省",
-                    "文科省": "文部科学省",
-                    "経済産業省": "経産省",
-                    "経産省": "経済産業省",
-                    "農林水産省": "農水省",
-                    "農水省": "農林水産省",
-                    "厚生労働省": "厚労省",
-                    "厚労省": "厚生労働省",
-                    "資源エネルギー庁": "エネ庁",
-                    "エネ庁": "資源エネルギー庁"
-                };
+                // --- CORE FUNCTIONS (defined inside this scope) ---
+                const ABBREVIATIONS = APP_DATA.abbreviations;
 
                 function playCrackSound() {
-                    if (!audioContext) {
-                        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    }
-                    const bufferSize = audioContext.sampleRate * 0.1;
-                    const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
-                    const output = buffer.getChannelData(0);
-                    for (let i = 0; i < bufferSize; i++) {
-                        output[i] = Math.random() * 2 - 1;
-                    }
-                    const source = audioContext.createBufferSource();
-                    source.buffer = buffer;
-                    const gainNode = audioContext.createGain();
-                    gainNode.gain.setValueAtTime(1, audioContext.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08);
-                    source.connect(gainNode);
-                    gainNode.connect(audioContext.destination);
+                    if (!audioContext) { try { audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { console.error('AudioContext not supported', e); return; } }
+                    if (audioContext.state === 'suspended') { audioContext.resume(); }
+                    const bufferSize = audioContext.sampleRate * 0.1; const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+                    const output = buffer.getChannelData(0); for (let i = 0; i < bufferSize; i++) { output[i] = (Math.random() * 2 - 1) * 0.5; }
+                    const source = audioContext.createBufferSource(); source.buffer = buffer;
+                    const gainNode = audioContext.createGain(); gainNode.gain.setValueAtTime(0.5, audioContext.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08);
+                    source.connect(gainNode); gainNode.connect(audioContext.destination);
                     source.start(0);
                 }
 
-                // Renamed populateTable for clarity in the exported HTML context
-                function populateTableExported(siteData, searchQuery = '') { 
-                    const tableBody = document.getElementById('data-table-body');
-                    const loadingIndicator = document.getElementById('loading');
-                    const dataCountDisplay = document.getElementById('dataCountDisplay'); // Get display element
-                    tableBody.innerHTML = '';
-
-                    if (!siteData || siteData.length === 0) {
-                        loadingIndicator.textContent = '表示するデータがありません。';
-                        loadingIndicator.style.display = 'block';
-                        dataCountDisplay.innerHTML = \`0件\${exportedFileTimestamp ? \`（\${exportedFileTimestamp} 更新）\` : ''}\`; // Update display
-                        return;
+                function toggleAudioPlayback(clickedIcon) {
+                    playCrackSound();
+                    const audioSrc = clickedIcon.dataset.src; if (!audioSrc) return;
+                    if (currentlyPlayingIcon === clickedIcon && !audioPlayer.paused) {
+                        audioPlayer.pause();
+                    } else {
+                        if (currentlyPlayingIcon) { currentlyPlayingIcon.classList.remove('playing'); }
+                        audioPlayer.src = audioSrc;
+                        audioPlayer.play().catch(e => console.error("Audio play failed:", e));
+                        currentlyPlayingIcon = clickedIcon;
                     }
+                }
 
-                    loadingIndicator.style.display = 'none';
-
-                    let filteredData = siteData;
-
-                    // Enhanced search logic for exported HTML
-                    if (searchQuery) {
-                        const lowerCaseSearchQuery = searchQuery.toLowerCase();
-                        const searchTerms = new Set([lowerCaseSearchQuery]);
-
-                        if (ABBREVIATIONS_EXPORTED[searchQuery]) {
-                            searchTerms.add(ABBREVIATIONS_EXPORTED[searchQuery].toLowerCase());
-                        }
-                        for (const fullForm in ABBREVIATIONS_EXPORTED) {
-                            if (ABBREVIATIONS_EXPORTED[fullForm].toLowerCase() === lowerCaseSearchQuery && fullForm.toLowerCase() !== lowerCaseSearchQuery) {
-                                searchTerms.add(fullForm.toLowerCase());
-                            }
-                        }
-
-                        filteredData = siteData.filter(function(item) {
-                            const title = item['タイトル名'] || '';
-                            const bikou = item['備考'] || '';
-                            const kaigiColumn = item['会議'] || '';
-
-                            let titlePrefixText = '';
-                            if (kaigiColumn === '会議') {
-                                titlePrefixText = '会議';
-                            } else { // No else if here, default to empty or process url2 later
-                                const url2 = (item && item['URL2']) ? String(item['URL2']) : ''; // Safely access url2
-                                if (url2.toLowerCase().includes('.pdf')) {
-                                    titlePrefixText = 'PDF';
-                                } else if (url2) { // Check if url2 exists after .pdf check
-                                    titlePrefixText = 'WEB';
-                                }
-                            }
-                            
-                            const searchableContent = Array.from(searchTerms).some(term => 
-                                (titlePrefixText + ' ' + title + ' ' + bikou).toLowerCase().includes(term)
-                            );
-                            return searchableContent;
-                        });
+                function filterData(data, searchQuery) {
+                    if (!searchQuery) return data;
+                    const lowerCaseSearchQuery = searchQuery.toLowerCase().trim();
+                    const searchTerms = new Set([lowerCaseSearchQuery]);
+                    const abbreviation = ABBREVIATIONS[searchQuery.trim()];
+                    if (abbreviation) { searchTerms.add(abbreviation.toLowerCase()); }
+                    for (const [full, abbr] of Object.entries(ABBREVIATIONS)) {
+                        if (abbr.toLowerCase() === lowerCaseSearchQuery) { searchTerms.add(full.toLowerCase()); }
                     }
-                    
-                    // Sort by bookmark status (bookmarked first), then by date (descending)
-                    filteredData.sort(function(a, b) {
-                        const isBookmarkedA = a.isBookmarked ? 1 : 0;
-                        const isBookmarkedB = b.isBookmarked ? 1 : 0;
-
-                        if (isBookmarkedA !== isBookmarkedB) {
-                            return isBookmarkedB - isBookmarkedA; // Bookmarked comes first
-                        }
-
-                        // If bookmark status is the same, sort by date
-                        return new Date(b['日付']) - new Date(a['日付']);
-                    });
-
-                    // Update data count display for exported HTML with current time formatted to minutes
-                    dataCountDisplay.innerHTML = \`\${filteredData.length}件\${exportedFileTimestamp ? \`（\${exportedFileTimestamp} 更新）\` : ''}\`;
-
-                    const today = new Date();
-                    const todayString = today.getFullYear() + '/' + ('0' + (today.getMonth() + 1)).slice(-2) + '/' + ('0' + today.getDate()).slice(-2);
-
-                    const yesterday = new Date();
-                    yesterday.setDate(today.getDate() - 1);
-                    const yesterdayString = yesterday.getFullYear() + '/' + ('0' + (yesterday.getMonth() + 1)).slice(-2) + '/' + ('0' + yesterday.getDate()).slice(-2);
-
-                    if (filteredData.length === 0) {
-                        loadingIndicator.textContent = '検索条件に一致するデータがありません。';
-                        loadingIndicator.style.display = 'block';
-                        return;
-                    }
-
-                    filteredData.forEach(function(item) {
+                    return data.filter(item => {
+                        const title = item['タイトル名'] || '';
+                        const bikou = item['備考'] || '';
                         const date = item['日付'] || '';
-                        const originalTitle = item['タイトル名'] || 'タイトルなし'; // Store original title for the title attribute
-                        let displayTitle = originalTitle; // Use a mutable variable for display
-                        const url1 = (item && item['URL1']) ? String(item['URL1']) : ''; // Safely access url1
-                        const url2 = (item && item['URL2']) ? String(item['URL2']) : ''; // Safely access url2
-                        let bikou = item['備考'] || ''; // Changed to let to allow modification
-                        const kaigiColumn = item['会議'] || '';
-                        const isBookmarked = item.isBookmarked || false;
-
-                        // Apply red style if "（更新）" is found in bikou
-                        if (bikou.includes('（更新）')) {
-                            bikou = bikou.replace('（更新）', '<span class="text-red-500">（更新）</span>'); // Standard font
-                        }
-                        // Apply red style if "（更新）" is found in title
-                        if (displayTitle.includes('（更新）')) {
-                            displayTitle = displayTitle.replace('（更新）', '<span class="text-red-500">（更新）</span>'); // Standard font
-                        }
-
-                        let dateClass = 'text-gray-900';
-                        if (date === todayString) {
-                            dateClass = 'text-red-500 font-bold';
-                        } else if (date === yesterdayString) {
-                            dateClass = 'text-red-500';
-                        }
-
-                        let titlePrefixHtml = '';
-                        if (kaigiColumn === '会議') {
-                            titlePrefixHtml = '<span class="inline-block bg-purple-100 text-purple-800 text-xs font-bold mr-3 px-2.5 py-1 rounded-full flex-shrink-0">会議</span>';
-                        } else if (url2) { // url2 is already a string here
-                            if (url2.toLowerCase().includes('.pdf')) {
-                                titlePrefixHtml = '<span class="inline-block bg-red-100 text-red-800 text-xs font-bold mr-3 px-2.5 py-1 rounded-full flex-shrink-0">PDF</span>';
-                            } else {
-                                titlePrefixHtml = '<span class="inline-block bg-blue-100 text-blue-800 text-xs font-bold mr-3 px-2.5 py-1 rounded-full flex-shrink-0">WEB</span>';
-                            }
-                        }
-
-                        let audioIconHtml = '';
-                        if (url1) { // url1 is already a string here
-                            audioIconHtml = '<span data-src="' + url1 + '" title="音声を再生" class="audio-icon text-gray-600 hover:text-blue-600 text-lg"><i class="fas fa-volume-up"></i></span>';
-                        }
-
-                        const row = document.createElement('tr');
-                        row.className = 'border-b border-gray-200 hover:bg-gray-100 transition-colors duration-200';
-
-                        row.innerHTML =
-                            '<td class="w-8 sm:w-16 px-2 py-3 text-sm text-center">' +
-                                '<input type="checkbox" class="bookmark-checkbox form-checkbox h-4 w-4 text-blue-600 rounded" data-index="' + item._originalIndex + '" ' + (isBookmarked ? 'checked' : '') + '>' +
-                            '</td>' +
-                            '<td class="w-20 sm:w-28 px-2 py-3 text-sm"><p class="whitespace-nowrap ' + dateClass + '">' + date + '</p></td>' +
-                            '<td class="px-2 py-3 text-sm min-w-0">' + // This column will expand to fill remaining space
-                                '<div>' +
-                                    '<div class="flex items-center">' + 
-                                        titlePrefixHtml +
-                                        '<a href="' + (url2 || '#') + '" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-bold hover:underline" title="' + originalTitle + '">' + displayTitle + '</a>' + 
-                                    '</div>' +
-                                    '<p class="text-xs text-gray-500 mt-1">' + bikou + '</p>' + // Use modified bikou
-                                '</div>' +
-                            '</td>' +
-                            '<td class="w-8 sm:w-16 px-2 py-3 text-sm text-center">' + audioIconHtml + '</td>';
-                        tableBody.appendChild(row);
+                        const kaigiDate = item['開催日'] || '';
+                        const contentToSearch = `${title} ${bikou} ${date} ${kaigiDate}`.toLowerCase();
+                        return Array.from(searchTerms).some(term => contentToSearch.includes(term));
                     });
-                    
-                    const audioPlayer = document.getElementById('audioPlayer');
-                    let currentlyPlayingIcon = null;
-
-                    document.querySelectorAll('.audio-icon').forEach(function(icon) {
-                        icon.addEventListener('click', function(e) {
-                            playCrackSound();
-                            const clickedIcon = e.currentTarget;
-                            const audioSrc = clickedIcon.dataset.src;
-                            if (currentlyPlayingIcon === clickedIcon && !audioPlayer.paused) {
-                                audioPlayer.pause();
-                            } else {
-                                if (currentlyPlayingIcon) currentlyPlayingIcon.classList.remove('playing');
-                                audioPlayer.src = audioSrc;
-                                audioPlayer.play();
-                                currentlyPlayingIcon = clickedIcon;
-                            }
-                        });
-                    });
-
-                    audioPlayer.addEventListener('play', function() { if (currentlyPlayingIcon) currentlyPlayingIcon.classList.add('playing'); });
-                    audioPlayer.addEventListener('pause', function() { if (currentlyPlayingIcon) currentlyPlayingIcon.classList.remove('playing'); });
-                    audioPlayer.addEventListener('ended', function() { if (currentlyPlayingIcon) { currentlyPlayingIcon.classList.remove('playing'); currentlyPlayingIcon = null; } });
-                    audioPlayer.addEventListener('error', function() {
-                        if (currentlyPlayingIcon) {
-                            currentlyPlayingIcon.classList.remove('playing');
-                            currentlyPlayingIcon = null;
+                }
+                
+                function sortData(data) {
+                    const { key, direction } = sortState;
+                    const modifier = direction === 'asc' ? 1 : -1;
+                    const isDateKey = key === '日付' || key === '開催日';
+                    data.sort((a, b) => {
+                        if (a.isBookmarked !== b.isBookmarked) return b.isBookmarked - a.isBookmarked;
+                        const valA = a[key] || '';
+                        const valB = b[key] || '';
+                        if (isDateKey) {
+                            const dateA = valA ? new Date(valA) : null;
+                            const dateB = valB ? new Date(valB) : null;
+                            if (!dateA && !dateB) return 0;
+                            if (!dateA) return 1;
+                            if (!dateB) return -1;
+                            return (dateA - dateB) * modifier;
+                        } else {
+                            return valA.localeCompare(valB, 'ja') * modifier;
                         }
-                        const errorMessage = "音声ファイルの読み込みに失敗しました。";
-                        const messageBox = document.createElement('div');
-                        messageBox.className = 'fixed inset-0 bg-black bg-opacity50 flex items-center justify-center z-50';
-                        messageBox.innerHTML = \`
-                            <div class="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
-                                <p class="text-lg text-red-600 mb-4">\${errorMessage}</p>
-                                <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg" onclick="this.closest('.fixed').remove()">OK</button>
-                            </div>
-                        \`;
-                        document.body.appendChild(messageBox);
-                    });
-                    // Add event listener for bookmark checkboxes in exported HTML
-                    document.querySelectorAll('.bookmark-checkbox').forEach(function(checkbox) {
-                        checkbox.addEventListener('change', function(e) {
-                            const originalIndex = parseInt(e.target.dataset.index);
-                            const item = globalExportedData.find(d => d._originalIndex === originalIndex);
-                            if (item) {
-                                item.isBookmarked = e.target.checked;
-                            }
-                            populateTableExported(globalExportedData, document.getElementById('searchInput').value);
-                        });
                     });
                 }
 
-                document.addEventListener('DOMContentLoaded', function() {
-                    populateTableExported(globalExportedData); // Initial population with the embedded data
-                    const searchInputExported = document.getElementById('searchInput'); // Get search input in exported HTML
-                    const clearSearchButtonExported = document.getElementById('clearSearchButton'); // Get clear button in exported HTML
-
-                    if (searchInputExported) {
-                        searchInputExported.addEventListener('keyup', function() {
-                            populateTableExported(globalExportedData, searchInputExported.value);
-                        });
-                    }
-                    if (clearSearchButtonExported) {
-                        clearSearchButtonExported.addEventListener('click', function() {
-                            searchInputExported.value = ''; // Clear the search input
-                            populateTableExported(globalExportedData, ''); // Re-populate with all data
-                        });
-                    }
-                });
-            })(); // Close IIFE for the exported HTML
-        `;
-
-                const htmlContent =
-                    '<!DOCTYPE html>' +
-                    '<html lang="ja">' +
-                    '<head>' +
-                    '    <meta charset="UTF-8">' +
-                    '    <meta name="viewport" content="width=device-width, initial-scale=1.0">' +
-                    '    <title>政策リサーチ政策関連情報一覧 - 出力結果</title>' +
-                    '    <script src="https://cdn.tailwindcss.com"></s' + 'cript>' +
-                    '    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">' +
-                    '    <style>' +
-                    '        body { font-family: \'Inter\', \'Noto Sans JP\', sans-serif; } ' +
-                    '        .audio-icon { cursor: pointer; } ' +
-                    '        .playing i { color: #3b82f6; animation: pulse 1.2s infinite; } ' +
-                    '        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.25); } 100% { transform: scale(1); } }' +
-                    '        /* Exported HTML用の検索バーとボタンの配置調整 */' +
-                    '        .exported-header-controls { display: flex; flex-direction: column; align-items: center; width: 100%; }' +
-                    '        @media (min-width: 640px) { /* sm breakpoint */' +
-                    '            .exported-header-controls { flex-direction: row; justify-content: flex-end; width: auto; }' +
-                    '            .exported-header-controls input { margin-right: 1rem; margin-bottom: 0; }' +
-                    '            .exported-header-controls button { margin-bottom: 0; margin-right: 0.5rem; }' +
-                    '            .exported-header-controls button:last-child { margin-right: 0; }' +
-                    '        }' +
-                    '    </style>' +
-                    '</head>' +
-                    '<body class="bg-gray-100 text-gray-800">' +
-                    '    <div class="container mx-auto px-4 py-8">' +
-                    '        <h1 class="text-4xl font-bold text-gray-900 text-center mb-8">政策リサーチ政策関連情報一覧</h1>' +
-                    '        <header class="flex-shrink-0 flex flex-col sm:flex-col justify-between items-end mb-4">' +
-                    '            <div class="exported-header-controls flex flex-col sm:flex-row items-center w-full sm:justify-between sm:space-x-4 mb-4 sm:mb-0">' +
-                    '                <input type="text" id="searchInput" placeholder="検索（省庁名は略称でも可）..." class="border border-gray-300 p-2 rounded-lg mb-4 sm:mb-0 w-full sm:w-80 focus:ring-blue-500 focus:border-blue-500">' +
-                    '                <!-- Clear button for exported HTML -->' +
-                    '                <button id="clearSearchButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center transition-colors mb-2 sm:mb-0">' +
-                    '                    <i class="fas fa-times mr-2"></i>' +
-                    '                    <span>クリア</span>' +
-                    '                </button>' +
-                    '            </div>' +
-                    '            <div id="dataCountDisplay" class="text-gray-600 text-sm mt-4 sm:mt-2 w-full text-center sm:text-right"></div>' +
-                    '        </header>' +
-                    '        <div class="bg-white shadow-lg rounded-lg overflow-auto">' +
-                    '            <table class="min-w-full leading-normal table-fixed">' +
-                    '                <thead class="bg-gray-800 text-white">' +
-                    '                    <tr>' +
-                    '                        <th class="w-8 sm:w-16 px-2 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold uppercase tracking-wider"><i class="fas fa-bookmark"></i></th>' +
-                            '                        <th class="w-20 sm:w-28 px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">日付</th>' +
-                    '                        <th class="px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">政策関連情報概要</th>' +
-                    '                        <th class="w-8 sm:w-16 px-2 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold uppercase tracking-wider"><i class="fas fa-volume-up"></i></th>' +
-                    '                    </tr>' +
-                    '                </thead>' +
-                    '                <tbody id="data-table-body"></tbody>' + // Empty tbody for initial load
-                    '            </table>' +
-                    '            <div id="loading" class="text-center p-8 text-gray-500"></div>' + // Added loading indicator for exported HTML
-                    '        </div>' +
-                    '        <footer class="text-center mt-8 text-gray-500">' +
-                    '            <p>&copy; 2024 政策リサーチポータル. All rights reserved.</p>' +
-                    '        </footer>' +
-                    '    </div>' +
-                    '    <audio id="audioPlayer" style="display: none;"></audio>' +
-                    '    <script>' + scriptContent.replace(/<\/script>/g, '</s' + 'cript>') + '</s' + 'cript>' +
-                    '</body>' +
-                    '</html>';
-
-                const blob = new Blob([htmlContent], { type: 'text/html' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'index.html'; // Changed to index.html
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }
-
-            document.addEventListener('DOMContentLoaded', function() {
-                const fileInput = document.getElementById('fileInput');
-                const uploadScreen = document.getElementById('upload-screen');
-                const resultsScreen = document.getElementById('results-screen');
-                const backButton = document.getElementById('back-button');
-                const exportButton = document.getElementById('export-button');
-                const uploadError = document.getElementById('upload-error');
-                const searchInput = document.getElementById('searchInput');
-                const clearSearchButton = document.getElementById('clearSearchButton'); // Get the new clear button
-                const mainTitleAudioIcon = document.getElementById('mainTitleAudioIcon'); // Get the main title audio icon
-
-
-                // Initial population of the table (empty initially until file is loaded)
-                populateTable([]); // Call with empty data on initial load of the main app
-
-                // Event listener for main title audio icon
-                if (mainTitleAudioIcon) {
-                    mainTitleAudioIcon.addEventListener('click', function() {
-                        playCrackSound();
+                function updateSortIcons() {
+                    document.querySelectorAll('.sortable-header').forEach(header => {
+                        header.classList.remove('asc', 'desc');
+                        if (header.dataset.sortKey === sortState.key) {
+                            header.classList.add(sortState.direction);
+                        }
                     });
                 }
+                
+                function createTableRow(item) {
+                    const date = item['日付'] || '';
+                    const kaigiDate = item['開催日'] || '';
+                    const originalTitle = item['タイトル名'] || 'タイトルなし';
+                    let displayTitle = originalTitle;
+                    const url2 = String(item['URL2'] || '');
+                    let bikou = item['備考'] || '';
+                    if (bikou.includes('（更新）')) { bikou = bikou.replace(/（更新）/g, '<span class="text-red-500 font-bold">（更新）</span>'); }
+                    if (displayTitle.includes('（更新）')) { displayTitle = displayTitle.replace(/（更新）/g, '<span class="text-red-500 font-bold">（更新）</span>'); }
+                    const today = new Date().toLocaleDateString('ja-JP', {year: 'numeric', month: '2-digit', day: '2-digit'});
+                    const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('ja-JP', {year: 'numeric', month: '2-digit', day: '2-digit'});
+                    let dateClass = 'text-gray-900';
+                    if (date === today) dateClass = 'text-red-500 font-bold';
+                    else if (date === yesterday) dateClass = 'text-red-500';
+                    let titlePrefixHtml = '';
+                    if (item['会議'] === '会議') { titlePrefixHtml = '<span class="inline-block bg-purple-100 text-purple-800 text-xs font-bold mr-3 px-2.5 py-1 rounded-full flex-shrink-0">会議</span>'; } 
+                    else if (url2) { titlePrefixHtml = url2.toLowerCase().includes('.pdf') ? '<span class="inline-block bg-red-100 text-red-800 text-xs font-bold mr-3 px-2.5 py-1 rounded-full flex-shrink-0">PDF</span>' : '<span class="inline-block bg-blue-100 text-blue-800 text-xs font-bold mr-3 px-2.5 py-1 rounded-full flex-shrink-0">WEB</span>'; }
+                    const audioIconHtml = item['URL1'] ? `<span data-src="${item['URL1']}" title="音声を再生" aria-label="音声を再生" class="audio-icon text-gray-600 hover:text-blue-600 text-lg"><i class="fas fa-volume-up"></i></span>` : '';
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50 transition-colors duration-200';
+                    row.innerHTML = `
+                        <td class="w-12 sm:w-16 px-2 py-3 text-sm text-center"><input type="checkbox" class="bookmark-checkbox form-checkbox h-4 w-4 text-blue-600 rounded cursor-pointer" data-index="${item._originalIndex}" ${item.isBookmarked ? 'checked' : ''} aria-label="ブックマーク"></td>
+                        <td class="w-24 sm:w-28 px-2 py-3 text-sm"><p class="whitespace-nowrap ${dateClass}">${date}</p></td>
+                        <td class="kaigi-date-col w-24 sm:w-28 px-2 py-3 text-sm"><p class="whitespace-nowrap text-gray-900">${kaigiDate}</p></td>
+                        <td class="px-2 py-3 text-sm min-w-0"><div><div class="flex items-center">${titlePrefixHtml}<a href="${url2 || '#'}" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-bold hover:underline" title="${originalTitle}">${displayTitle}</a></div><p class="text-xs text-gray-500 mt-1">${bikou}</p></div></td>
+                        <td class="w-12 sm:w-16 px-2 py-3 text-sm text-center">${audioIconHtml}</td>
+                    `;
+                    return row;
+                }
 
-                fileInput.addEventListener('change', function(event) {
-                    const file = event.target.files[0];
-                    if (!file) {
-                        // ファイル選択がキャンセルされた場合、タイムスタンプをリセットし、件数を更新
-                        lastUploadTimestamp = '';
-                        populateTable([]); 
-                        return;
+                function renderTable() {
+                    const searchQuery = searchInput.value;
+                    let dataToRender = [...currentData];
+                    dataToRender = filterData(dataToRender, searchQuery);
+                    sortData(dataToRender);
+                    updateSortIcons();
+                    tableBody.innerHTML = '';
+                    loadingIndicator.style.display = 'none';
+                    dataCountDisplay.innerHTML = `${dataToRender.length}件 (${APP_DATA.lastUpdate} 更新)`;
+                    if (dataToRender.length === 0) {
+                        loadingIndicator.textContent = '該当データがありません。';
+                        loadingIndicator.style.display = 'block';
+                    } else {
+                        const fragment = document.createDocumentFragment();
+                        dataToRender.forEach(item => fragment.appendChild(createTableRow(item)));
+                        tableBody.appendChild(fragment);
                     }
-                    uploadError.textContent = '';
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        try {
-                            const data = e.target.result;
-                            const workbook = XLSX.read(data, { type: 'array' });
-                            const firstSheetName = workbook.SheetNames[0];
-                            const worksheet = workbook.Sheets[firstSheetName];
-                            let parsedData = XLSX.utils.sheet_to_json(worksheet);
+                }
 
-                            const headers = XLSX.utils.sheet_to_json(worksheet, { header: 1 })[0] || [];
-                            if (headers.includes('日付')) {
-                                parsedData.forEach(function(row, index) {
-                                    const serial = row['日付'];
-                                    if (typeof serial === 'number' && serial > 1) {
-                                        const utc_days = Math.floor(serial - 25569);
-                                        const date_info = new Date(utc_days * 86400 * 1000);
-                                        row['日付'] = date_info.getUTCFullYear() + '/' + ('0' + (date_info.getUTCMonth() + 1)).slice(-2) + '/' + ('0' + date_info.getUTCDate()).slice(-2);
-                                    }
-                                    row.isBookmarked = false; // Initialize bookmark status
-                                    row._originalIndex = index; // Store original index for consistent lookup
-                                });
-                            }
-                            
-                            // Sort data initially
-                            parsedData.sort(function(a, b) {
-                                const isBookmarkedA = a.isBookmarked ? 1 : 0;
-                                const isBookmarkedB = b.isBookmarked ? 1 : 0;
-
-                                if (isBookmarkedA !== isBookmarkedB) {
-                                    return isBookmarkedB - isBookmarkedA;
-                                }
-                                return new Date(b['日付']) - new Date(a['日付']);
-                            });
-
-                            currentData = parsedData;
-                            // データの読み込みが成功した時のみタイムスタンプを更新
-                            lastUploadTimestamp = new Date().toLocaleString('ja-JP', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-
-                            populateTable(currentData);
-                            uploadScreen.style.display = 'none';
-                            resultsScreen.style.display = 'flex';
-                            searchInput.value = ''; // Clear search input on new file load
-                        } catch (error) {
-                            console.error('ファイルの処理中にエラーが発生しました:', error);
-                            uploadError.textContent = 'ファイルの処理中にエラーが発生しました。ファイル形式を確認してください。';
-                            // エラー時もタイムスタンプをリセット
-                            lastUploadTimestamp = '';
-                            populateTable([]); 
+                // --- INITIALIZATION & EVENT LISTENERS ---
+                document.addEventListener('DOMContentLoaded', () => {
+                    renderTable();
+                    let searchTimeout;
+                    searchInput.addEventListener('keyup', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => renderTable(), 300); });
+                    clearSearchButton.addEventListener('click', () => { searchInput.value = ''; renderTable(); });
+                    tableHeader.addEventListener('click', e => {
+                        const header = e.target.closest('.sortable-header');
+                        if (!header) return;
+                        const key = header.dataset.sortKey;
+                        if (sortState.key === key) {
+                            sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+                        } else {
+                            sortState.key = key;
+                            sortState.direction = (key === '日付' || key === '開催日') ? 'desc' : 'asc';
                         }
-                    };
-                    reader.onerror = function() {
-                        uploadError.textContent = 'ファイルの読み込みに失敗しました。';
-                        // エラー時もタイムスタンプをリセット
-                        lastUploadTimestamp = '';
-                        populateTable([]); 
-                    };
-                    reader.readAsArrayBuffer(file);
+                        renderTable();
+                    });
+                    tableBody.addEventListener('click', e => {
+                        const target = e.target;
+                        if (target.classList.contains('bookmark-checkbox')) {
+                            const originalIndex = parseInt(target.dataset.index, 10);
+                            const item = currentData.find(d => d._originalIndex === originalIndex);
+                            if (item) { item.isBookmarked = target.checked; renderTable(); }
+                        }
+                        const audioIcon = target.closest('.audio-icon');
+                        if (audioIcon) { toggleAudioPlayback(audioIcon); }
+                    });
+                    audioPlayer.addEventListener('play', () => { if (currentlyPlayingIcon) currentlyPlayingIcon.classList.add('playing'); });
+                    audioPlayer.addEventListener('pause', () => { if (currentlyPlayingIcon) currentlyPlayingIcon.classList.remove('playing'); });
+                    audioPlayer.addEventListener('ended', () => { if (currentlyPlayingIcon) { currentlyPlayingIcon.classList.remove('playing'); currentlyPlayingIcon = null; }});
                 });
+            };
+            
+            const dataForExport = {
+                tableData: currentData,
+                abbreviations: ABBREVIATIONS,
+                lastUpdate: lastUploadTimestamp,
+                initialSortState: sortState
+            };
 
-                backButton.addEventListener('click', function() {
-                    resultsScreen.style.display = 'none';
-                    uploadScreen.style.display = 'flex'; // Changed to flex for centering
-                    fileInput.value = '';
-                    searchInput.value = '';
-                    currentData = []; // Clear data when going back to upload screen
-                    lastUploadTimestamp = ''; // Clear timestamp when going back to upload screen
-                    populateTable([]); // Reset the count display
-                    window.scrollTo(0, 0); // スクロール位置を一番上に戻す
-                });
+            const exportedScript = `(${exportedAppLogic.toString()})(${JSON.stringify(dataForExport)});`;
 
-                exportButton.addEventListener('click', exportHTML);
+            const htmlContent = `
+<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>政策リサーチ政策関連情報一覧 - 出力結果</title><script src="https://cdn.tailwindcss.com"><\/script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap');
+body { font-family: 'Inter', 'Noto Sans JP', sans-serif; } .audio-icon { cursor: pointer; } .playing i { color: #3b82f6; animation: pulse 1.2s infinite; }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.hide-kaigi-date .kaigi-date-col { display: none; }
+.sortable-header { cursor: pointer; user-select: none; } .sortable-header:hover { background-color: #4a5568; }
+.sort-icon { margin-left: 0.5rem; color: #a0aec0; width: 1em; display: inline-block; }
+.sortable-header.asc .sort-icon::after { content: '▲'; } .sortable-header.desc .sort-icon::after { content: '▼'; }
+</style></head><body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
+<div class="container mx-auto px-4 py-8 flex-grow flex flex-col">
+<header class="text-center mb-8 flex-shrink-0"><h1 class="text-3xl md:text-4xl font-bold text-gray-900">政策リサーチ政策関連情報一覧</h1></header>
+<main class="flex-grow flex flex-col">
+<header class="flex-shrink-0 flex flex-col sm:flex-row justify-between items-end mb-4 gap-4">
+<div class="flex flex-col sm:flex-row items-center w-full sm:justify-start gap-2">
+<input type="text" id="searchInput" placeholder="検索（省庁名は略称でも可）" class="border border-gray-300 p-2 rounded-lg w-full sm:w-80 focus:ring-blue-500 focus:border-blue-500">
+<button id="clearSearchButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors"><i class="fas fa-times mr-2"></i><span>クリア</span></button>
+</div><div id="dataCountDisplay" class="text-gray-600 text-sm w-full sm:w-auto text-center sm:text-right flex-shrink-0"></div></header>
+<div id="results-table-container" class="bg-white shadow-lg rounded-lg overflow-auto flex-grow">
+<table class="min-w-full leading-normal table-fixed ${!hasKaigiDateColumn ? 'hide-kaigi-date' : ''}">
+<thead id="table-header" class="bg-gray-800 text-white sticky top-0 z-10">
+<tr>
+<th class="w-12 sm:w-16 px-2 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold uppercase tracking-wider" title="ブックマーク"><i class="fas fa-bookmark"></i></th>
+<th class="w-24 sm:w-28 px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider sortable-header" data-sort-key="日付">日付<span class="sort-icon"></span></th>
+<th class="kaigi-date-col w-24 sm:w-28 px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider sortable-header" data-sort-key="開催日">会議日<span class="sort-icon"></span></th>
+<th class="px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider sortable-header" data-sort-key="タイトル名">政策関連情報概要<span class="sort-icon"></span></th>
+<th class="w-12 sm:w-16 px-2 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold uppercase tracking-wider" title="音声"><i class="fas fa-volume-up"></i></th>
+</tr></thead><tbody id="data-table-body" class="divide-y divide-gray-200"></tbody></table>
+<div id="loading" class="text-center p-8 text-gray-500"></div></div></main>
+<footer class="text-center mt-8 text-gray-500 flex-shrink-0"><p>&copy; ${new Date().getFullYear()} 政策リサーチポータル. All rights reserved.</p></footer>
+</div><audio id="audioPlayer" style="display: none;"></audio>
+<script>${exportedScript.replace(/<\/script>/g, '<\\/script>')}<\/script></body></html>`;
 
-                searchInput.addEventListener('keyup', function() {
-                    populateTable(currentData, searchInput.value);
-                });
+            const blob = new Blob([htmlContent.trim()], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'index.html';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+        }
 
-                // Event listener for the clear search button in the main application
-                clearSearchButton.addEventListener('click', function() {
-                    searchInput.value = ''; // Clear the search input
-                    populateTable(currentData, ''); // Re-populate the table with all data
-                });
+        /**
+         * アプリケーションの全てのイベントリスナーを設定します。
+         */
+        function setupEventListeners() {
+            fileInput.addEventListener('change', handleFileSelect);
+            backButton.addEventListener('click', () => {
+                resultsScreen.style.display = 'none'; uploadScreen.style.display = 'flex';
+                fileInput.value = ''; searchInput.value = ''; currentData = []; lastUploadTimestamp = '';
+                tableElement.classList.add('hide-kaigi-date');
+                renderTable(); window.scrollTo(0, 0);
             });
-        })();
+            exportButton.addEventListener('click', exportHTML);
+            let searchTimeout;
+            searchInput.addEventListener('keyup', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => renderTable(), 300); });
+            clearSearchButton.addEventListener('click', () => { searchInput.value = ''; renderTable(); });
+            mainTitleAudioIcon.addEventListener('click', playCrackSound);
+            
+            tableHeader.addEventListener('click', e => {
+                const header = e.target.closest('.sortable-header');
+                if (!header) return;
+                const key = header.dataset.sortKey;
+                if (sortState.key === key) {
+                    sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortState.key = key;
+                    sortState.direction = (key === '日付' || key === '開催日') ? 'desc' : 'asc';
+                }
+                renderTable();
+            });
+
+            tableBody.addEventListener('click', e => {
+                const target = e.target;
+                if (target.classList.contains('bookmark-checkbox')) {
+                    const originalIndex = parseInt(target.dataset.index);
+                    const item = currentData.find(d => d._originalIndex === originalIndex);
+                    if (item) { item.isBookmarked = target.checked; renderTable(); }
+                }
+                const audioIcon = target.closest('.audio-icon');
+                if (audioIcon) { toggleAudioPlayback(audioIcon); }
+            });
+            audioPlayer.addEventListener('play', () => { if (currentlyPlayingIcon) currentlyPlayingIcon.classList.add('playing'); });
+            audioPlayer.addEventListener('pause', () => { if (currentlyPlayingIcon) currentlyPlayingIcon.classList.remove('playing'); });
+            audioPlayer.addEventListener('ended', () => { if (currentlyPlayingIcon) { currentlyPlayingIcon.classList.remove('playing'); currentlyPlayingIcon = null; }});
+            audioPlayer.addEventListener('error', () => { if (currentlyPlayingIcon) { currentlyPlayingIcon.classList.remove('playing'); currentlyPlayingIcon = null; } alert('音声ファイルの読み込みに失敗しました。'); });
+        }
+
+        // --- 初期化 ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            tableElement.classList.add('hide-kaigi-date');
+            renderTable();
+        });
+
+    })();
     </script>
 </body>
 </html>
