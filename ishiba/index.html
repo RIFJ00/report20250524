@@ -44,6 +44,48 @@
              height: 400px;
              width: 100%;
         }
+        /* AI Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            cursor: pointer;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -77,6 +119,7 @@
                  </div>
              </div>
             <div class="flex flex-wrap justify-end space-x-2 md:space-x-4">
+                <button id="aiAnalysisBtn" class="control-btn px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700 transition-colors">AI分析</button>
                 <button id="toggleAnalysisBtn" class="control-btn px-4 py-2 bg-purple-600 text-white rounded-md shadow-sm hover:bg-purple-700 transition-colors">総合評価・分析を表示</button>
                 <button id="exportBtn" class="px-4 py-2 bg-emerald-600 text-white rounded-md shadow-sm hover:bg-emerald-700 transition-colors">Excelファイルで出力</button>
             </div>
@@ -145,6 +188,54 @@
     <footer class="text-center text-xs text-slate-500 p-4 mt-8">
         <p id="footer-text"></p>
     </footer>
+
+    <!-- AI Analysis Modal -->
+    <div id="ai-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button id="modal-close-btn" class="modal-close-btn text-gray-500 hover:text-gray-800">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">AI分析機能</h2>
+            
+            <div class="mb-6">
+                <label for="api-key-input" class="block text-sm font-medium text-gray-700 mb-1">Google AI APIキー</label>
+                <div class="flex items-center space-x-2">
+                    <input type="password" id="api-key-input" class="flex-grow p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="APIキーを入力...">
+                    <button id="save-api-key-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700 transition-colors">保存</button>
+                </div>
+                <div id="api-key-status" class="text-sm text-green-600 mt-1 h-4"></div>
+            </div>
+
+            <div class="mb-4 p-4 border border-gray-200 rounded-lg">
+                <h3 class="font-semibold text-lg mb-2">総合分析サマリー</h3>
+                <p class="text-sm text-gray-600 mb-3">ボタンをクリックすると、全政策データのサマリーをAIが生成します。</p>
+                <button id="run-ai-analysis-btn" class="w-full px-4 py-2 bg-emerald-600 text-white rounded-md shadow-sm hover:bg-emerald-700 transition-colors disabled:bg-gray-400">総合分析を実行</button>
+            </div>
+
+            <div class="mb-4 p-4 border border-gray-200 rounded-lg">
+                <h3 class="font-semibold text-lg mb-2">AIに質問する</h3>
+                 <textarea id="ai-question-input" rows="3" class="w-full p-2 border border-slate-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="政策データに関する質問を自由に入力してください...（例：安全保障分野で評価の高い政策は何ですか？）"></textarea>
+                <button id="ask-ai-btn" class="mt-2 w-full px-4 py-2 bg-sky-600 text-white rounded-md shadow-sm hover:bg-sky-700 transition-colors disabled:bg-gray-400">質問を送信</button>
+            </div>
+
+            <div id="ai-result-container" class="mt-4 p-4 border border-gray-200 rounded-md bg-gray-50 min-h-[200px] prose max-w-none">
+                <div id="ai-loader" class="loader hidden"></div>
+                <div id="ai-result-text" class="text-slate-700">ここに分析・回答結果が表示されます。</div>
+            </div>
+
+            <div class="mt-6 p-3 bg-slate-100 rounded-md text-sm text-slate-600">
+                <h4 class="font-bold mb-2">Google AIの無料APIキーを取得する方法</h4>
+                <p>この機能を利用するには、Google AIのAPIキーが必要です。以下の手順で無料で取得できます。</p>
+                <ol class="list-decimal list-inside mt-2 space-y-1">
+                    <li><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:underline">Google AI Studio</a> にアクセスし、Googleアカウントでログインします。</li>
+                    <li>「Create API key in new project」ボタンをクリックして、新しいAPIキーを生成します。</li>
+                    <li>生成されたAPIキーをコピーし、上の入力欄に貼り付けて「保存」してください。</li>
+                </ol>
+                <p class="mt-2">※ APIの利用はGoogleの利用規約に従ってください。このウェブサイトはAPIキーをサーバーに保存しません。</p>
+            </div>
+        </div>
+    </div>
+
 
     <script type="module">
         // --- Data ---
@@ -813,12 +904,201 @@
         }
         
         /**
-         * Sets the footer text with the current date.
+         * Sets the footer text.
          */
         function setFooter() {
             const footer = document.getElementById('footer-text');
             footer.textContent = `この分析は、一般社団法人日本みらい研が開発したAIを用いて算出したものであり、絶対的な評価ではない（作成日:2025年6月20日、更新日:2025年6月22日）。`;
         }
+        
+        // --- AI Analysis ---
+
+        /**
+         * A generic function to call the Gemini API and handle the response.
+         * @param {string} prompt The prompt to send to the AI.
+         */
+        async function callGemini(prompt) {
+            const apiKey = localStorage.getItem('googleAiApiKey');
+            const resultTextDiv = document.getElementById('ai-result-text');
+            const loader = document.getElementById('ai-loader');
+            const runAnalysisBtn = document.getElementById('run-ai-analysis-btn');
+            const askAiBtn = document.getElementById('ask-ai-btn');
+
+            if (!apiKey) {
+                resultTextDiv.style.color = 'red';
+                resultTextDiv.textContent = 'エラー: AI分析を実行する前にAPIキーを保存してください。';
+                return;
+            }
+
+            loader.classList.remove('hidden');
+            resultTextDiv.classList.add('hidden');
+            runAnalysisBtn.disabled = true;
+            askAiBtn.disabled = true;
+
+            try {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                const payload = {
+                    contents: [{
+                        parts: [{ text: prompt }]
+                    }]
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error.message || 'APIからの応答エラー');
+                }
+
+                const result = await response.json();
+                const text = result.candidates[0].content.parts[0].text;
+                
+                resultTextDiv.style.color = 'black';
+                // A simple markdown to HTML converter
+                let htmlText = text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')     // Italic
+                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                    .replace(/^\* (.*$)/gim, '<li>$1</li>');
+                
+                htmlText = htmlText.replace(/<\/li><li>/g, '</li><li>');
+                htmlText = htmlText.replace(/<li>/g, '<ul><li>').replace(/<\/li>/g, '</li></ul>');
+                htmlText = htmlText.replace(/<\/ul>\s*<ul>/g, '');
+
+                resultTextDiv.innerHTML = htmlText.replace(/\n/g, '<br>');
+
+            } catch (error) {
+                resultTextDiv.style.color = 'red';
+                resultTextDiv.textContent = `分析中にエラーが発生しました: ${error.message}。APIキーが正しいか、またはGoogle AI Studioで有効になっているか確認してください。`;
+            } finally {
+                loader.classList.add('hidden');
+                resultTextDiv.classList.remove('hidden');
+                runAnalysisBtn.disabled = false;
+                askAiBtn.disabled = false;
+            }
+        }
+
+        /**
+         * Handles the request for an overall analysis summary.
+         */
+        function handleOverallAnalysis() {
+            const totalScore = allPolicies.reduce((acc, p) => acc + p.score, 0);
+            const overallAvg = (totalScore / allPolicies.length).toFixed(1);
+            const fieldAverages = getFieldAverages();
+            const sortedFields = Object.entries(fieldAverages).sort(([, a], [, b]) => b.avg - a.avg);
+            const bestField = `${sortedFields[0][0]} (${sortedFields[0][1].avg.toFixed(1)})`;
+            const worstField = `${sortedFields[sortedFields.length - 1][0]} (${sortedFields[sortedFields.length - 1][1].avg.toFixed(1)})`;
+            
+            const highRatedPolicies = [...allPolicies].sort((a, b) => b.score - a.score).slice(0, 5);
+            const lowRatedPolicies = [...allPolicies].sort((a, b) => a.score - b.score).slice(0, 5);
+
+            const prompt = `
+あなたは鋭い洞察力を持つ政治アナリストです。以下の石破内閣の政策評価データに基づいて、総合的な分析レポートをマークダウン形式で作成してください。
+
+# データ概要
+- 総合平均評価: ${overallAvg}点
+- 最高評価分野: ${bestField}
+- 最低評価分野: ${worstField}
+- 政策項目数: ${allPolicies.length}件
+
+# 高評価の政策例
+${highRatedPolicies.map(p => `- 「${p.policy}」 (${p.score}点)`).join('\n')}
+
+# 低評価の政策例
+${lowRatedPolicies.map(p => `- 「${p.policy}」 (${p.score}点)`).join('\n')}
+
+# 分析の構成
+1.  **総合所感:** 全体的な評価と政権運営の傾向を簡潔にまとめてください。
+2.  **強みと評価される点:** データから読み取れる政権の強みや、国民から評価されているであろう政策分野を具体例を挙げて分析してください。
+3.  **弱みと課題:** データから読み取れる政権の弱点や、今後の課題となる政策分野を具体例を挙げて分析してください。
+4.  **今後の展望:** これまでの傾向を踏まえ、今後の政権運営がどうなるか、注目すべきポイントを予測してください。
+`;
+            
+            document.getElementById('ai-result-text').textContent = '総合分析を生成中です...';
+            callGemini(prompt);
+        }
+
+        /**
+         * Handles a user's specific question to the AI.
+         */
+        function handleUserQuestion() {
+            const resultTextDiv = document.getElementById('ai-result-text');
+            const userQuestion = document.getElementById('ai-question-input').value.trim();
+
+            if (!userQuestion) {
+                resultTextDiv.style.color = 'red';
+                resultTextDiv.textContent = '質問内容を入力してください。';
+                return;
+            }
+            
+            // Create a simplified text representation of all policies to use as context
+            const policyContext = allPolicies.map(p => {
+                return `政策名: ${p.policy}, 分野: ${p.mainField}, 評価点: ${p.score}, 日付: ${p.date}, ポジティブ評価: ${p.positiveEval}, ネガティブ評価: ${p.negativeEval}`;
+            }).join('\n');
+
+            const prompt = `
+あなたは日本の政治に詳しい、優秀なAIアシスタントです。以下の政策データセット全体をコンテキストとして、ユーザーからの次の質問に誠実に、そして具体的に回答してください。
+
+# コンテキストデータ
+${policyContext}
+
+---
+# ユーザーの質問:
+${userQuestion}
+`;
+            
+            document.getElementById('ai-result-text').textContent = `「${userQuestion}」について回答を生成中です...`;
+            callGemini(prompt);
+        }
+
+        /**
+         * Sets up all event listeners for the AI analysis modal.
+         */
+        function setupAiAnalysisModal() {
+            const modal = document.getElementById('ai-modal');
+            const openBtn = document.getElementById('aiAnalysisBtn');
+            const closeBtn = document.getElementById('modal-close-btn');
+            const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+            const apiKeyInput = document.getElementById('api-key-input');
+            const apiKeyStatus = document.getElementById('api-key-status');
+            const runAnalysisBtn = document.getElementById('run-ai-analysis-btn');
+            const askAiBtn = document.getElementById('ask-ai-btn'); 
+
+            // Load saved API key from localStorage
+            const savedApiKey = localStorage.getItem('googleAiApiKey');
+            if (savedApiKey) {
+                apiKeyInput.value = savedApiKey;
+                apiKeyStatus.textContent = '保存済みのAPIキーを読み込みました。';
+                setTimeout(() => apiKeyStatus.textContent = '', 3000);
+            }
+
+            openBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+            closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
+            
+            saveApiKeyBtn.addEventListener('click', () => {
+                const key = apiKeyInput.value;
+                if (key) {
+                    localStorage.setItem('googleAiApiKey', key);
+                    apiKeyStatus.style.color = 'green';
+                    apiKeyStatus.textContent = 'APIキーを保存しました。';
+                } else {
+                    localStorage.removeItem('googleAiApiKey');
+                    apiKeyStatus.style.color = 'red';
+                    apiKeyStatus.textContent = 'APIキーを削除しました。';
+                }
+                setTimeout(() => apiKeyStatus.textContent = '', 3000);
+            });
+
+            runAnalysisBtn.addEventListener('click', handleOverallAnalysis);
+            askAiBtn.addEventListener('click', handleUserQuestion); 
+        }
+
 
         // --- Initialization ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -832,6 +1112,7 @@
             setupSorting();
             setupAnalysisToggle();
             setupExcelExport();
+            setupAiAnalysisModal();
             setFooter();
 
             updateDisplay();
