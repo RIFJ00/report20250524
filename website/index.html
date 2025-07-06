@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主要政党WEBサイト分析</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: "Warm Neutral" - 背景に温かみのある白(f8f7f4)、主要テキストに濃いグレー(333)、アクセントに落ち着いた緑(4a7c59)とオレンジ(d48a60)を使用し、信頼感と視認性を両立。 -->
+    <!-- Application Structure Plan: ユーザーが情報を多角的に探求できるよう、タブ切り替え型のダッシュボード形式を採用。1) 概要ビュー：本サイトの目的と構成を説明。2) 政党比較ビュー：全政党の総合評価を一覧できる横棒グラフと詳細なデータテーブルを表示。3) 詳細評価ビュー：各政党のカードで個別の評価内訳（レーダーチャート）と総評テキストを表示。4) 総括ビュー：レポートの要点を掲載。5) 詳細レポートビュー：レポート全文を整形して掲載。6) 音声概要ビュー：音声でレポート概要を提供。7) LPビュー：インフォグラフィック形式のLPを内包。この構造は、各セクションのコンテンツに集中しやすく、アプリケーションとしての操作性を高めるために選択した。 -->
+    <!-- Visualization & Content Choices: 1. 全体比較（Goal:比較）：全12政党のスコアを明瞭に比較するため、Chart.jsによる横棒グラフとHTMLテーブルを選択。ランキング形式で優劣が視覚的にわかりやすい。インタラクション：ドロップダウンで評価項目を動的に切り替え。2. 党別詳細（Goal:深掘り）：各党の5つの評価項目のバランスを示すため、Chart.jsのレーダーチャートが最適と判断。強みと弱みが一目でわかる。3. テキスト情報（Goal:理解）：レポートの総評や各党の解説文は、カード形式や専用セクションで整理し、チャートと連携させ深い理解を促進。ライブラリはChart.jsのみ使用。 -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: #f8f7f4; color: #333333; }
+        .chart-container { position: relative; width: 100%; max-width: 900px; margin: 0 auto; height: 500px; max-height: 70vh; }
+        @media (max-width: 768px) { .chart-container { height: 400px; } }
+        .radar-chart-container { position: relative; width: 100%; max-width: 300px; margin: 1rem auto; height: 300px; }
+        .nav-link.active-nav { color: #d48a60; font-weight: 700; border-bottom: 2px solid #d48a60; }
+        .prose h2 { color: #4a7c59; margin-top: 1.5em; margin-bottom: 1em; text-align: center; font-size: 1.875rem; }
+        .prose h3 { color: #4a7c59; margin-top: 2em; margin-bottom: 1em; }
+        .prose h4 { color: #333; margin-top: 1.5em; margin-bottom: 0.5em; }
+        .prose p { margin-bottom: 1em; }
+        .prose strong { color: #000; }
+        .prose ul { list-style-position: inside; }
+        .prose ul li { margin-bottom: 0.5em; }
+        
+        #lp-page .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 450px; max-height: 60vh; }
+        #lp-page .radar-chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 400px; max-height: 50vh; }
+        #lp-page .scatter-chart-container { position: relative; width: 100%; max-width: 700px; margin-left: auto; margin-right: auto; height: 450px; max-height: 60vh; }
+        #lp-page .lp-tab.active { background-color: #118AB2; color: white; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white shadow-md sticky top-0 z-10">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <h1 class="text-xl md:text-2xl font-bold text-[#4a7c59]">主要政党WEBサイト分析</h1>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#overview" class="nav-link text-gray-600 hover:text-[#d48a60] py-5 transition-colors duration-300">概要</a>
+                    <a href="#comparison" class="nav-link text-gray-600 hover:text-[#d48a60] py-5 transition-colors duration-300">政党比較</a>
+                    <a href="#details" class="nav-link text-gray-600 hover:text-[#d48a60] py-5 transition-colors duration-300">詳細評価</a>
+                    <a href="#summary" class="nav-link text-gray-600 hover:text-[#d48a60] py-5 transition-colors duration-300">総括</a>
+                    <a href="#full-report" class="nav-link text-gray-600 hover:text-[#d48a60] py-5 transition-colors duration-300">詳細レポート</a>
+                    <a href="#audio-summary" class="nav-link text-gray-600 hover:text-[#d48a60] py-5 transition-colors duration-300">音声概要</a>
+                    <a href="#lp-page" class="nav-link text-gray-600 hover:text-[#d48a60] py-5 transition-colors duration-300">LP</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+
+        <section id="overview" class="page-section mb-12">
+            <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                <h2 class="text-2xl md:text-3xl font-bold text-center mb-4 text-[#4a7c59]">この分析について</h2>
+                <div class="prose max-w-none mx-auto text-gray-700">
+                    <p>本レポートは、一般社団法人日本みらい研が日本の国政政党の公式サイトおよびSNSにおける情報発信能力を多角的に分析・評価したインタラクティブ・レポートである。デジタル時代における各党のコミュニケーション戦略の現状と課題を可視化し、有権者がより深く政治を理解するための一助となることを目的とする。</p>
+                    <p>このアプリケーションでは、以下の機能を通じて、レポートの情報を直感的に探求できる。</p>
+                    <ul>
+                        <li><strong>政党比較:</strong> 全政党の評価を総合点や個別の評価軸で比較し、ランキング形式で確認できる。</li>
+                        <li><strong>詳細評価:</strong> 各政党の強みと弱みをレーダーチャートで視覚的に把握し、個別の総評を閲覧できる。</li>
+                        <li><strong>総括:</strong> レポート全体の分析から導き出された、現代の政党に求められるデジタル戦略の要点を詳述する。</li>
+                        <li><strong>詳細レポート:</strong> 本分析の基となった評価レポートの全文を閲覧できる。</li>
+                        <li><strong>音声概要:</strong> レポートの要点をまとめた音声解説を聞くことができる。</li>
+                        <li><strong>LP:</strong> 全ての情報を一枚にまとめたインフォグラフィック形式のランディングページを閲覧できる。</li>
+                    </ul>
+                    <hr class="my-6">
+                    <h3 class="text-xl font-bold text-center text-[#4a7c59]">LPページの構成</h3>
+                    <p>「LP」タブで表示されるインフォグラフィックは、以下の物語的な構成に基づいている。</p>
+                    <h4>総合ランキング</h4>
+                    <p>公式サイトとSNS発信力を総合的に評価した結果。どの政党がデジタル時代に最も適応しているかを一目で把握できる。</p>
+                    <h4>評価軸別 勢力図</h4>
+                    <p>政党の強みはどこにあるのか？ 上位・中位・下位グループの特性をレーダーチャートで比較し、各グループの戦略的傾向を明らかにする。</p>
+                    <h4>戦略パターン分析</h4>
+                    <p>「政策のわかりやすさ」と「SNS発信力」にはどんな関係があるのか？政党のタイプを「バランス型」「SNS先行型」「政策詳細型」「従来型」の4つに分類し、その相関関係を可視化する。</p>
+                    <h4>成功の法則：国民民主党モデル</h4>
+                    <p>なぜ国民民主党が評価1位なのか？ユーザー視点の好循環を生み出すデジタル戦略の要点を図解し、その成功要因を分析する。</p>
+                    <h4>結論：デジタル時代の政党に求められること</h4>
+                    <p>本分析全体から見えてきた、これからの政治コミュニケーションの鍵となる「わかりやすさ」「双方向性」「戦略のバランス」という3つの要点を提示する。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparison" class="page-section mb-12 hidden">
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-2 text-[#4a7c59]">政党別 評価比較</h2>
+            <p class="text-center text-gray-600 mb-6 max-w-3xl mx-auto">
+                ここでは、各政党のデジタル発信力を様々な角度から比較可能である。下のドロップダウンメニューから評価項目を選択すると、グラフが動的に更新される。
+            </p>
+            <div class="flex justify-center mb-6">
+                <div class="relative">
+                    <select id="criteria-selector" class="block appearance-none w-full bg-white border border-gray-300 hover:border-gray-400 px-4 py-2 pr-8 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#d48a60] focus:border-transparent transition">
+                        <option value="total">総合評価</option>
+                        <option value="info">情報の探しやすさ</option>
+                        <option value="policy">政策のわかりやすさ</option>
+                        <option value="design">デザインの見やすさ</option>
+                        <option value="structure">構成力</option>
+                        <option value="communication">発信力</option>
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                        <span>▼</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-4 sm:p-6 rounded-xl shadow-lg">
+                <div class="chart-container">
+                    <canvas id="main-chart"></canvas>
+                </div>
+            </div>
+            <div id="comparison-table-container" class="mt-8 bg-white p-4 sm:p-6 rounded-xl shadow-lg"></div>
+        </section>
+
+        <section id="details" class="page-section mb-12 hidden">
+            <h2 class="text-2xl md:text-3xl font-bold text-center mb-2 text-[#4a7c59]">各政党の詳細評価</h2>
+            <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">
+                ここでは、各政党の評価詳細を確認できる。5つの評価項目のバランスをレーダーチャートで示し、レポートに記載された強みや課題などの総評を掲載する。
+            </p>
+            <div id="party-details-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+        </section>
+
+        <section id="summary" class="page-section mb-12 hidden">
+            <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                <h2 class="text-2xl md:text-3xl font-bold text-center mb-4 text-[#4a7c59]">全体の傾向と総括</h2>
+                 <div class="prose max-w-none mx-auto text-gray-700">
+                    <p class="lead text-lg mb-6">
+                        本レポートの分析から、現代の政治活動においてデジタル発信の巧拙が、いかに党の支持拡大に直結するかが明確に示された。ここでは、全体の傾向と結論を詳述する。
+                    </p>
+                    <div id="summary-content" class="space-y-6">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="full-report" class="page-section mb-12 hidden">
+            <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                <div id="full-report-container" class="prose max-w-none mx-auto text-gray-700 space-y-8"></div>
+            </div>
+        </section>
+        
+        <section id="audio-summary" class="page-section mb-12 hidden">
+            <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                <h2 class="text-2xl md:text-3xl font-bold text-center mb-6 text-[#4a7c59]">音声によるレポート概要</h2>
+                <div class="prose max-w-none mx-auto text-gray-700 text-center">
+                    <p>詳細レポートの要点をまとめた音声解説である。以下のプレーヤーで再生されたい。</p>
+                    <audio controls class="w-full mt-4">
+                        <source src="https://www.rifj.jp/wp/wp-content/uploads/2025/07/政党デジタル戦略徹底分析：国民民主党躍進の秘訣と各党の課題.mp3" type="audio/mpeg">
+                        お使いのブラウザは音声の再生に対応していません。
+                    </audio>
+                </div>
+            </div>
+        </section>
+
+        <section id="lp-page" class="page-section mb-12 hidden">
+             <div class="bg-gray-50 text-[#073B4C] space-y-20">
+                <section id="lp-ranking">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-[#118AB2]">総合ランキング</h2>
+                        <p class="mt-2 text-gray-600">公式サイトとSNS発信力を総合的に評価した結果。どの政党がデジタル時代に最も適応しているか。</p>
+                    </div>
+                    <div class="bg-white p-4 md:p-8 rounded-2xl shadow-xl">
+                        <div class="chart-container">
+                            <canvas id="lp-totalRankChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="lp-radar-analysis">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-[#118AB2]">評価軸別 勢力図</h2>
+                        <p class="mt-2 text-gray-600">政党の強みはどこにあるのか？ 上位・中位・下位グループの特性をレーダーチャートで比較。</p>
+                    </div>
+                    <div class="bg-white p-4 md:p-8 rounded-2xl shadow-xl">
+                        <div class="flex justify-center border-b mb-6">
+                            <button class="lp-tab active py-2 px-6 font-semibold transition-colors duration-300" data-group="top">上位グループ</button>
+                            <button class="lp-tab py-2 px-6 font-semibold transition-colors duration-300 text-gray-500" data-group="middle">中位グループ</button>
+                            <button class="lp-tab py-2 px-6 font-semibold transition-colors duration-300 text-gray-500" data-group="bottom">下位グループ</button>
+                        </div>
+                        <div class="radar-chart-container">
+                            <canvas id="lp-radarChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="lp-strategy-pattern">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-[#118AB2]">戦略パターン分析</h2>
+                        <p class="mt-2 text-gray-600">「政策のわかりやすさ」と「SNS発信力」にはどんな関係があるのか？政党のタイプを可視化する。</p>
+                    </div>
+                    <div class="bg-white p-4 md:p-8 rounded-2xl shadow-xl">
+                        <div class="scatter-chart-container">
+                            <canvas id="lp-scatterChart"></canvas>
+                        </div>
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 text-sm text-center">
+                            <div class="p-4 bg-blue-50 rounded-lg"><h4 class="font-bold text-[#118AB2]">右上：バランス型</h4><p>政策の明快さと高い発信力を両立。理想的なデジタル戦略を展開。</p></div>
+                            <div class="p-4 bg-green-50 rounded-lg"><h4 class="font-bold text-[#06D6A0]">左上：SNS先行型</h4><p>発信力は高いが、政策の具体性や分かりやすさが今後の課題。</p></div>
+                            <div class="p-4 bg-yellow-50 rounded-lg"><h4 class="font-bold text-[#FFD166]">右下：政策詳細型</h4><p>政策は分かりやすいが、SNSでの拡散力が弱く、支持が広がりづらい。</p></div>
+                            <div class="p-4 bg-red-50 rounded-lg"><h4 class="font-bold text-[#FF6B6B]">左下：従来型・課題あり</h4><p>デジタルコミュニケーション全体に改善の余地がある。</p></div>
+                        </div>
+                    </div>
+                </section>
+                
+                <section id="lp-success-model">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-[#118AB2]">成功の法則：国民民主党モデル</h2>
+                        <p class="mt-2 text-gray-600">なぜ評価1位なのか？ユーザー視点の好循環を生むデジタル戦略を図解。</p>
+                    </div>
+                    <div class="bg-white p-4 md:p-8 rounded-2xl shadow-xl">
+                        <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4 text-center">
+                            <div class="p-4 bg-gray-100 rounded-lg shadow w-full md:w-1/4">
+                                <div class="text-2xl mb-2">①</div>
+                                <h4 class="font-bold">明確な政策</h4>
+                                <p class="text-sm">4つの柱でシンプルに提示</p>
+                            </div>
+                            <div class="text-4xl font-thin text-gray-400 transform md:rotate-0 rotate-90">→</div>
+                            <div class="p-4 bg-yellow-100 rounded-lg shadow w-full md:w-1/4">
+                                 <div class="text-2xl mb-2">②</div>
+                                <h4 class="font-bold">平易な言葉</h4>
+                                <p class="text-sm">専門用語を避け具体策を重視</p>
+                            </div>
+                            <div class="text-4xl font-thin text-gray-400 transform md:rotate-0 rotate-90">→</div>
+                            <div class="p-4 bg-green-100 rounded-lg shadow w-full md:w-1/4">
+                                 <div class="text-2xl mb-2">③</div>
+                                <h4 class="font-bold">双方向SNS</h4>
+                                <p class="text-sm">ライブ配信でコメントに即応</p>
+                            </div>
+                             <div class="text-4xl font-thin text-gray-400 transform md:rotate-0 rotate-90">→</div>
+                            <div class="p-4 bg-blue-100 rounded-lg shadow w-full md:w-1/4">
+                                 <div class="text-2xl mb-2">④</div>
+                                <h4 class="font-bold">支持拡大</h4>
+                                <p class="text-sm">若年層の投票先トップに</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="lp-conclusion">
+                    <div class="text-center mb-8">
+                        <h2 class="text-3xl font-bold text-[#118AB2]">結論：デジタル時代の政党に求められること</h2>
+                        <p class="mt-2 text-gray-600">この分析から見えた、これからの政治コミュニケーションの鍵。</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                        <div class="bg-white p-6 rounded-2xl shadow-xl">
+                            <div class="text-5xl font-bold text-[#06D6A0]">1</div>
+                            <h3 class="text-xl font-bold mt-4 mb-2">わかりやすさ</h3>
+                            <p class="text-gray-600">専門的・網羅的な情報よりも、一般の有権者が直感的に理解できる平易なメッセージが支持を集める。</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-xl">
+                            <div class="text-5xl font-bold text-[#FFD166]">2</div>
+                            <h3 class="text-xl font-bold mt-4 mb-2">双方向性</h3>
+                            <p class="text-gray-600">一方的な広報ではなく、SNSでの対話やライブ感のあるコミュニケーションが共感と信頼を生む。</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-xl">
+                            <div class="text-5xl font-bold text-[#FF6B6B]">3</div>
+                            <h3 class="text-xl font-bold mt-4 mb-2">戦略のバランス</h3>
+                            <p class="text-gray-600">発信力と政策の分かりやすさ、両方のバランスが取れた政党が、持続的な支持拡大に成功している。</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white mt-12 py-6">
+        <div class="container mx-auto text-center text-gray-500">
+            <p>&copy; 一般社団法人日本みらい研 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const partyData = [
+                { id: 'dpfp', name: '国民民主党', url: 'https://new-kokumin.jp/', scores: { info: 27, policy: 23, design: 18, structure: 13, communication: 9, total: 90 }, summary: 'ユーザ視点に立った情報発信で他党を一歩リードしている。サイトの構造やコンテンツの平易さ、SNSでの双方向性など、新しい時代に対応した手法で支持拡大に成功している。今後もこのデジタル戦略を維持・強化することで、更なる支持層の拡大が期待できるであろう。' },
+                { id: 'ldp', name: '自由民主党', url: 'https://www.jimin.jp/', scores: { info: 26, policy: 20, design: 17, structure: 14, communication: 8, total: 85 }, summary: '情報量の豊富さと安定したサイト運営ではトップクラスである反面、平易さやデジタル上での親近感演出では課題を残す。伝統政党ゆえにメッセージが総花的になりがちで、SNS上でも保守本流らしい硬さが目立つ。幅広い支持層に訴える戦略自体は奏功しているものの、若年層へのリーチ強化のためにはデジタル発信のさらなる工夫が求められる。' },
+                { id: 'jip', name: '日本維新の会', url: 'https://o-ishin.jp/', scores: { info: 25, policy: 22, design: 16, structure: 13, communication: 7, total: 83 }, summary: '分かりやすい政策パッケージと安定したサイト運営が強みである。「身を切る改革」に象徴される明確なメッセージはデジタル上でも伝わりやすく、支持者に浸透している。一方で、SNS活用では他の改革政党に比べ保守的との印象もあり、今後はネット上での共感を広げる工夫、例えば若年層に刺さるコンテンツの充実が課題である。' },
+                { id: 'cdp', name: '立憲民主党', url: 'https://cdp-japan.jp/', scores: { info: 24, policy: 18, design: 14, structure: 12, communication: 6, total: 74 }, summary: '情報発信の量と丁寧さでは優れているものの、それが必ずしもわかりやすさや拡散力に結び付いていない。政策資料を充実させ専門的な議論をリードする姿勢は野党第一党として評価できるが、一般有権者への訴求という点ではメディア戦略の練り直しが必要である。ユーザー目線でコンテンツを簡素化し、SNSでの対話型発信を強めることで、支持の裾野を広げる余地があるだろう。' },
+                { id: 'sansei', name: '参政党', url: 'https://www.sanseito.jp/', scores: { info: 22, policy: 20, design: 13, structure: 11, communication: 9, total: 75 }, summary: 'SNS時代に台頭した政党らしく、デジタル発信力が際立っている。政策の伝え方も「噛み砕いて説明する」姿勢で一貫しており、政治参加を呼びかけるメッセージが明確である。その一方で、公式サイト上の情報基盤は発展途上であり、今後コンテンツ拡充に伴う分かりやすさの維持が課題となろう。既存メディアに載らない視点を提示する姿勢は支持者を惹きつけており、引き続きユーザー目線の発信を継続することが求められる。' },
+                { id: 'reiwa', name: 'れいわ新選組', url: 'https://www.reiwa-shinsengumi.com/', scores: { info: 22, policy: 21, design: 12, structure: 11, communication: 9, total: 75 }, summary: '既存政党にはないライブ感あふれる発信で台頭した政党である。特に山本代表の個人発信力が突出しており、ネット募金やボランティア動員など草の根の支持をオンラインで組織化している点が特徴的である。その反面、公式サイト自体は補助的な位置づけとなっており、情報の体系性やデザイン洗練度では他党に及ばない部分もある。今後もSNS・動画を主戦場として支持拡大を図る戦略が有効であるが、公式サイトも党の理念や成果を蓄積・発信する場として充実させていくことが望まれる。' },
+                { id: 'komei', name: '公明党', url: 'https://www.komei.or.jp/', scores: { info: 23, policy: 18, design: 13, structure: 12, communication: 6, total: 72 }, summary: '伝統的な支持層に支えられた政党であり、公式サイトも堅実で信頼感のある作りである。一方で、ネット時代における自発的な情報拡散にはあまり力を入れていない。SNSの活用も他党のような積極性は見られず、選挙時には支持者による草の根の広報活動に頼る部分が大きい。今後、党勢維持・拡大のためには、若い世代にもアピールできるようなデジタル発信コンテンツの強化が課題である。' },
+                { id: 'jcp', name: '日本共産党', url: 'https://www.jcp.or.jp/', scores: { info: 22, policy: 17, design: 12, structure: 11, communication: 6, total: 68 }, summary: '情報発信の真面目さ・丁寧さでは群を抜いている。公式サイトでも日々の見解や論戦を詳細に公開し、資料性は極めて高い。しかしその反面、情報量が多すぎて一般の有権者にとってはハードルが高く映る可能性がある。SNSでの発信も委員長個人に頼る部分が大きく、党全体としてのデジタル戦略は控えめである。支持者に確実に情報を届ける姿勢は堅持しつつ、もう少しカジュアルな形で党の主張を広げる工夫があっても良いだろう。' },
+                { id: 'mirai', name: 'チームみらい', url: 'https://team-mirai.jp/', scores: { info: 18, policy: 18, design: 18, structure: 13, communication: 6, total: 73 }, summary: '公式サイト・SNSともに新設の政党とは思えない完成度であり、テクノロジーに精通した若手らしいセンスが光る。特にサイトの洗練度は国政政党中トップクラスで、情報発信にもデジタル世代の感覚が反映されている。一方、支持基盤がまだ形成途上であるため、せっかくの発信力を実際の支持拡大に繋げるには時間と工夫が必要である。明確なビジョン提示と先進的な発信スタイルは評価できるので、今後は具体的な政策提案と実績づくりを伴わせることで更なる飛躍が期待できると感じる。' },
+                { id: 'hosyu', name: '日本保守党', url: 'https://hoshuto.jp/', scores: { info: 15, policy: 15, design: 14, structure: 10, communication: 5, total: 59 }, summary: '著名人の呼びかけで誕生した経緯から初動の注目度は高かったが、公式サイト・SNSを通じた情報発信の内容を見る限り、一般有権者への訴求という点では不十分である。理念先行で具体策の提示が遅れているためサイトの情報量も少なく、支持層以外にメッセージが届きにくい状況である。今後、国政政党として定着していくためには、政策の肉付けと分かりやすい発信、そして双方向で支持を広げるデジタル戦略の強化が求められるであろう。' },
+                { id: 'nhk', name: 'NHK党', url: 'https://www.nhk-tou.jp/', scores: { info: 15, policy: 12, design: 12, structure: 9, communication: 5, total: 53 }, summary: 'その特異な立ち位置を反映して一般的な政党とは大きく異なる。目的特化型の情報提供に徹しているため、政党としての総合力アピールには繋がっていない。単一争点に資源を割く戦略がサイトにも表れており、他の政策やビジョンが見えないことが党勢拡大の妨げになっている。発信スタイルも一部で過激すぎるため、広範な支持獲得には向いていない。' },
+                { id: 'sdp', name: '社会民主党', url: 'https://sdp.or.jp/', scores: { info: 16, policy: 16, design: 10, structure: 11, communication: 5, total: 58 }, summary: 'デジタル発信は必要最低限にとどまり、全体として旧来型の政党広報から脱しきれていない。サイトもSNSも党の存在感を高めるには力不足で、支持者向けの告知板の域を出ていない。長年培ってきた理念は明確であるため、本来はそれを現代風に伝える工夫次第で発信力向上の余地はある。しかし人的・資金的リソースが限られる現状では難しく、ユーザー視点では「情報が少なく更新も遅い政党」という評価になりがちである。' }
+            ];
+
+            const summaryData = {
+                points: [
+                    { 
+                        title: "デジタル戦略の二極化：対話型 vs 広報型", 
+                        content: "本調査から、各政党のデジタル戦略が「対話型」と「広報型」に明確に二極化していることが判明した。国民民主党、参政党、れいわ新選組に代表される「対話型」は、SNSでのライブ配信やコメントへの即時応答を通じ、有権者との双方向性を重視する。これにより、政治参加へのハードルを下げ、特に若年層からの共感と支持を獲得している。これは、発信力スコアの高さに直接的に反映されている。一方で、自由民主党や立憲民主党などの伝統的な大政党は、豊富な情報量を背景とした「広報型」に留まる傾向がある。公式サイトは情報のアーカイブとしては機能するものの、一方的な情報提供が中心となり、SNSでのエンゲージメント創出には至っていない。この差が、新しい支持層の開拓における明暗を分けていると言える。" 
+                    },
+                    { 
+                        title: "「わかりやすさ」の再定義：情報量から伝達効率へ", 
+                        content: "デジタル時代における「政策のわかりやすさ」は、情報の網羅性から、要点をいかに効率的に伝えるかという点にシフトしている。かつて評価された詳細な政策集は、時間のない現代の有権者、特にデジタルネイティブ層には敬遠されがちである。日本維新の会の「維新八策」や国民民主党の「4本の柱」のように、政策を記憶しやすいパッケージにまとめ、キャッチーなスローガンと共に提示する戦略が、高い評価に繋がっている。これは、サイトのデザインや構成力とも密接に関連する。優れたUI/UXは、ユーザーを最も重要なメッセージへと自然に誘導し、政策理解を助ける。立憲民主党や共産党のように、政策の質は高くともその提示方法が複雑である場合、有権者への訴求力は限定的となる。" 
+                    },
+                    { 
+                        title: "党首の個性が党ブランドを牽引する時代", 
+                        content: "玉木雄一郎氏（国民民主）や山本太郎氏（れいわ）の事例は、党首個人の発信力が党全体のブランドイメージを形成し、支持拡大の強力なエンジンとなっていることを示している。彼らは自らがメディアとなり、政策や理念を直接、そして感情豊かに語ることで、政治をより身近なものに変えている。この「党首＝ブランド」戦略は、組織的な広報活動とは異なる、属人的で強力な求心力を生む。しかし、この戦略は諸刃の剣でもある。党のイメージが党首個人に過度に依存するため、個人の言動が党全体の信頼を揺るがすリスクを内包する。NHK党の混乱は、その危険性を示す教訓と言える。" 
+                    },
+                    { 
+                        title: "情報基盤の脆弱性と持続可能性の課題", 
+                        content: "日本保守党やNHK党の評価は、初期の話題性や単一イシューの訴求力だけでは、持続的な政党活動の基盤を築けないことを浮き彫りにした。有権者が政党を長期的に信頼し、支持するためには、しっかりとした政策体系（政策のわかりやすさ）と、それをいつでも確認できる安定した情報基盤（情報の探しやすさ・構成力）が不可欠である。公式サイトが貧弱であったり、政策が断片的であったりすると、一過性の注目は集めても、幅広い層からの継続的な支持には繋がらない。チームみらいのように、デザイン性に優れた先進的なサイトを構築しても、そこに掲載されるべき具体的な政策や活動実績が伴わなければ、そのポテンシャルを十分に発揮できない。" 
+                    },
+                    { 
+                        title: "最終総括：UXを核とした統合的デジタル戦略の必要性", 
+                        content: "本レポートを通じて明らかになったのは、現代の政党に求められるのは、単なる情報発信ではなく、「ユーザー体験（UX）」を核に据えた、統合的なデジタルコミュニケーション戦略であるということだ。これは、①見やすく使いやすい公式サイト（UI/UX）、②明快で記憶に残りやすいメッセージ（コンテンツ戦略）、③有権者との継続的な関係構築（エンゲージメント戦略）の三位一体を意味する。SNSでの対話を通じて有権者の関心事を把握し、それを政策に反映させ、分かりやすく公式サイトで提示し、再びSNSでその成果を報告するという、一貫したフィードバックループを構築することが重要である。もはやデジタルプレゼンスは、単なる広報ツールではない。それは、有権者の声を聞く「耳」であり、政策を練る「頭脳」であり、そして支持者と繋がる「心」でもある。この統合的アプローチを最も高いレベルで実現した政党が、今後の日本の政治において主導的な役割を果たしていくであろう。"
+                    }
+                ]
+            };
+            
+            const reportTextData = {
+                dpfp: { info: '公式サイトは2023年のリニューアルにより洗練され、トップページから政策やニュースへの導線が明確である。主要な政策は「給料・年金アップ」「自分の国は自分で守る」など4本の柱に整理されており、目的の情報に素早くアクセスできる構成である。', policy: '政策集はカテゴリ別に整理され、一般向けに平易な表現で解説されている。スローガン「対決より解決」に象徴されるように具体策を重視し、難解な専門用語を避けている。各政策分野で要点が箇条書きされており、一読して党の主張が理解しやすい。', design: '明るいオレンジを基調とした配色で視認性が高く、余白を活かしたモダンなレイアウトである。公式キャラクターの「こくみんうさぎ」を用いるなど親しみやすさにも配慮しており、文字サイズや図版も適切で読みやすいデザインである。', structure: 'トップメニューに政策、議員紹介、党の基本情報、ニュース、参加方法などが体系立てて配置されている。コンテンツの階層構造が論理的で迷いやすい箇所が少なく、サイト内検索機能も充実している。総じて情報構成の整理度が高い。', communication: 'SNS発信は全政党中でも突出しており、選挙期間中のYouTube短編動画の視聴回数（中央値約3万回）とライブ配信視聴回数（同約5万回）はトップだった。玉木雄一郎代表自らが連日ライブ配信を行い、寄せられたコメントにリアルタイムで応答するなど双方向のコミュニケーションで有権者との距離を縮めている。若年層に向けたショート動画も積極活用し、実際にネット利用が盛んな20～40代の投票先トップになるなど成果を上げている。' },
+                ldp: { info: '長年の与党だけあって公式サイトには膨大な情報が蓄積されている。トップページから政策集や選挙情報、党則・歴史まで網羅されており検索機能も備わる。ただ情報量が多いため、目的の資料に辿り着くまでに階層を何度か辿る必要があり、新規利用者には若干とっつきにくい面もある。', policy: '選挙公約や政策集は詳細だが専門的・網羅的で、簡潔さには欠ける印象である。例えば参院選特設サイトでは政策を丁寧に解説しているものの、一般有権者に訴求するスローガン中心のまとめ方は他党に比べ控えめである。主要政策テーマ（例えば「新しい資本主義」や「防衛力強化」など）は提示しているが、全体像を短時間で掴むにはやや時間を要する。', design: '保守的ながら安定感のあるデザインで、伝統の党カラーである青を基調に落ち着いた雰囲気である。レイアウトはオーソドックスで情報量が多い割に整理されている。ただし最新のWebトレンドの導入は限定的で、視覚的インパクトという点では他の革新系政党サイトに及ばない。', structure: '「政策」「ニュース」「活動」「党情報」など分類が明確で、大政党らしく組織だったサイト構成である。各種特設サイトも作成し、本体サイトからのリンク導線も適切である。一方、情報の階層が深く初心者には見通しづらい部分もあるが、構成自体は論理的である。', communication: 'SNS公式アカウントはX（旧Twitter）、Facebook、YouTubeなど一通り揃え、首相や幹部の発信も行っている。しかしその内容は記者会見動画や政策PRが中心で、カジュアルな双方向発信は控えめである。ネット戦略は慎重で保守的との指摘もあり、若者層に“身近さ”を訴えるコンテンツでは他党に水をあけられた。ただ近年は岸田首相自らYouTube対談企画を行うなど、新たな試みも見られる。' },
+                jip: { info: '公式サイトはシンプルで必要情報に行き着きやすい。トップページに最新ニュースや政策リンクが整理され、検索ボタンも目立つ位置に配置。地方組織の情報も含め網羅的だが、サイト内ナビゲーションで全体を把握しやすく、初見でも迷いにくい設計である。', policy: '維新は「維新八策」と称する包括的政策ビジョンを掲げ、主要な改革項目を8つに集約している。このように重点政策を絞って提示するため党の方向性が明確であり、サイト上でも章立てで政策が整理されている。個別政策集は詳細だが章立てと目次が整備されているため閲覧性は高い。', design: '白と緑を基調とした爽やかなデザインで、視覚的な癖は少なく万人に見やすい。反面、シンプルさゆえにやや地味な印象も受ける。画像やアイコンよりテキスト主体のページが多く、必要十分ではあるものの、国民民主党などと比べるとビジュアル面での訴求力は平均的である。', structure: '維新サイトは「日本維新の会について」「政策」「活動情報」「選挙情報」など明確なセクション分けで構成されている。政策ページにはカテゴリ別の詳細が掲載され資料性が高い一方、情報量が多いため深掘りする際にはPDF等で読む必要がある。全体として体系立てられているが、情報の深さゆえに利用者が取捨選択する工夫も必要である。', communication: '公式SNSはXやYouTubeで記者会見・演説動画を配信し、党所属議員も積極的に情報発信している。しかし国民民主や参政党ほどSNS戦略が話題になることは少なく、発信内容もどちらかと言えば政策アピールや首長の実績紹介が中心である。党首クラスでは吉村副代表（大阪府知事）が高い知名度を活かし情報発信しているが、双方向のキャンペーンやバズを狙った企画は限定的で、SNS上での存在感は中程度に留まっている。' },
+                cdp: { info: 'オフィシャルサイトには党の基本情報から最新のニュースリリースまで幅広く掲載されている。政策ページでは「政策集2025」として所掌ごとに整理された情報を提供しており、主要な政策ビジョンや提出法案の情報も見つけられる。ただし情報の幅が広く、初めて訪れた利用者にとっては必要な情報を探すのに多少時間がかかることもある。', policy: '政策集は非常に網羅的で、多岐にわたる政策項目（環境、経済、社会保障、ジェンダー等）が並ぶ。専門用語や細かな政策目標も含まれるため、有権者が党の主張を一瞥で掴むにはハードルが高い面がある。一方、「7つの約束」など選挙時には重点公約を掲げる工夫もみられるが、公式サイト上では詳細資料が前面に出ており、全体として平易さより詳細さが勝っている。', design: '党カラーのブルーを基調に落ち着いた印象だが、レイアウト自体はオーソドックスで視覚的な魅力には乏しい。テキスト情報が主体で、写真やアイコンの活用も必要最低限に留まる。可読性は確保されているものの、デザイン面での特徴が薄くユーザーの注意を引きにくい。', structure: 'サイト構造は政党情報、政策、選挙、活動報告など項目ごとに整理され、大きな迷いはない。政策関連では基本政策からビジョン、提出法案集まで階層化されている。ただ、掲載情報が多岐にわたるため深掘りしようとするとPDFダウンロードなど外部リンクに飛ぶ場面も多く、サイト内で完結しづらい部分がある。', communication: '公式SNSアカウントはXやYouTube、Instagram等を運用し、定期的に党の見解やイベント情報を発信している。しかし他党に比べて発信内容が堅めで話題性に欠ける傾向がある。近年は街頭演説のライブ配信や党首のメッセージ動画も行うが、バズを生むような企画は少なく、SNS上でのフォロワーの広がりも限定的である。' },
+                sansei: { info: '新興政党ながら公式サイトには党の概要やイベント情報、政策カタログなど基本的な情報が揃っている。ページ数自体が多くないため閲覧すべき情報に辿り着きやすいが、設立から日が浅いためか詳細なデータや過去実績の情報は限定的である。必要最低限の情報は容易に見つかる反面、深い分析を求める利用者には物足りなさも残る。', policy: '参政党は「3つの重点政策」として教育・子育て支援などを掲げ、シンプルなメッセージで訴えている。公式Instagramでも「メディアが語らない政治をわかりやすく発信中」と銘打っており、専門用語を避け平易に主張を伝える工夫が見られる。一方で独自の憲法草案の提唱など思想色の強い内容も含まれるため、具体策の部分で理解に時間を要する箇所もある。', design: '白とオレンジを基調にしたサイトで、レイアウトはシンプルだがやや素朴な印象である。テキスト中心で装飾性は高くないものの、ページ読み込みも軽快でスマートフォン表示にも大きな不都合はない。全体に必要最低限のデザインに留まっており、可もなく不可もない印象である。', structure: 'サイト内は「党の紹介」「政策」「お知らせ」「寄付・ボランティア募集」など基本要素で構成され、階層も浅く分かりやすい。結党間もないため情報量は限られるが、その分シンプルな構成で読みやすい。ただし今後情報が増えた際の整理方針が見えにくく、現状ではコンテンツ量が少ないことが構成面での分かりやすさにつながっている。', communication: '発信力は中規模政党としては際立っており、党首がYouTubeで積極的に発信し支持者との信頼関係を築いてきた。Twitter（X）だけでなくInstagramやTikTokにも公式アカウントを開設し、若年層へのアプローチにも熱心である。選挙期間中も街頭演説をライブ配信し、その動画クリップがSNS上で拡散され議席獲得の原動力となった。双方向性という点では国民民主党に次ぐレベルで、限られたリソースで最大限の発信効果を上げている。' },
+                reiwa: { info: '公式サイトには党の基本情報や代表メッセージ、政策、寄付のお願いまでコンパクトにまとまっている。立ち上げ以来のニュースや活動報告も掲載されているが、他党に比べページ数は多くなく必要な情報は比較的すぐ見つかる。ただ政策詳細については紙幅が限られており、深く知りたい場合は別途動画や演説を見る必要があるなど、サイト単体で得られる情報量はほどほどである。', policy: '消費税廃止や積極財政といった大きな政策キーワードを前面に出し、誰にでも理解しやすい言葉で主張している。山本太郎代表のスローガンは平易で情感に訴えるものが多く、政策リーフレット等でも専門用語を避け具体的な数字や例示で説明する工夫がなされている。サイト上でも「れいわニューディール」など政策の愛称を付けて紹介しており、おおむね直感的に理解しやすい内容である。', design: '党カラーのピンクを基調に視覚的インパクトを与えている一方、サイトの構造自体はやや雑然としている。トップページに寄付やボランティア募集、物販など多くの要素が配置されており、初見では情報の優先度が掴みづらい箇所もある。画像や動画を多用する一方でレイアウトの統一感に欠ける部分があり、洗練度という点では平均的である。', structure: '基本的なメニュー項目（党紹介、政策、活動、寄付など）は揃っており、一通りの情報にはアクセス可能である。とはいえ、れいわ新選組の場合は党首の発信力に重きが置かれるためか、サイトよりもSNSやYouTubeチャンネルで情報を追う支持者が多い印象である。そのため公式サイトの情報体系は必要最小限で、コンテンツ量が少ない分構成上の複雑さは少ない。', communication: '発信力は極めて高く、山本太郎代表自らが街頭演説のライブ配信やSNS投稿を精力的に行っている。YouTubeチャンネルでのライブ中継や切り抜き動画の拡散力は大きく、支持者からの寄付募集中継など独自のオンライン選挙手法でも注目を集めた。党公式のXアカウントの他に国会情報専用アカウントも運用するなど情報発信の細やかさも見られる。参院選でもSNS経由の支持拡大が議席増に貢献したとされ、双方向の対話集会「おしゃべり会」をネットで告知・開催するなど、新しい支持層の開拓に成功している。' },
+                komei: { info: '公式サイトは堅実な作りで、党のニュース、政策、実績など必要情報にアクセスしやすい。長年の与党経験から実績集や提言集も掲載されており、「よくあるご質問」等の利用者向け情報も用意されている。情報の範囲は広いが、トピックごとに整理されているため目的の情報は比較的探し出しやすい。', policy: '公明党は福祉や子育て支援など身近な政策課題を前面に打ち出す傾向にあり、文章も平易である。サイトでも直近の公約や重点政策を紹介しているが、与党連立の立場上、自民党との合同政策集に埋もれてしまう側面もある。党独自の主張（例えば軽減税率の推進など）は簡潔に示されているものの、政策全体像は連立与党の一翼として語られるため、単独の党としてのビジョンがやや見えにくい。', design: '青と緑を用いた落ち着いたデザインで、必要最低限の機能性に徹している。可読性は問題ないが、レイアウトは保守的で目新しさは感じられない。文章量が多くテキスト中心のページ構成が多いため、視覚的な訴求力は他党のモダンなサイトと比べて弱い印象である。', structure: '「政策・提言」「実績」「ニュース」「党概要」などカテゴリー分けが明確で、大規模組織らしく情報整理は行き届いている。過去の実績データや議員情報も体系立てて配置され、サイトマップも用意されている。ただ情報深度が深く、公明党独自の視点を探すには多数のページを閲覧する必要があるなど、構造がやや縦長になっている部分もある。', communication: 'SNS発信は一通り行っているものの、他党に比べ目立った展開は少ない。公式Xアカウントでは党の活動報告や青年局イベントの様子を発信するが、フォロワーへの広がりは限定的である。YouTubeの「公明党チャンネル」では政策動画を公開しているが再生回数は中規模に留まり、支持母体のネットワーク外に訴えるバズには乏しい。組織力でカバーしている部分が大きく、ネット上の自発的な盛り上がりという点では中位以下である。' },
+                jcp: { info: '党機関紙「しんぶん赤旗」由来の記事や声明文など情報量は膨大だが、公式サイト上ではトピックごとに整理され比較的探しやすい。政策や党史、地方組織の紹介まで幅広く掲載されている。しかし更新頻度が高く日々新しい情報が追加されるため、特定の情報を遡って探す場合には検索機能を活用する必要があるなど、上級者向けの側面も持つ。', policy: '基本路線は憲法擁護や反新自由主義など一貫しており、その理念自体は明確である。ただ公式サイト上の政策説明は詳細で文章量が多く、全体像の把握には時間を要する。例えば綱領や基本政策のページでは理念的な記述が続き、具体的施策はやや埋もれがちである。対外的なスローガン（「消費税減税」「9条守れ」等）は端的でわかりやすいものの、党内政策論を含め全て読むとかなり情報量が多い。', design: 'サイトデザインはシンプルで保守的であり、文字情報主体で視覚的アクセントは少ない。白と赤を基調にした画面構成で必要な情報は読めるものの、レイアウトは旧来型で若干雑多な印象を与える部分もある。画像や動画コンテンツもあるにはあるが限定的で、全体として視認性より情報量優先のデザインと言える。', structure: '「政策」「ニュース」「党紹介」「活動」という形で大区分はされているが、一つひとつのページに詰め込まれた情報が多く、利用者自身が取捨選択しながら読む必要がある。例えば政策ページでは膨大な項目が羅列されており、興味のあるテーマを探すのにスクロール量が多くなる。体系だった整理はされているものの情報過多ゆえの扱いにくさが構成上の課題となっている。', communication: '志位和夫委員長がX上で積極的に情報発信を行いフォロワーも数十万人規模に達するなど、野党として一定のSNS存在感は維持している。YouTubeでも党公式チャンネルで会見や演説を配信しているが、再生回数は限定的で他党のようなバズは少ない。支持者層が比較的高年齢であることもあり、TikTokなど新興プラットフォームでの展開は見られない。従来型メディア（機関紙や集会）が主軸で、SNSは補助的な位置づけにとどまっている。' },
+                mirai: { info: '結党間もない政党のため情報量自体は少なめで、公式サイトでは党のミッションやビジョン、候補者一覧など基本情報はすぐ見つかる。ただ政策詳細や具体的な活動実績の蓄積はこれからであり、利用者が知りたい細部については現時点で提供されていない場合もある。現状ではサイト内の情報探索は容易だが、そもそもの情報項目が限定的である。', policy: '「テクノロジーで政治を変える。あなたと一緒に未来をつくる。」というミッションを前面に掲げ、デジタル技術活用による政治刷新という軸が明確に示されている。一方で具体的政策については理念先行の傾向があり、AI・ITで何をどう改善するかの詳細はこれから詰める部分も見受けられる。理念自体は平易な言葉で理解しやすく提示されており、党名にも「未来」を冠することでビジョンの方向性を直感的に伝えている。', design: '非常にモダンで洗練されたデザインを採用している。白を基調に余白を大きくとり、要所にイラストやアイコンを配置して視覚的に訴えるサイトとなっている。スクロールに合わせて動的に要素が現れるなどテクノロジー志向の新党らしい工夫も凝らされている。全体としてスタートアップ企業のサイトを思わせるような先進的デザインで、他党と比べても見やすさ・新しさが際立っている。', structure: '「ミッション」「ビジョン」「政策マニフェスト」「党首紹介」「価値観」などコンテンツが明確に区分けされており、新規訪問者でも党の概要を順序立てて理解できる構成である。またSNSや寄付ページへの導線もはっきり示されており、サイト内の回遊もしやすい。情報量が少ない分レイアウトにゆとりがあり、各ページの関連情報へのリンクも適切に配置されている。', communication: '公式X（Twitter）やYouTubeチャンネル、Instagram、Facebook、LINEなど主要SNSプラットフォームを一通り活用している。党首の安野氏自身がエンジニア・SF作家という経歴もあり、ネット上での発信には慣れている様子である。ただ党の知名度がまだ低くフォロワー数は限られており、発信力が大きな支持に繋がる段階には至っていない。2025年参院選ではSNSを駆使して話題作りに努めたものの、議席獲得には至らず認知拡大は今後の課題である。' },
+                hosyu: { info: '公式サイトは立ち上げたばかりでコンテンツが少なく、基本情報（結党宣言や役員紹介、入党案内）に限られている。シンプルな構成ゆえ主要な情報にはすぐ行き着けるものの、政策詳細や活動報告といった一般有権者が知りたい情報はあまり掲載されていない。必要最小限の情報提供に留まり、サイトを訪れて得られる内容が限定的である。', policy: '「日本の国体、伝統文化を守る」という理念を掲げており結党の目的は明確であるが、具体的政策については断片的にしか示されていない。LGBT法案反対など結党の契機となった主張は分かりやすいものの、包括的な政策集や公約リストはサイト上で確認できず、有権者視点では党の全体像を把握しにくい。主張の方向性は理解できても詳細な政策設計が見えてこない点でわかりやすさを欠く。', design: 'サイトデザインはシンプルで、白地に党ロゴとテキストが中心の素朴なものとなっている。読みやすさには配慮されているが、視覚的な特徴や洗練さは平均的である。結党当初の急造サイトという印象は否めず、今後コンテンツ拡充と併せデザイン面でのブラッシュアップの余地がある。', structure: 'ページ数が少なく階層も浅いため、サイト構成自体は単純明快である。ただ逆に言えば情報が極端に少なく、政党サイトとして提供すべきコンテンツが整っていない印象を受ける。例えば党の綱領や具体的政策一覧などが未掲載であり、現状では「結党のお知らせ」程度の内容に留まっている。構成面で迷うことはないが、裏を返せば利用者が得られるものも限定的である。', communication: '百田尚樹代表および有本香事務総長という著名人が創設者であるため、結党直後にはX上で党アカウントのフォロワーが短期間で数十万に達するなど注目を集めた。しかしその後のSNS発信は主に代表のYouTube番組や講演会告知が中心で、双方向性に乏しい。参政党が党首自ら日常的に発信して信頼を築いたのに対し、日本保守党は既存支持者向けの一方通行な情報発信に留まり、支持率は伸び悩んでいる。今のところSNS上での話題性も頭打ちで、発信力が得票に結び付いているとは言い難い。' },
+                nhk: { info: '公式サイトではNHK受信料問題に関する活動報告や裁判情報が中心に掲載されており、党の基本情報や他の政策についての記載は極めて限られる。一応「公約」「党役員」などのページはあるものの、訪問者が知りたいであろう党の全貌や理念に関する情報を網羅的には提供していない。単一課題に特化している分、その関連情報（例：弁護士相談窓口案内等）は見つけやすいが、政党サイトとしての情報総量は著しく少ない。', policy: '唯一と言ってよい主張である「NHKのスクランブル放送実現」は端的であり明快である。しかしそれ以外の政策は日替わりで党名や主張を変更するなど一貫性に欠け、公式サイト上でもNHK問題以外の政策体系は示されていない。政党要件維持のため話題性のあるテーマを都度取り上げてきたが、有権者から見ると何を目指す政党なのか極めて分かりにくい。結果的に「NHK問題だけ」の党との印象が固定化しており、政策全体のわかりやすさは低い。', design: 'サイトデザインは簡素かつ雑多な印象である。トップページに代表の長文談話が掲載されるなどレイアウト的に読みづらく、全体としてブログに近い体裁となっている。ページ内の情報配置も整理されておらず、新着情報や発信動画がランダムに貼られているように見受けられる。視認性よりも主張の勢いを優先したような構成で、デザイン面での見やすさは十分とは言えない。', structure: 'NHK問題に資源を集中しているためか、サイト構成もNHK関連コンテンツに偏っている。「裁判」「選挙」「コールセンター」等のメニューはあるが、一般的な党紹介や政策集に当たるページは存在しない。情報構造としては特殊な単一課題サイトに近く、政党公式サイトに通常期待される総合情報提供の役割を十分に果たしていない。結果としてサイト全体の構成はちぐはぐで、党の全容を理解するには不向きな作りとなっている。', communication: '立花孝志党首自身がYouTubeを駆使して注目を集めた経緯があり、一時はSNSでの話題性は高かった。しかし党首や候補者の度重なる不祥事・除名などを経て信頼性を欠き、現在では発信力が低下している。公式Xアカウント等も存在するが、主張が過激な割にフォロワー数は伸び悩み、ネット上でも一部での物珍しさに留まる。ニコニコ動画など特定コミュニティでは一定の支持を集めるものの、広く国民にリーチする発信力は備えていない。' },
+                sdp: { info: '公式サイトには党の歴史や綱領、声明文などが掲載され、最低限の情報取得は可能である。ただ更新頻度は高くなく最新情報の発信がやや滞りがちで、サイト全体が静的な印象を受ける。党員向けの組織情報はともかく、一般向けには必要な情報がトップにまとまっておらず、例えば政策ページを探すにもいくつかのリンクを辿る必要があるなど、やや不親切な構造である。', policy: '平和主義、福祉重視、脱原発といった一貫した基本理念を掲げており、その点ではぶれがなく理解しやすい。公式サイトでも基本政策として憲法9条堅持や格差是正などを打ち出している。ただ詳細な政策集やマニフェストは簡略化されすぎて具体性に欠け、他党との差別化が見えにくい。シンプルゆえに分かりやすい反面、「で、具体的に何をする政党なのか」が伝わりづらい部分がある。', design: 'サイトデザインは旧態依然としており、視覚的な魅力には乏しい。レイアウトはシンプルだが文字情報が中心で、写真や図表も少ないため画面の賑わいがない。フォントサイズや配色も標準的でアクセシビリティ上の問題はないものの、全体に地味で時代遅れな印象は否めない。閲覧そのものに支障はないが、ユーザーを惹きつけるデザインとは言い難い。', structure: 'ページ構成自体は「党情報」「政策」「活動」「ニュース」といった基本項目で整理されており、ごく普通である。コンテンツ量が少ないため深い階層もなく、迷うほどの情報量ではない。ただ情報が少ないことがそのまま訴求力の低さにも繋がっており、サイト全体から受ける印象は薄い。最低限の体裁は整っているが、充実度・体系性の面では物足りない。', communication: '党公式のSNS発信は頻度が低く、存在感は希薄である。福島瑞穂党首個人はX等で積極発信しているものの、フォロワーは他党幹部に比べて多くはなく、拡散力は限定的だ。YouTubeに公式チャンネルはあるが再生数はごく少数で、TikTokなど新媒体への展開も確認できない。党勢の低下も相まって、デジタル空間での発信力は国政政党の中でも最も低い部類に入る。' }
+            };
+
+            const criteriaMap = {
+                total: { label: '総合評価', max: 100 },
+                info: { label: '情報の探しやすさ', max: 30 },
+                policy: { label: '政策のわかりやすさ', max: 25 },
+                design: { label: 'デザインの見やすさ', max: 20 },
+                structure: { label: '構成力', max: 15 },
+                communication: { label: '発信力', max: 10 }
+            };
+
+            const chartColors = ['#4a7c59', '#6a9979', '#8cb49a', '#add0bb', '#d48a60', '#eeb390', '#f4cba6', '#7d7d7d', '#a3a3a3', '#c8c8c8', '#e8e8e8', '#f0f0f0'].reverse();
+            
+            let mainChart;
+            let detailsRendered = false;
+            let summaryRendered = false;
+            let fullReportRendered = false;
+            let lpRendered = false;
+
+            const renderMainChart = (criteria = 'total') => {
+                const ctx = document.getElementById('main-chart').getContext('2d');
+                
+                partyData.sort((a, b) => b.scores[criteria] - a.scores[criteria]);
+
+                const chartData = {
+                    labels: partyData.map(p => p.name),
+                    datasets: [{
+                        label: criteriaMap[criteria].label,
+                        data: partyData.map(p => p.scores[criteria]),
+                        backgroundColor: partyData.map((_, i) => chartColors[i % chartColors.length]),
+                        borderColor: '#ffffff',
+                        borderWidth: 1,
+                    }]
+                };
+
+                if (mainChart) {
+                    mainChart.data = chartData;
+                    mainChart.options.scales.x.max = criteriaMap[criteria].max;
+                    mainChart.options.plugins.title.text = `${criteriaMap[criteria].label} 比較`;
+                    mainChart.update();
+                } else {
+                    mainChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: chartData,
+                        options: {
+                            indexAxis: 'y',
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    max: criteriaMap[criteria].max,
+                                    grid: { color: '#e0e0e0' }
+                                },
+                                y: {
+                                    grid: { display: false }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: `${criteriaMap[criteria].label} 比較`,
+                                    font: { size: 18 },
+                                    padding: { top: 10, bottom: 20 }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            return `${context.dataset.label}: ${context.raw}点`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            };
+            
+            const renderComparisonTable = () => {
+                const container = document.getElementById('comparison-table-container');
+                const sortedData = [...partyData].sort((a, b) => b.scores.total - a.scores.total);
+
+                let tableHTML = `
+                    <h3 class="text-xl font-bold text-center mb-4 text-[#4a7c59]">評価結果一覧</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="py-2 px-4 text-left">政党名</th>
+                                    <th class="py-2 px-4 text-center">総合評価 (100)</th>
+                                    <th class="py-2 px-4 text-center">情報の探しやすさ (30)</th>
+                                    <th class="py-2 px-4 text-center">政策のわかりやすさ (25)</th>
+                                    <th class="py-2 px-4 text-center">デザインの見やすさ (20)</th>
+                                    <th class="py-2 px-4 text-center">構成力 (15)</th>
+                                    <th class="py-2 px-4 text-center">発信力 (10)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                sortedData.forEach(party => {
+                    tableHTML += `
+                        <tr class="border-b">
+                            <td class="py-2 px-4 font-medium"><a href="${party.url}" target="_blank" class="text-blue-600 hover:underline">${party.name}</a></td>
+                            <td class="py-2 px-4 text-center font-bold text-[#d48a60]">${party.scores.total}</td>
+                            <td class="py-2 px-4 text-center">${party.scores.info}</td>
+                            <td class="py-2 px-4 text-center">${party.scores.policy}</td>
+                            <td class="py-2 px-4 text-center">${party.scores.design}</td>
+                            <td class="py-2 px-4 text-center">${party.scores.structure}</td>
+                            <td class="py-2 px-4 text-center">${party.scores.communication}</td>
+                        </tr>
+                    `;
+                });
+                tableHTML += `
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+                container.innerHTML = tableHTML;
+            };
+
+            const renderPartyDetails = () => {
+                if(detailsRendered) return;
+
+                const grid = document.getElementById('party-details-grid');
+                partyData
+                    .sort((a, b) => b.scores.total - a.scores.total)
+                    .forEach(party => {
+                        const card = document.createElement('div');
+                        card.id = `party-${party.id}`;
+                        card.className = 'bg-white p-6 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300';
+                        
+                        const radarData = {
+                            labels: ['情報の探しやすさ', '政策のわかりやすさ', 'デザイン', '構成力', '発信力'],
+                            datasets: [{
+                                label: `${party.name} 評価`,
+                                data: [
+                                    (party.scores.info / 30) * 100,
+                                    (party.scores.policy / 25) * 100,
+                                    (party.scores.design / 20) * 100,
+                                    (party.scores.structure / 15) * 100,
+                                    (party.scores.communication / 10) * 100
+                                ],
+                                backgroundColor: 'rgba(74, 124, 89, 0.2)',
+                                borderColor: 'rgba(74, 124, 89, 1)',
+                                borderWidth: 2,
+                                pointBackgroundColor: 'rgba(74, 124, 89, 1)',
+                                pointBorderColor: '#fff',
+                                pointHoverBackgroundColor: '#fff',
+                                pointHoverBorderColor: 'rgba(74, 124, 89, 1)'
+                            }]
+                        };
+
+                        card.innerHTML = `
+                            <h3 class="text-xl font-bold mb-2 text-center text-[#4a7c59]"><a href="${party.url}" target="_blank" class="hover:underline">${party.name}</a></h3>
+                            <p class="text-center font-bold text-2xl mb-4 text-[#d48a60]">${party.scores.total}<span class="text-sm">点</span></p>
+                            <div class="radar-chart-container">
+                                <canvas id="radar-${party.id}"></canvas>
+                            </div>
+                            <p class="text-gray-600 mt-4 text-sm leading-relaxed">${party.summary}</p>
+                        `;
+
+                        grid.appendChild(card);
+                        
+                        new Chart(document.getElementById(`radar-${party.id}`).getContext('2d'), {
+                           type: 'radar',
+                           data: radarData,
+                           options: {
+                               responsive: true,
+                               maintainAspectRatio: false,
+                                scales: {
+                                    r: {
+                                        angleLines: { color: '#ddd' },
+                                        grid: { color: '#ddd' },
+                                        pointLabels: { 
+                                            font: { size: 10 },
+                                            color: '#666'
+                                        },
+                                        suggestedMin: 0,
+                                        suggestedMax: 100,
+                                        ticks: {
+                                            display: false,
+                                            stepSize: 25
+                                        }
+                                    }
+                               },
+                               plugins: {
+                                   legend: {
+                                       display: false
+                                   }
+                               }
+                           }
+                        });
+                    });
+                detailsRendered = true;
+            };
+            
+            const renderSummary = () => {
+                if(summaryRendered) return;
+                const container = document.getElementById('summary-content');
+                summaryData.points.forEach(point => {
+                    const el = document.createElement('div');
+                    el.innerHTML = `
+                        <h4 class="font-bold text-lg text-[#4a7c59]">${point.title}</h4>
+                        <p>${point.content}</p>
+                    `;
+                    container.appendChild(el);
+                });
+                summaryRendered = true;
+            };
+
+            const renderFullReport = () => {
+                if(fullReportRendered) return;
+                const container = document.getElementById('full-report-container');
+                
+                let introHTML = `
+                    <div class="text-center">
+                        <h2>日本の国政政党公式サイト・SNS発信評価レポート</h2>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold">はじめに</h3>
+                        <p>現代社会において、インターネット、特に公式サイトやSNS（ソーシャル・ネットワーキング・サービス）は、政党が有権者と直接コミュニケーションを図り、政策や理念を伝えるための極めて重要なプラットフォームである。情報の伝達速度と拡散力が飛躍的に向上したデジタル時代において、各政党がこれらのツールをいかに戦略的に活用しているかは、その支持拡大や政治的影響力に直結する。</p>
+                        <p>本レポートは、日本の主要な国政政党および一部の新興政党を対象に、その公式サイトとSNSにおける情報発信能力を多角的に分析・評価するものである。評価は「情報の探しやすさ」「政策のわかりやすさ」「デザインの見やすさ」「構成力」「発信力」の5つの分野で行い、それぞれの現状と課題を明らかにする。これにより、各党のデジタル戦略の特色を浮き彫りにし、今後の政治コミュニケーションのあり方を展望することを目的とする。</p>
+                        <h3 class="text-xl font-bold">評価基準</h3>
+                        <p>各政党の評価は、以下の5項目・100点満点で行った。</p>
+                        <ul>
+                            <li><strong>情報の探しやすさ (30%):</strong> ユーザーが必要な情報に迅速かつ容易にたどり着けるか。</li>
+                            <li><strong>政策のわかりやすさ (25%):</strong> 政策や公約が専門用語を避け、一般の有権者にも平易に解説されているか。</li>
+                            <li><strong>デザインの見やすさ (20%):</strong> サイトの配色、レイアウト、文字サイズなどが視覚的に快適で、直感的に操作できるか。</li>
+                            <li><strong>構成力 (15%):</strong> サイト全体の情報の体系化、コンテンツの論理的な配置がなされているか。</li>
+                            <li><strong>発信力 (10%):</strong> SNSなどを活用し、双方向のコミュニケーションや話題の創出、情報の拡散が効果的に行えているか。</li>
+                        </ul>
+                    </div>
+                    <hr class="my-8 border-gray-300">
+                `;
+                container.innerHTML = introHTML;
+
+                const sortedPartyData = [...partyData].sort((a,b) => b.scores.total - a.scores.total);
+
+                sortedPartyData.forEach(party => {
+                    const partyReport = reportTextData[party.id];
+                    if(!partyReport) return;
+                    
+                    let partyHTML = `<div class="party-report-section">`;
+                    partyHTML += `<h3 class="text-xl font-bold"><a href="${party.url}" target="_blank" class="hover:underline">${party.name}</a> (${party.scores.total}点)</h3>`;
+                    partyHTML += `<p><strong>情報の探しやすさ (${party.scores.info}/30点):</strong> ${partyReport.info}</p>`;
+                    partyHTML += `<p><strong>政策のわかりやすさ (${party.scores.policy}/25点):</strong> ${partyReport.policy}</p>`;
+                    partyHTML += `<p><strong>デザインの見やすさ (${party.scores.design}/20点):</strong> ${partyReport.design}</p>`;
+                    partyHTML += `<p><strong>構成力 (${party.scores.structure}/15点):</strong> ${partyReport.structure}</p>`;
+                    partyHTML += `<p><strong>発信力 (${party.scores.communication}/10点):</strong> ${partyReport.communication}</p>`;
+                    partyHTML += `<p><strong>備考:</strong> ${party.summary}</p>`;
+                    partyHTML += `</div>`;
+                    container.innerHTML += partyHTML;
+                });
+                fullReportRendered = true;
+            };
+
+            const renderLpPage = () => {
+                if (lpRendered) return;
+
+                const lpPartyData = [
+                    { name: '国民民主党', scores: { info: 27, policy: 23, design: 18, structure: 13, communication: 9, total: 90 }, group: 'top' },
+                    { name: '自由民主党', scores: { info: 26, policy: 20, design: 17, structure: 14, communication: 8, total: 85 }, group: 'top' },
+                    { name: '日本維新の会', scores: { info: 25, policy: 22, design: 16, structure: 13, communication: 7, total: 83 }, group: 'top' },
+                    { name: '参政党', scores: { info: 22, policy: 20, design: 13, structure: 11, communication: 9, total: 75 }, group: 'middle' },
+                    { name: 'れいわ新選組', scores: { info: 22, policy: 21, design: 12, structure: 11, communication: 9, total: 75 }, group: 'middle' },
+                    { name: '立憲民主党', scores: { info: 24, policy: 18, design: 14, structure: 12, communication: 6, total: 74 }, group: 'middle' },
+                    { name: 'チームみらい', scores: { info: 18, policy: 18, design: 18, structure: 13, communication: 6, total: 73 }, group: 'middle' },
+                    { name: '公明党', scores: { info: 23, policy: 18, design: 13, structure: 12, communication: 6, total: 72 }, group: 'middle' },
+                    { name: '日本共産党', scores: { info: 22, policy: 17, design: 12, structure: 11, communication: 6, total: 68 }, group: 'bottom' },
+                    { name: '日本保守党', scores: { info: 15, policy: 15, design: 14, structure: 10, communication: 5, total: 59 }, group: 'bottom' },
+                    { name: '社会民主党', scores: { info: 16, policy: 16, design: 10, structure: 11, communication: 5, total: 58 }, group: 'bottom' },
+                    { name: 'NHK党', scores: { info: 15, policy: 12, design: 12, structure: 9, communication: 5, total: 53 }, group: 'bottom' }
+                ];
+
+                const palette = {
+                    red: '#FF6B6B',
+                    yellow: '#FFD166',
+                    green: '#06D6A0',
+                    blue: '#118AB2',
+                    darkBlue: '#073B4C'
+                };
+
+                const tooltipPlugin = {
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                };
+
+                const totalRankCtx = document.getElementById('lp-totalRankChart').getContext('2d');
+                const sortedByTotal = [...lpPartyData].sort((a, b) => b.scores.total - a.scores.total);
+                new Chart(totalRankCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: sortedByTotal.map(p => p.name),
+                        datasets: [{
+                            label: '総合評価',
+                            data: sortedByTotal.map(p => p.scores.total),
+                            backgroundColor: sortedByTotal.map(p => {
+                                if (p.group === 'top') return palette.green;
+                                if (p.group === 'middle') return palette.yellow;
+                                return palette.red;
+                            }),
+                            borderColor: 'rgba(255, 255, 255, 0.5)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        ...tooltipPlugin,
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { ...tooltipPlugin.plugins, legend: { display: false } },
+                        scales: { x: { beginAtZero: true, max: 100 } }
+                    }
+                });
+
+                const radarCtx = document.getElementById('lp-radarChart').getContext('2d');
+                let radarChart;
+                const radarLabels = ['情報の探しやすさ', '政策のわかりやすさ', 'デザイン', '構成力', '発信力'];
+                const radarColors = [palette.blue, palette.green, palette.yellow, palette.red, palette.darkBlue];
+
+                const createRadarData = (group) => {
+                    const filteredParties = lpPartyData.filter(p => p.group === group);
+                    return {
+                        labels: radarLabels,
+                        datasets: filteredParties.map((p, i) => ({
+                            label: p.name,
+                            data: [
+                                p.scores.info / 30 * 100,
+                                p.scores.policy / 25 * 100,
+                                p.scores.design / 20 * 100,
+                                p.scores.structure / 15 * 100,
+                                p.scores.communication / 10 * 100,
+                            ],
+                            borderColor: radarColors[i % radarColors.length],
+                            backgroundColor: 'transparent',
+                            pointBackgroundColor: radarColors[i % radarColors.length],
+                            borderWidth: 2,
+                        }))
+                    };
+                };
+
+                const renderRadarChart = (group) => {
+                    const data = createRadarData(group);
+                    if(radarChart) {
+                        radarChart.data = data;
+                        radarChart.update();
+                    } else {
+                        radarChart = new Chart(radarCtx, {
+                            type: 'radar',
+                            data: data,
+                            options: {
+                                ...tooltipPlugin,
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: { ...tooltipPlugin.plugins, legend: { position: 'top' }},
+                                scales: { r: { beginAtZero: true, max: 100, pointLabels: { font: {size: 11} }}}
+                            }
+                        });
+                    }
+                }
+
+                const tabs = document.querySelectorAll('#lp-page .lp-tab');
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        tabs.forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        renderRadarChart(tab.dataset.group);
+                    });
+                });
+                renderRadarChart('top');
+
+                const scatterCtx = document.getElementById('lp-scatterChart').getContext('2d');
+                const scatterData = lpPartyData.map(p => ({
+                    x: p.scores.policy,
+                    y: p.scores.communication,
+                    label: p.name,
+                    color: p.group === 'top' ? palette.blue : p.group === 'middle' ? palette.green : palette.red
+                }));
+
+                new Chart(scatterCtx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: '政党',
+                            data: scatterData,
+                            backgroundColor: scatterData.map(d => d.color),
+                            pointRadius: 8,
+                            pointHoverRadius: 12
+                        }]
+                    },
+                    options: {
+                        ...tooltipPlugin,
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            ...tooltipPlugin.plugins,
+                            legend: { display: false },
+                            tooltip: {
+                                ...tooltipPlugin.plugins.tooltip,
+                                callbacks: {
+                                    ...tooltipPlugin.plugins.tooltip.callbacks,
+                                    label: function(context) {
+                                        return context.raw.label;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: { display: true, text: '政策のわかりやすさ (点)', font: {size: 14} },
+                                min: 10, max: 25
+                            },
+                            y: {
+                                 title: { display: true, text: 'SNS発信力 (点)', font: {size: 14} },
+                                 min: 4, max: 10
+                            }
+                        }
+                    }
+                });
+
+                lpRendered = true;
+            };
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const pageSections = document.querySelectorAll('.page-section');
+
+            const showPage = (targetId) => {
+                pageSections.forEach(section => {
+                    section.classList.add('hidden');
+                });
+                navLinks.forEach(link => {
+                    link.classList.remove('active-nav');
+                });
+
+                const targetSection = document.querySelector(targetId);
+                if (targetSection) {
+                    targetSection.classList.remove('hidden');
+                }
+                const activeLink = document.querySelector(`a[href='${targetId}']`);
+                if (activeLink) {
+                    activeLink.classList.add('active-nav');
+                }
+
+                if (targetId === '#comparison') {
+                    renderMainChart();
+                    renderComparisonTable();
+                } else if (targetId === '#details') {
+                    renderPartyDetails();
+                } else if (targetId === '#summary') {
+                    renderSummary();
+                } else if (targetId === '#full-report') {
+                    renderFullReport();
+                } else if (targetId === '#lp-page') {
+                    renderLpPage();
+                }
+            };
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    showPage(targetId);
+                });
+            });
+
+            document.getElementById('criteria-selector').addEventListener('change', (e) => {
+                renderMainChart(e.target.value);
+            });
+
+            showPage('#overview');
+        });
+    </script>
+</body>
+</html>
