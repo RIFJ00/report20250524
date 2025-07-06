@@ -77,6 +77,7 @@
                 <button class="tab-button px-4 py-2" data-tab="economic-policies">主要な公約</button>
                 <button class="tab-button px-4 py-2" data-tab="summary">総括と提言</button>
                 <button class="tab-button px-4 py-2" data-tab="ai-analysis">AI分析</button>
+                <button class="tab-button px-4 py-2" data-tab="situation-analysis">情勢分析</button>
             </div>
         </div>
 
@@ -113,7 +114,7 @@
                     <div class="text-sm space-y-2 text-gray-600">
                         <p>• 改選124議席（選挙区74＋比例50）</p>
                         <p>• 最新の都議選結果を反映し、既成政党の伸び悩みと第3極の躍進シナリオを加味。</p>
-                        <p>• 6月23日時点のデータを基準にモンテカルロ10万回シミュレーション</p>
+                        <p>• 7月5日時点のデータを基準にモンテカルロ10万回シミュレーション</p>
                         <p>• 勝敗ライン：過半数獲得には<strong>63議席</strong>必要</p>
                     </div>
                 </div>
@@ -479,7 +480,7 @@
                             <p class="mt-1 text-xs">全世代型社会保障の重要な財源として堅持。軽減税率は見直しの対象。</p>
                           </td>
                           <td class="px-6 py-4 align-top">
-                            <div class="font-semibold text-center text-red-600">時限的に5%へ減税</div>
+                            <div class="font-semibold text-center text-red-600">時限的に0%へ減税</div>
                             <p class="mt-1 text-xs">インフレが収束するまでの時限措置。富裕層への課税強化とセットで提案。</p>
                           </td>
                           <td class="px-6 py-4 align-top">
@@ -509,16 +510,16 @@
                               <p class="mt-1 text-xs">公的セクター（介護・保育等）の賃金引き上げを先行。中小企業への社会保険料負担を軽減。</p>
                             </td>
                             <td class="px-6 py-4 align-top">
-                              <div class="font-semibold text-center text-green-600">「給料が上がる経済」</div>
+                              <div class="font-semibold text-center text-green-600">給料が上がる経済</div>
                               <p class="mt-1 text-xs">人への投資を拡大し、スキルアップ支援を強化。同一労働同一賃金の徹底。</p>
                             </td>
                               <td class="px-6 py-4 align-top">
                               <div class="font-semibold text-center text-yellow-500">解雇規制の緩和</div>
-                              <p class="mt-1 text-xs">労働市場の流動性を高め、成長産業への人材移動を促進。リカレント教育の無償化。</p>
+                              <p class="mt-1 text-xs">労働市場の流動性を高め、成長産業への人材移動を促進する。リカレント教育の無償化を行う。</p>
                             </td>
                             <td class="px-6 py-4 align-top">
                               <div class="font-semibold text-center text-orange-500">中小企業支援と公契約</div>
-                              <p class="mt-1 text-xs">社会保険料の事業者負担を時限的にゼロに。政府・自治体の事業を請け負う企業の労働者に適正賃金を保証。</p>
+                              <p class="mt-1 text-xs">社会保険料の事業者負担を時限的にゼロ。政府・自治体の事業を請け負う企業の労働者に適正賃金保証。</p>
                             </td>
                           </tr>
                           <tr class="bg-white border-b hover:bg-slate-100">
@@ -536,7 +537,7 @@
                             </td>
                             <td class="px-6 py-4 align-top">
                               <div class="font-semibold text-center text-green-600">多様な選択肢を追求</div>
-                              <p class="mt-1 text-xs">再エネ主力化を目指しつつ、安全基準を満たした原発の活用も選択肢として維持。</p>
+                              <p class="mt-1 text-xs">再エネ主力化を目指し、安全基準を満たした原発の活用も選択肢として維持。</p>
                             </td>
                               <td class="px-6 py-4 align-top">
                               <div class="font-semibold text-center text-yellow-500">原発フェードアウト</div>
@@ -566,11 +567,11 @@
                             </td>
                               <td class="px-6 py-4 align-top">
                               <div class="font-semibold text-center text-yellow-500">改革実行で達成</div>
-                              <p class="mt-1 text-xs">徹底した行財政改革（身を切る改革）を断行し、財源を生み出すことでPB黒字化を実現。</p>
+                              <p class="mt-1 text-xs">徹底した行財政改革（身を切る改革）で、財源を生み出し、PB黒字化を実現。</p>
                             </td>
                             <td class="px-6 py-4 align-top">
                               <div class="font-semibold text-center text-orange-500">積極財政に転換</div>
-                              <p class="mt-1 text-xs">PB黒字化目標は破棄。デフレ脱却まで国債を大規模に発行し、財政出動を行うべき。</p>
+                              <p class="mt-1 text-xs">PB黒字化目標破棄。デフレ脱却まで国債を大規模に発行し、財政出動を行う。</p>
                             </td>
                           </tr>
                       </tbody>
@@ -670,6 +671,18 @@
                 </div>
             </div>
 
+            <!-- 情勢分析タブ -->
+            <div id="situation-analysis" class="tab-content hidden p-8 flex flex-col items-center justify-center text-center">
+                <h3 class="text-xl font-semibold mb-4 text-gray-700">外部サイトでの情勢分析</h3>
+                <p class="text-gray-600 mb-6 max-w-lg">
+                    直近の情勢分析は、外部サイトで確認できます。以下のボタンをクリックすると、新しいタブで情報分析ページが開きます。
+                </p>
+                <a href="https://felo.ai/ja/page/856dfc38-65fc-4b8e-9255-ab6305657bca?invite=2mGjka1gKG4gn" target="_blank" rel="noopener noreferrer" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors duration-300 shadow-md">
+                    情勢分析ページを開く
+                </a>
+                <p class="text-xs text-gray-500 mt-4">（felo.ai のページが新しいタブで開きます）</p>
+            </div>
+
         </div>
     </div>
 
@@ -678,7 +691,7 @@
     </footer>
 
     <script>
-        // === DATA DEFINITIONS (UPDATED June 23, 2025) ===
+        // === DATA DEFINITIONS (UPDATED July 5, 2025) ===
         // Reflects the trend of the Tokyo Metropolitan Assembly election results and user feedback.
         const baselineResults = [
             { party: '自由民主党', color: '#58A9F2', singleSeat: 28, proportionalSeat: 18, total: 46 },
@@ -1330,6 +1343,7 @@
                         else if (tabName === 'politics') { /* No chart rendering needed for this tab */ }
                         else if (tabName === 'summary') renderSummaryCharts();
                         else if (tabName === 'economic-policies') { /* No chart rendering needed for this tab */ }
+                        else if (tabName === 'situation-analysis') { /* No chart rendering needed for this tab */ }
                         else if (tabName === 'ai-analysis') { 
                             // AI Tab Specific Setup
                             const apiKeyInput = document.getElementById('api-key-input');
@@ -1385,7 +1399,7 @@
             switchTab('baseline'); // 初期タブ
 
             // Add footer date
-            document.getElementById('update-date').textContent = '2025年6月23日';
+            document.getElementById('update-date').textContent = '2025年7月5日';
         });
     </script>
 </body>
