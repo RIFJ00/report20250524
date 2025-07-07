@@ -114,7 +114,7 @@
                     <div class="text-sm space-y-2 text-gray-600">
                         <p>• 改選124議席（選挙区74＋比例50）</p>
                         <p>• 最新の都議選結果を反映し、既成政党の伸び悩みと第3極の躍進シナリオを加味。</p>
-                        <p>• 7月5日時点のデータを基準にモンテカルロ10万回シミュレーション</p>
+                        <p>• 7月7日時点のデータを基準にモンテカルロ10万回シミュレーション</p>
                         <p>• 勝敗ライン：過半数獲得には<strong>63議席</strong>必要</p>
                     </div>
                 </div>
@@ -406,10 +406,10 @@
 
             <!-- 議席予測タブ -->
             <div id="prediction" class="tab-content hidden p-4">
-                <h3 class="text-xl font-semibold mb-4 text-gray-700">選挙後の全体議席予測</h3>
+                <h3 class="text-xl font-semibold mb-4 text-gray-700">ベースライン予測</h3>
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                     <div>
-                        <h4 class="font-medium mb-2 text-gray-700">選挙後 参議院全体勢力図（予測）</h4>
+                        <h4 class="font-medium mb-2 text-gray-700">選挙後 参議院全体勢力図（ベースライン）</h4>
                         <div class="h-96 relative">
                             <canvas id="powerBalanceChart"></canvas>
                         </div>
@@ -419,7 +419,7 @@
                         </div>
                     </div>
                     <div class="bg-gray-100 p-4 rounded-lg">
-                        <h4 class="font-medium text-gray-800 mb-3">勢力別議席数（予測）</h4>
+                        <h4 class="font-medium text-gray-800 mb-3">勢力別議席数（ベースライン）</h4>
                         <div id="powerBalanceDetails" class="space-y-4">
                            <!-- JSで動的に生成 -->
                         </div>
@@ -427,7 +427,7 @@
                 </div>
 
                 <div class="mt-8 pt-8 border-t border-gray-300">
-                       <h3 class="text-xl font-semibold mb-4 text-gray-700">現有議席と予測議席の比較</h3>
+                       <h3 class="text-xl font-semibold mb-4 text-gray-700">現有議席と予測議席の比較（ベースライン）</h3>
                        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
                            <div class="lg:col-span-3">
                                <h4 class="font-medium mb-2 text-gray-700">会派別 議席数変化</h4>
@@ -453,6 +453,56 @@
                            </div>
                        </div>
                 </div>
+                
+                <div class="mt-12 pt-8 border-t-4 border-dashed border-red-300">
+                     <h3 class="text-xl font-semibold mb-4 text-red-700">悲観シナリオ（直近情勢を反映）</h3>
+                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                        <div>
+                            <h4 class="font-medium mb-2 text-gray-700">選挙後 参議院全体勢力図（悲観シナリオ）</h4>
+                            <div class="h-96 relative">
+                                <canvas id="powerBalanceChartPessimistic"></canvas>
+                            </div>
+                             <div class="text-xs text-center text-gray-600 mt-2 space-y-1">
+                                <p>総議席数: 248議席</p>
+                                <p>過半数: 125議席 / 憲法改正発議に必要な3分の2: 166議席</p>
+                            </div>
+                        </div>
+                        <div class="bg-red-50 p-4 rounded-lg">
+                            <h4 class="font-medium text-gray-800 mb-3">勢力別議席数（悲観シナリオ）</h4>
+                            <div id="powerBalanceDetailsPessimistic" class="space-y-4">
+                               <!-- JSで動的に生成 -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8 pt-8 border-t border-gray-300">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-700">現有議席と予測議席の比較（悲観シナリオ）</h3>
+                        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                            <div class="lg:col-span-3">
+                                <h4 class="font-medium mb-2 text-gray-700">会派別 議席数変化</h4>
+                                <div class="h-96"><canvas id="postElectionChartPessimistic"></canvas></div>
+                            </div>
+                            <div class="lg:col-span-2">
+                                <h4 class="font-medium mb-2 text-gray-700">議席増減表</h4>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full bg-white border border-gray-200 text-sm">
+                                        <thead class="bg-gray-100">
+                                            <tr>
+                                                <th class="py-2 px-3 border-b text-left font-semibold">会派名</th>
+                                                <th class="py-2 px-3 border-b text-center font-semibold">現有</th>
+                                                <th class="py-2 px-3 border-b text-center font-semibold">予測</th>
+                                                <th class="py-2 px-3 border-b text-center font-semibold">増減</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="seatChangeTableBodyPessimistic">
+                                            <!-- JavaScript will populate this -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- 主要な公約タブ -->
@@ -466,6 +516,7 @@
                           <th scope="col" class="px-6 py-3 min-w-[200px] text-center">立憲民主党</th>
                           <th scope="col" class="px-6 py-3 min-w-[200px] text-center">国民民主党</th>
                           <th scope="col" class="px-6 py-3 min-w-[200px] text-center">日本維新の会</th>
+                          <th scope="col" class="px-6 py-3 min-w-[200px] text-center">参政党</th>
                           <th scope="col" class="px-6 py-3 min-w-[200px] text-center">れいわ新選組</th>
                         </tr>
                       </thead>
@@ -490,6 +541,10 @@
                             <td class="px-6 py-4 align-top">
                             <div class="font-semibold text-center text-yellow-500">段階的に5%へ減税</div>
                             <p class="mt-1 text-xs">社会保障制度改革とセットでの減税を主張。「教育国債」で財源を確保。</p>
+                          </td>
+                           <td class="px-6 py-4 align-top">
+                            <div class="font-semibold text-center" style="color: #75A9A9;">0%へ減税</div>
+                            <p class="mt-1 text-xs">経済成長を最優先し、消費税は0%に。将来的には廃止も視野。</p>
                           </td>
                           <td class="px-6 py-4 align-top">
                             <div class="font-semibold text-center text-orange-500">廃止</div>
@@ -516,6 +571,10 @@
                               <td class="px-6 py-4 align-top">
                               <div class="font-semibold text-center text-yellow-500">解雇規制の緩和</div>
                               <p class="mt-1 text-xs">労働市場の流動性を高め、成長産業への人材移動を促進する。リカレント教育の無償化を行う。</p>
+                            </td>
+                             <td class="px-6 py-4 align-top">
+                              <div class="font-semibold text-center" style="color: #75A9A9;">国内産業保護</div>
+                              <p class="mt-1 text-xs">減税と規制緩和で国内企業の競争力を強化し、自然な賃金上昇を目指す。</p>
                             </td>
                             <td class="px-6 py-4 align-top">
                               <div class="font-semibold text-center text-orange-500">中小企業支援と公契約</div>
@@ -544,6 +603,10 @@
                               <p class="mt-1 text-xs">原発は段階的に縮小し、再エネへの転換を加速。発送電分離の徹底。</p>
                             </td>
                             <td class="px-6 py-4 align-top">
+                              <div class="font-semibold text-center" style="color: #75A9A9;">国産エネルギー推進</div>
+                              <p class="mt-1 text-xs">食料自給率向上と合わせ、エネルギー自給率の向上を重視。原発は選択肢の一つ。</p>
+                            </td>
+                            <td class="px-6 py-4 align-top">
                               <div class="font-semibold text-center text-orange-500">即時原発禁止</div>
                               <p class="mt-1 text-xs">全ての原発を停止し、再エネ100%を目指す。エネルギーの地産地消を推進。</p>
                             </td>
@@ -569,6 +632,10 @@
                               <div class="font-semibold text-center text-yellow-500">改革実行で達成</div>
                               <p class="mt-1 text-xs">徹底した行財政改革（身を切る改革）で、財源を生み出し、PB黒字化を実現。</p>
                             </td>
+                             <td class="px-6 py-4 align-top">
+                              <div class="font-semibold text-center" style="color: #75A9A9;">プライマリーバランス制約からの脱却</div>
+                              <p class="mt-1 text-xs">国益に資する投資は国債発行で賄う。将来世代への負担を考慮した財政運営。</p>
+                            </td>
                             <td class="px-6 py-4 align-top">
                               <div class="font-semibold text-center text-orange-500">積極財政に転換</div>
                               <p class="mt-1 text-xs">PB黒字化目標破棄。デフレ脱却まで国債を大規模に発行し、財政出動を行う。</p>
@@ -587,7 +654,7 @@
                     <div class="space-y-4">
                         <div class="p-3 bg-white rounded shadow-sm border-l-4 border-blue-500">
                           <h5 class="font-medium text-blue-800">1. 既成政党の苦戦と第3極の躍進</h5>
-                          <p class="mt-1 text-sm">都議選の結果が示すように、自民・立憲の二大政党が伸び悩み、国民民主、参政党（その他）、れいわ等の第3極がその受け皿として躍進する構図が鮮明になった。与党の改選過半数（63議席）確保は厳しい情勢。</p>
+                          <p class="mt-1 text-sm">都議選の結果が示すように、自民・立憲の二大政党が伸び悩み、国民民主、参政党、れいわ等の第3極がその受け皿として躍進する構図が鮮明になった。与党の改選過半数（63議席）確保は厳しい情勢。</p>
                         </div>
                         <div class="p-3 bg-white rounded shadow-sm border-l-4 border-purple-500">
                           <h5 class="font-medium text-purple-800">2. 保守票の流動化</h5>
@@ -691,17 +758,30 @@
     </footer>
 
     <script>
-        // === DATA DEFINITIONS (UPDATED July 5, 2025) ===
+        // === DATA DEFINITIONS (UPDATED July 7, 2025) ===
         // Reflects the trend of the Tokyo Metropolitan Assembly election results and user feedback.
         const baselineResults = [
-            { party: '自由民主党', color: '#58A9F2', singleSeat: 28, proportionalSeat: 18, total: 46 },
+            { party: '自由民主党', color: '#58A9F2', singleSeat: 29, proportionalSeat: 17, total: 46 },
             { party: '公明党', color: '#92C364', singleSeat: 4, proportionalSeat: 5, total: 9 },
-            { party: '国民民主党・新緑風会', color: '#BA68C8', singleSeat: 7, proportionalSeat: 5, total: 12 },
-            { party: '立憲民主・社民・無所属', color: '#F06292', singleSeat: 10, proportionalSeat: 6, total: 16 },
-            { party: '日本維新の会', color: '#FFB74D', singleSeat: 5, proportionalSeat: 3, total: 8 },
+            { party: '国民民主党・新緑風会', color: '#BA68C8', singleSeat: 8, proportionalSeat: 6, total: 14 },
+            { party: '立憲民主・社民・無所属', color: '#F06292', singleSeat: 14, proportionalSeat: 7, total: 21 },
+            { party: '日本維新の会', color: '#FFB74D', singleSeat: 3, proportionalSeat: 1, total: 4 },
+            { party: '参政党', color: '#75A9A9', singleSeat: 4, proportionalSeat: 6, total: 10 },
+            { party: '日本共産党', color: '#E57373', singleSeat: 2, proportionalSeat: 3, total: 5 },
+            { party: 'れいわ新選組', color: '#FF8A65', singleSeat: 3, proportionalSeat: 1, total: 4 },
+            { party: 'その他・無所属', color: '#90A4AE', singleSeat: 7, proportionalSeat: 3, total: 10 },
+        ];
+        
+        const pessimisticResults = [
+            { party: '自由民主党', color: '#58A9F2', singleSeat: 27, proportionalSeat: 13, total: 40 },
+            { party: '公明党', color: '#92C364', singleSeat: 3, proportionalSeat: 5, total: 8 },
+            { party: '国民民主党・新緑風会', color: '#BA68C8', singleSeat: 8, proportionalSeat: 7, total: 15 },
+            { party: '立憲民主・社民・無所属', color: '#F06292', singleSeat: 15, proportionalSeat: 8, total: 23 },
+            { party: '日本維新の会', color: '#FFB74D', singleSeat: 4, proportionalSeat: 2, total: 6 },
+            { party: '参政党', color: '#75A9A9', singleSeat: 6, proportionalSeat: 6, total: 12 },
             { party: '日本共産党', color: '#E57373', singleSeat: 2, proportionalSeat: 3, total: 5 },
             { party: 'れいわ新選組', color: '#FF8A65', singleSeat: 4, proportionalSeat: 2, total: 6 },
-            { party: 'その他・無所属', color: '#90A4AE', singleSeat: 14, proportionalSeat: 8, total: 22 }, // Includes Sanseito and other mini-parties
+            { party: 'その他・無所属', color: '#90A4AE', singleSeat: 5, proportionalSeat: 3, total: 8 }, 
         ];
 
         // This data represents the CURRENT seats in the House of Councillors before the election.
@@ -713,7 +793,8 @@
             { party: '国民民主党・新緑風会', total: 12, reElect: 5, nonReElect: 7, color: '#BA68C8' },
             { party: '日本共産党', total: 11, reElect: 7, nonReElect: 4, color: '#E57373' },
             { party: 'れいわ新選組', total: 5, reElect: 2, nonReElect: 3, color: '#FF8A65' },
-            { party: 'その他・無所属', total: 14, reElect: 9, nonReElect: 5, color: '#90A4AE' }
+            { party: '参政党', total: 1, reElect: 0, nonReElect: 1, color: '#75A9A9' },
+            { party: 'その他・無所属', total: 13, reElect: 9, nonReElect: 4, color: '#90A4AE' }
         ];
 
         const partyGroups = [
@@ -788,42 +869,46 @@
         };
 
         // === DATA CALCULATION FOR PREDICTION TAB ===
-        const projectedSeatData = baselineResults.map(prediction => {
-            const current = currentSeatsData.find(c => c.party === prediction.party);
-            if (!current) {
-                return { ...prediction, currentTotal: 0, nonReElect: 0, projectedTotal: prediction.total, change: prediction.total };
-            }
-            const projectedTotal = current.nonReElect + prediction.total;
-            const change = projectedTotal - current.total;
-            return {
-                ...prediction,
-                currentTotal: current.total,
-                nonReElect: current.nonReElect,
-                projectedTotal: projectedTotal,
-                change: change,
-            };
-        }).sort((a,b) => b.projectedTotal - a.projectedTotal);
-
-        const powerBalanceData = {
-            '与党': { parties: ['自由民主党', '公明党'], seats: 0, nonReElect: 0, color: '#64B5F6' },
-            '第3極': { parties: ['国民民主党・新緑風会', '日本維新の会', 'その他・無所属'], seats: 0, nonReElect: 0, color: '#4DB6AC'},
-            '野党': { parties: ['立憲民主・社民・無所属', '日本共産党', 'れいわ新選組'], seats: 0, nonReElect: 0, color: '#EF5350' },
+        const calculateProjection = (results) => {
+            return results.map(prediction => {
+                const current = currentSeatsData.find(c => c.party === prediction.party);
+                if (!current) {
+                    return { ...prediction, currentTotal: 0, nonReElect: 0, projectedTotal: prediction.total, change: prediction.total };
+                }
+                const projectedTotal = current.nonReElect + prediction.total;
+                const change = projectedTotal - current.total;
+                return {
+                    ...prediction,
+                    currentTotal: current.total,
+                    nonReElect: current.nonReElect,
+                    projectedTotal: projectedTotal,
+                    change: change,
+                };
+            }).sort((a,b) => b.projectedTotal - a.projectedTotal);
         };
 
-        projectedSeatData.forEach(p => {
-            for (const group in powerBalanceData) {
-                if (powerBalanceData[group].parties.includes(p.party)) {
-                    powerBalanceData[group].seats += p.projectedTotal;
+        const calculatePowerBalance = (projectedData) => {
+            const balance = {
+                '与党': { parties: ['自由民主党', '公明党'], seats: 0, nonReElect: 0, color: '#64B5F6' },
+                '第3極': { parties: ['国民民主党・新緑風会', '日本維新の会', '参政党', 'その他・無所属'], seats: 0, nonReElect: 0, color: '#4DB6AC'},
+                '野党': { parties: ['立憲民主・社民・無所属', '日本共産党', 'れいわ新選組'], seats: 0, nonReElect: 0, color: '#EF5350' },
+            };
+            projectedData.forEach(p => {
+                for (const group in balance) {
+                    if (balance[group].parties.includes(p.party)) {
+                        balance[group].seats += p.projectedTotal;
+                    }
                 }
-            }
-        });
-        currentSeatsData.forEach(c => {
-             for (const group in powerBalanceData) {
-                if (powerBalanceData[group].parties.includes(c.party)) {
-                    powerBalanceData[group].nonReElect += c.nonReElect;
-                }
-            }
-        });
+            });
+            return balance;
+        };
+
+        const projectedSeatData = calculateProjection(baselineResults);
+        const powerBalanceData = calculatePowerBalance(projectedSeatData);
+        
+        const projectedSeatDataPessimistic = calculateProjection(pessimisticResults);
+        const powerBalanceDataPessimistic = calculatePowerBalance(projectedSeatDataPessimistic);
+
 
         // === CHARTING LOGIC ===
         let charts = {};
@@ -1081,11 +1166,22 @@
             }
         };
 
-        const renderPredictionCharts = () => {
+        const renderPredictionCharts = (predictionType) => {
+            const isPessimistic = predictionType === 'pessimistic';
+            const results = isPessimistic ? pessimisticResults : baselineResults;
+            const projectedData = isPessimistic ? projectedSeatDataPessimistic : projectedSeatData;
+            const powerBalance = isPessimistic ? powerBalanceDataPessimistic : powerBalanceData;
+            
+            const chartSuffix = isPessimistic ? 'Pessimistic' : '';
+            const powerBalanceChartId = `powerBalanceChart${chartSuffix}`;
+            const powerBalanceDetailsId = `powerBalanceDetails${chartSuffix}`;
+            const postElectionChartId = `postElectionChart${chartSuffix}`;
+            const seatChangeTableBodyId = `seatChangeTableBody${chartSuffix}`;
+
             // 1. Post Election Seat Change Chart
-            destroyChart('postElectionChart');
-            const sortedProjectedData = [...projectedSeatData].sort((a,b) => a.projectedTotal - b.projectedTotal);
-            charts['postElectionChart'] = new Chart(document.getElementById('postElectionChart'), {
+            destroyChart(postElectionChartId);
+            const sortedProjectedData = [...projectedData].sort((a,b) => a.projectedTotal - b.projectedTotal);
+            charts[postElectionChartId] = new Chart(document.getElementById(postElectionChartId), {
                 type: 'bar',
                 data: {
                     labels: sortedProjectedData.map(d => d.party),
@@ -1102,8 +1198,8 @@
             });
 
             // 2. Seat Change Table
-            const tableBody = document.getElementById('seatChangeTableBody');
-            tableBody.innerHTML = projectedSeatData.map(d => {
+            const tableBody = document.getElementById(seatChangeTableBodyId);
+            tableBody.innerHTML = projectedData.map(d => {
                 const changeColor = d.change > 0 ? 'text-green-600' : (d.change < 0 ? 'text-red-600' : 'text-gray-600');
                 const changeSign = d.change > 0 ? '+' : '';
                 return `
@@ -1116,14 +1212,14 @@
             `}).join('');
 
             // 3. Power Balance Doughnut Chart
-            destroyChart('powerBalanceChart');
-            charts['powerBalanceChart'] = new Chart(document.getElementById('powerBalanceChart'), {
+            destroyChart(powerBalanceChartId);
+            charts[powerBalanceChartId] = new Chart(document.getElementById(powerBalanceChartId), {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(powerBalanceData),
+                    labels: Object.keys(powerBalance),
                     datasets: [{
-                        data: Object.values(powerBalanceData).map(d => d.seats),
-                        backgroundColor: Object.values(powerBalanceData).map(d => d.color),
+                        data: Object.values(powerBalance).map(d => d.seats),
+                        backgroundColor: Object.values(powerBalance).map(d => d.color),
                         borderColor: '#f9fafb',
                         borderWidth: 4,
                     }]
@@ -1140,8 +1236,8 @@
             });
 
             // 4. Power Balance Details
-            const detailsContainer = document.getElementById('powerBalanceDetails');
-            detailsContainer.innerHTML = Object.entries(powerBalanceData).map(([group, data]) => {
+            const detailsContainer = document.getElementById(powerBalanceDetailsId);
+            detailsContainer.innerHTML = Object.entries(powerBalance).map(([group, data]) => {
                 const percentage = ((data.seats / 248) * 100).toFixed(1);
                 return `
                     <div class="flex items-center p-2 bg-white rounded-lg shadow-sm">
@@ -1339,7 +1435,10 @@
                         else if (tabName === 'scenarios') renderScenariosCharts();
                         else if (tabName === 'risks') renderRisksCharts();
                         else if (tabName === 'issues-risks') renderIssuesRisksCharts();
-                        else if (tabName === 'prediction') renderPredictionCharts(); 
+                        else if (tabName === 'prediction') {
+                            renderPredictionCharts('baseline');
+                            renderPredictionCharts('pessimistic');
+                        } 
                         else if (tabName === 'politics') { /* No chart rendering needed for this tab */ }
                         else if (tabName === 'summary') renderSummaryCharts();
                         else if (tabName === 'economic-policies') { /* No chart rendering needed for this tab */ }
@@ -1399,7 +1498,7 @@
             switchTab('baseline'); // 初期タブ
 
             // Add footer date
-            document.getElementById('update-date').textContent = '2025年7月5日';
+            document.getElementById('update-date').textContent = '2025年7月7日';
         });
     </script>
 </body>
