@@ -900,6 +900,13 @@
                     }
                 }
             });
+             currentSeatsData.forEach(c => {
+                for (const group in balance) {
+                    if (balance[group].parties.includes(c.party)) {
+                        balance[group].nonReElect += c.nonReElect;
+                    }
+                }
+            });
             return balance;
         };
 
@@ -1285,42 +1292,49 @@
             const summaryBoxData = [
                 {
                     title: '与党（自民・公明）',
-                    contested: powerBalanceData['与党'].seats - powerBalanceData['与党'].nonReElect,
-                    nonContested: powerBalanceData['与党'].nonReElect,
-                    total: powerBalanceData['与党'].seats,
+                    groupKey: '与党',
                     color: 'text-red-600',
-                    reElectBefore: 69,
+                    reElectBefore: 66,
                     desc: '都議選の結果を反映し、予測は大幅減。単独過半数は絶望的。'
                 },
                 {
                     title: '第3極（国民・維新・他）',
-                    contested: powerBalanceData['第3極'].seats - powerBalanceData['第3極'].nonReElect,
-                    nonContested: powerBalanceData['第3極'].nonReElect,
-                    total: powerBalanceData['第3極'].seats,
+                    groupKey: '第3極',
                     color: 'text-teal-600',
-                    reElectBefore: 22,
+                    reElectBefore: 19,
                     desc: '選挙の主役となる勢力。選挙後の政局の鍵を握る。'
                 },
                 {
                     title: '野党（立憲・共産・れいわ）',
-                    contested: powerBalanceData['野党'].seats - powerBalanceData['野党'].nonReElect,
-                    nonContested: powerBalanceData['野党'].nonReElect,
-                    total: powerBalanceData['野党'].seats,
+                    groupKey: '野党',
                     color: 'text-blue-600',
-                    reElectBefore: 30,
+                    reElectBefore: 32,
                     desc: '自民党への批判を吸収できず、第3極に存在感を奪われる形。'
                 }
             ];
             
-            summaryBoxesContainer.innerHTML = summaryBoxData.map(d => `
+            summaryBoxesContainer.innerHTML = summaryBoxData.map(d => {
+                const baseline = powerBalanceData[d.groupKey];
+                const pessimistic = powerBalanceDataPessimistic[d.groupKey];
+                const baselineContested = baseline.seats - baseline.nonReElect;
+                const pessimisticContested = pessimistic.seats - pessimistic.nonReElect;
+
+                return `
                 <div class="p-4 bg-gray-100 rounded-lg shadow-sm text-center">
                     <h4 class="font-medium mb-3">${d.title}</h4>
-                    <div class="text-5xl font-bold ${d.color} mb-2">${d.contested}議席</div>
+                    <div class="text-5xl font-bold ${d.color} mb-2">${baselineContested}議席</div>
                     <p class="text-sm text-gray-600">改選前: ${d.reElectBefore}議席</p>
-                    <p class="text-xs text-gray-500 mt-1">(非改選: ${d.nonContested}議席 / 総計: ${d.total}議席)</p>
+                    <p class="text-xs text-gray-500 mt-1">(非改選: ${baseline.nonReElect}議席 / 総計: ${baseline.seats}議席)</p>
                     <p class="mt-3 text-sm text-left">${d.desc}</p>
+                    
+                    <div class="mt-4 pt-4 border-t border-dashed border-red-400">
+                        <h5 class="font-semibold text-red-700">悲観シナリオ予測</h5>
+                        <div class="text-4xl font-bold text-red-700 mb-1">${pessimisticContested}議席</div>
+                        <p class="text-xs text-gray-500">(非改選: ${pessimistic.nonReElect}議席 / 総計: ${pessimistic.seats}議席)</p>
+                    </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         };
 
         // === AI ANALYSIS LOGIC ===
