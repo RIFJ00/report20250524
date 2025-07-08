@@ -17,6 +17,7 @@
         - Detailed Report (Renamed): Goal: Provide full source Method: Scrollable HTML (Updated with new structure and latest info)
         - Audio Summary: Goal: Provide audio overview Method: HTML5 audio player
         - LP Infographic (NEW): Goal: Present key report data visually Method: Infographic layout with Chartjs charts styled HTML elements Palette: Energetic & Playful Library: Chartjs (Updated)
+        - AI Analysis (NEW): Goal: Provide AI-driven insights Method: Client-side Gemini API call Library: None
         - CONFIRMATION: NO SVG graphics used NO Mermaid JS used -->
     <style>
         body { font-family: 'Inter', sans-serif; position: relative; }
@@ -74,6 +75,24 @@
         #externalVariablesList li span { cursor: pointer; text-decoration: underline; color: #2563eb; }
         #externalVariablesList li span:hover { color: #1d4ed8; }
 
+        /* AI Analysis Styles */
+        #ai-chat-container { max-height: 400px; overflow-y: auto; }
+        .ai-message, .user-message { padding: 0.75rem; border-radius: 0.5rem; line-height: 1.6; }
+        .user-message { background-color: #e0f2fe; color: #0c4a6e; }
+        .ai-message { background-color: #f1f5f9; color: #334155; white-space: pre-wrap; }
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #2563eb;
+            animation: spin 1s ease infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800">
@@ -89,12 +108,12 @@
                     <button data-target="timeline" class="nav-button px-3 py-2 rounded-md text-sm font-medium">交渉の経緯</button>
                     <button data-target="scenarios" class="nav-button px-3 py-2 rounded-md text-sm font-medium">交渉シナリオ</button>
                     <button data-target="probability" class="nav-button px-3 py-2 rounded-md text-sm font-medium">蓋然性分析</button>
-                    <!-- NEW SECTION BUTTON -->
                     <button data-target="sector-impact" class="nav-button px-3 py-2 rounded-md text-sm font-medium">分野別影響</button>
                     <button data-target="implications" class="nav-button px-3 py-2 rounded-md text-sm font-medium">影響と提言</button>
                     <button data-target="full-report" class="nav-button px-3 py-2 rounded-md text-sm font-medium">詳細レポート</button>
                     <button data-target="audio-summary" class="nav-button px-3 py-2 rounded-md text-sm font-medium">音声概要</button>
                     <button data-target="lp-infographic" class="nav-button px-3 py-2 rounded-md text-sm font-medium">LP</button>
+                    <button data-target="ai-analysis" class="nav-button px-3 py-2 rounded-md text-sm font-medium">AI分析</button>
                 </nav>
                 <div class="md:hidden">
                     <!-- Mobile menu button -->
@@ -114,12 +133,12 @@
                 <button data-target="timeline" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium">交渉の経緯</button>
                 <button data-target="scenarios" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium">交渉シナリオ</button>
                 <button data-target="probability" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium">蓋然性分析</button>
-                <!-- NEW SECTION BUTTON (MOBILE) -->
                 <button data-target="sector-impact" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium">分野別影響</button>
                 <button data-target="implications" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium">影響と提言</button>
                 <button data-target="full-report" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium">詳細レポート</button>
                 <button data-target="audio-summary" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium">音声概要</button>
                 <button data-target="lp-infographic" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium">LP</button>
+                <button data-target="ai-analysis" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium">AI分析</button>
             </nav>
         </div>
     </header>
@@ -157,7 +176,7 @@
                 <div>
                     <h4 class="text-lg font-semibold mb-2 text-blue-700 border-b-2 border-blue-200 pb-1">主要な争点と直近の動向</h4>
                     <p class="text-sm sm:text-base leading-relaxed">
-                        交渉の最大の争点は、日本の基幹産業である**自動車**への追加関税の扱いである。6月30日にはトランプ大統領自らが日本の対米自動車輸出の「不平等」を非難し、関税を引き下げない姿勢を改めて明言したことで、この問題が交渉の最大のネックであることが一層明確になった。これに加え、**鉄鋼・アルミニウム**への高関税も重くのしかかる。6月を通じて交渉は完全に**停滞**しており、7月9日に迫る相互関税の上乗せ部分の適用停止期限を前に緊張は高まっている。**失敗・膠着シナリオのリスクは、本レポートの分析開始以来、最も高いレベルにある。**
+                        交渉の最大の争点は、日本の基幹産業である**自動車**への追加関税の扱いである。6月30日にはトランプ大統領自らが日本の対米自動車輸出の「不平等」を非難し、関税を引き下げない姿勢を改めて明言したことで、この問題が交渉の最大のネックであることが一層明確になった。7月8日には大統領から総理への親書で、8月1日から新たな25%関税を課すことが通知され、状況は最終局面を迎えている。これに加え、**鉄鋼・アルミニウム**への高関税も重くのしかかる。**失敗・膠着シナリオのリスクは、本レポートの分析開始以来、最も高いレベルにある。**
                     </p>
                 </div>
                  <div>
@@ -182,7 +201,7 @@
                     <p class="text-sm mb-2">全輸入品に一律10%の基本関税に加え、対米貿易赤字が大きい国に追加関税を上乗せする。</p>
                     <ul class="list-disc list-inside text-sm space-y-1 pl-4">
                         <li>日本への適用: 基本10% + 上乗せ14% = <span class="font-bold text-red-600">合計24%</span></li>
-                        <li>備考: 上乗せ14%分は、交渉開始に伴い当初90日間適用停止された。**期限は7月9日。**</li>
+                        <li>備考: 上乗せ14%分は、交渉開始に伴い当初90日間適用停止された。**7月8日の大統領書簡により、8月1日から新たな25%関税が通知された。**</li>
                     </ul>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow">
@@ -246,18 +265,19 @@
                     <li class="bg-amber-50 p-2 rounded-md border-l-4 border-amber-400"><strong>6月12日 (現地時間):</strong> 米中ハイレベル通商交渉がジュネーブで開始。米側は「構造的な問題の解決」を、中国側は「全ての追加関税の撤廃」をそれぞれ要求し、交渉は冒頭から難航が予想される。</li>
                     <li class="bg-red-50 p-2 rounded-md border-l-4 border-red-400"><strong>6月15日 (米国時間):</strong> ラトニック米商務長官がテレビインタビューで、「日本からの意味のある譲歩がない限り、50%の鉄鋼・アルミニウム関税は交渉の余地がない」と明言。米国の姿勢がさらに硬化したことが明確になる。</li>
                     <li class="bg-red-50 p-2 rounded-md border-l-4 border-red-400"><strong>6月16日 (JST 午前):</strong> ワシントンDCで第6回閣僚級会合が開催されるも、鉄鋼・アルミ関税、自動車関税に関する双方の溝は埋まらず。日本側が提示した対米投資拡大案に対し、米国側は「具体的な貿易不均衡の是正には繋がらない」と不満を表明。協議は次回日程の合意なく終了し、交渉は事実上の停滞状態に。</li>
+                    <li class="bg-blue-50 p-2 rounded-md border-l-4 border-blue-400"><strong>6月16日 (現地時間):</strong> G7サミット（於：カナダ）の機会に、石破総理とトランプ大統領が短時間の首脳会談を実施。「交渉の加速」で一致するも、具体的な指示はなく、象徴的なやり取りに終わる。</li>
                     <li class="bg-blue-50 p-2 rounded-md border-l-4 border-blue-400"><strong>6月18日:</strong> 日本も政府高官が、WTOに対し米国の鉄鋼・アルミ関税に関する紛争解決手続きに基づく協議を視野に入れる必要があると発言。</li>
                     <li class="bg-amber-50 p-2 rounded-md border-l-4 border-amber-400"><strong>6月25日:</strong> 米中通商交渉が具体的成果なく終了。対立の根深さが改めて浮き彫りになる。</li>
                     <li class="bg-blue-50 p-2 rounded-md border-l-4 border-blue-400"><strong>6月27日:</strong> 林官房長官が記者会見で「対話のドアは常に開かれているが、他の手続きも視野に入れる必要がある」と表明。</li>
                     <li class="bg-red-50 p-2 rounded-md border-l-4 border-red-400"><strong>6月29日（現地時間）:</strong> 赤澤経済再生担当大臣が期限切れを前に打開を図るため訪米し、ラトニック商務長官、グリアUSTR代表と個別に会談。日本側は、エネルギーやインフラ分野での協力拡大を提案するも、米側は農業分野での具体的な市場開放を求める姿勢を崩さず、議論は平行線に終わる。</li>
                     <li class="bg-red-50 p-2 rounded-md border-l-4 border-red-400"><strong>6月30日 (JST 午前):</strong> 米政府高官が匿名を条件に、7月9日の期限切れを前に日本が農産物市場開放で具体的な譲歩を示さなければ、相互関税の上乗せ分（14%）を発動する最終準備に入ったと発言したことが報じられる。赤澤大臣は一連の会談後、記者団に対し「状況は極めて厳しい」と述べ、具体的な進展がなかったことを認めた。</li>
                     <li class="bg-red-50 p-2 rounded-md border-l-4 border-red-400"><strong>6月30日 (現地時間):</strong> トランプ大統領、SNSで日本の対米自動車輸出について「長年の不平等」と非難し、「自動車関税を引き下げることはない」と改めて明言。交渉の最大のネックが自動車問題であることが再確認される。</li>
-                    <li class="bg-blue-50 p-2 rounded-md border-l-4 border-blue-400"><strong>6月16日 (現地時間):</strong> G7サミット（於：カナダ）の機会に、石破総理とトランプ大統領が短時間の首脳会談を実施。「交渉の加速」で一致するも、具体的な指示はなく、象徴的なやり取りに終わる。</li>
+                    <li class="bg-red-50 p-2 rounded-md border-l-4 border-red-400"><strong>7月8日 (JST 午前):</strong> トランプ大統領が石破総理宛の親書をSNSで公開。書簡は「日本の関税や非関税障壁による長期の貿易赤字から脱却する必要がある」と指摘し、8月1日から日本からの輸入品に25%の関税を課すことを通知した。これは現在の相互関税を含む24%を上回る水準である。一方で、9日までの相互関税の適用停止期限は8月1日に延期するとし、日本が市場を開放し障壁を撤廃する場合には「調整を検討する」と、交渉の余地も示唆した。</li>
                 </ul>
 
                 <h3 class="text-xl font-semibold mt-6 mb-3 text-sky-700">交渉の雰囲気</h3>
                 <p class="text-sm leading-relaxed">
-                    6月を通じて、交渉は完全に停滞した。日本によるWTOへの正式提訴と、それに対する米国の反発により、対立は法廷闘争の様相を呈し始めている。米中交渉が一旦区切りを迎えたことで、米国の関心が再び日本に向かう可能性はあるが、それは圧力の強化を意味する公算が大きい。7月9日の期限を前に、米国側から最後通牒ともとれる報道がなされるなど、雰囲気は悪化の一途を辿っている。
+                    6月を通じて交渉が停滞した後、7月に入り、期限切れを目前にして緊張は頂点に達している。トランプ大統領からの親書は、日本に対し最後通牒を突きつけた形となり、交渉の雰囲気は極めて厳しい。米国は農業分野での譲歩を絶対条件としており、日本側にはほとんど交渉の余地が残されていない。
                 </p>
 
                 <h3 class="text-xl font-semibold mt-6 mb-3 text-sky-700">交渉における「スピード対実質」のジレンマと新たな動き</h3>
@@ -271,7 +291,7 @@
         <div id="scenarios" class="content-section">
             <h2 class="text-2xl font-bold mb-6 text-blue-600">交渉シナリオ分析</h2>
             <p class="mb-6 text-sm sm:text-base leading-relaxed">
-                日米関税交渉は、日本の経済にとって極めて重要な局面である。「成功」と「失敗・膠着」の二つの主要シナリオを想定し、それぞれの定義、主要因、想定される道筋、そして日米間の譲歩・見返りの可能性を比較検討する。下のタブで各シナリオの詳細を切り替えてご覧いただきたい。<br>**交渉の完全な停滞と米国からの最後通牒ともとれる動きにより、失敗・膠着シナリオが極めて現実的なものとなっている。**
+                日米関税交渉は、日本の経済にとって極めて重要な局面である。「成功」と「失敗・膠着」の二つの主要シナリオを想定し、それぞれの定義、主要因、想定される道筋、そして日米間の譲歩・見返りの可能性を比較検討する。下のタブで各シナリオの詳細を切り替えてご覧いただきたい。<br>**7月8日のトランプ大統領からの親書は、日本に二者択一を迫るものであり、失敗・膠着シナリオの現実味を極限まで高めている。**
             </p>
             <div class="mb-6 border-b border-slate-300">
                 <nav class="-mb-px flex space-x-4" aria-label="Tabs">
@@ -426,7 +446,7 @@
         <div id="probability" class="content-section">
             <h2 class="text-2xl font-bold mb-6 text-blue-600">蓋然性分析：成功 vs 失敗</h2>
             <p class="mb-6 text-sm sm:text-base leading-relaxed">
-                日米関税交渉が成功裏に終わる可能性と、失敗または膠着状態に陥る可能性のどちらが高いかを評価する。<br>推進要因、外部変数、専門家の見解を総合的に考慮し、より可能性の高い結果を導き出す。<br>**交渉停滞と米国の強硬姿勢を受け、失敗・膠着シナリオの蓋然性が「限定的な成功」を明確に上回ったと判断される。**
+                日米関税交渉が成功裏に終わる可能性と、失敗または膠着状態に陥る可能性のどちらが高いかを評価する。<br>推進要因、外部変数、専門家の見解を総合的に考慮し、より可能性の高い結果を導き出す。<br>**7月8日のトランプ大統領からの親書により、交渉は最終的な岐路に立たされた。**
             </p>
             <div class="grid md:grid-cols-2 gap-6 mb-8">
                 <div class="bg-white p-4 rounded-lg shadow">
@@ -457,7 +477,7 @@
                     <canvas id="probabilityChart"></canvas>
                 </div>
                 <p class="text-center mt-3 text-sm">
-                    本レポートの分析では、「失敗または膠着状態」の可能性を <span class="font-bold">65%</span>、<br>「限定的な成功」の可能性を <span class="font-bold">35%</span> と見積もる。<br>**トランプ大統領の自動車関税に関する発言は、このバランスをさらに「失敗」側に傾ける重大な要因である。**
+                    本レポートの分析では、「失敗または膠着状態」の可能性を <span class="font-bold">75%</span>、<br>「限定的な成功」の可能性を <span class="font-bold">25%</span> と見積もる。<br>**トランプ大統領の親書は、日本が大幅な譲歩を呑まない限り、関税発動が不可避であることを示唆しており、蓋然性は大きく「失敗」側に傾いた。**
                 </p>
                 <div class="mt-4 bg-sky-100 border-l-4 border-sky-500 text-sky-700 p-3 rounded-md">
                     <p class="font-bold">重要な留保事項</p>
@@ -918,10 +938,54 @@
                  </section>
             </div>
         </div>
+        <!-- AI Analysis Section -->
+        <div id="ai-analysis" class="content-section">
+            <h2 class="text-2xl font-bold mb-6 text-blue-600">AIによる関税交渉分析</h2>
+            <div class="bg-white p-6 rounded-lg shadow space-y-4">
+                <div>
+                    <label for="apiKeyInput" class="block text-sm font-medium text-slate-700 mb-1">Google AI Studio APIキー</label>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                        <input type="password" id="apiKeyInput" class="flex-grow p-2 border border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="APIキーを入力してください">
+                        <div class="flex space-x-2 mt-2 sm:mt-0">
+                             <button id="saveApiKey" class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white font-semibold rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">保存</button>
+                             <button id="runAnalysis" class="w-full sm:w-auto px-4 py-2 bg-green-600 text-white font-semibold rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">初回分析を実行</button>
+                        </div>
+                    </div>
+                     <p id="apiKeyStatus" class="text-xs text-green-600 mt-1 ml-1 hidden">APIキーが保存されました。</p>
+                </div>
+                
+                <div id="ai-chat-container" class="mt-4 p-4 border border-slate-200 rounded-md bg-slate-50 min-h-[200px] space-y-4">
+                     <p id="ai-placeholder" class="text-slate-500">APIキーを設定し、「初回分析を実行」ボタンを押してください。このレポートの全データを基に、AIが今後の交渉の展望を分析します。</p>
+                </div>
+                
+                <div id="ai-loading" class="hidden justify-center items-center py-4">
+                    <div class="spinner"></div>
+                    <p class="ml-4 text-slate-600">AIが分析中です。しばらくお待ちください...</p>
+                </div>
+
+                <div id="follow-up-container" class="mt-4 pt-4 border-t border-slate-200">
+                     <label for="followUpInput" class="block text-sm font-medium text-slate-700 mb-1">追加で質問する</label>
+                     <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                         <input type="text" id="followUpInput" class="flex-grow p-2 border border-slate-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="分析結果についてさらに質問...">
+                         <button id="askFollowUp" class="mt-2 sm:mt-0 w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">再質問</button>
+                     </div>
+                </div>
+            </div>
+             <div class="mt-6 bg-blue-50 border border-blue-200 p-4 rounded-lg text-sm">
+                <h4 class="font-bold text-blue-800 mb-2">Google AI Studioの無料APIキーを取得する方法</h4>
+                <ol class="list-decimal list-inside space-y-1 text-blue-700">
+                    <li><a href="https://aistudio.google.com/" target="_blank" class="underline hover:text-blue-900">Google AI Studio</a>にGoogleアカウントでログインします。</li>
+                    <li>左側のメニューから「APIキーを取得」を選択します。</li>
+                    <li>「新しいAPIキーを作成」ボタンをクリックしてキーを生成します。</li>
+                    <li>生成されたAPIキーをコピーし、上の入力欄に貼り付けて「保存」ボタンを押してください。</li>
+                </ol>
+                <p class="text-xs mt-2 text-blue-600">※APIの利用は、Googleの利用規約と無料利用枠の範囲に従います。</p>
+            </div>
+        </div>
     </main>
 
     <footer class="text-center py-8 text-sm text-slate-600">
-        <p>&copy; 2025 日米関税交渉分析レポート (一般社団法人日本みらい研2025年5月23日作成、2025年6月30日更新)</p>
+        <p>&copy; 2025 日米関税交渉分析レポート (一般社団法人日本みらい研2025年5月23日作成、2025年7月8日更新)</p>
         <p class="mt-1">本内容は提供されたレポートに基づき作成されたものであり、実際の交渉結果を保証するものではありません。</p>
     </footer>
 
@@ -1035,6 +1099,126 @@
     }
 
 
+    // --- AI ANALYSIS ---
+    let userApiKey = "";
+    let chatHistory = [];
+    const saveApiKeyButton = document.getElementById('saveApiKey');
+    const runAnalysisButton = document.getElementById('runAnalysis');
+    const askFollowUpButton = document.getElementById('askFollowUp');
+    const apiKeyInput = document.getElementById('apiKeyInput');
+    const aiChatContainer = document.getElementById('ai-chat-container');
+    const aiLoadingDiv = document.getElementById('ai-loading');
+    const apiKeyStatus = document.getElementById('apiKeyStatus');
+    const followUpInput = document.getElementById('followUpInput');
+    const aiPlaceholder = document.getElementById('ai-placeholder');
+
+    if (saveApiKeyButton) {
+        saveApiKeyButton.addEventListener('click', () => {
+            userApiKey = apiKeyInput.value;
+            if(userApiKey) {
+                apiKeyStatus.classList.remove('hidden');
+                setTimeout(() => {
+                    apiKeyStatus.classList.add('hidden');
+                }, 3000);
+            }
+        });
+    }
+
+    async function callGenerativeAI(prompt) {
+        if (!userApiKey) {
+            aiChatContainer.innerHTML += '<div class="ai-message text-red-600">APIキーが設定されていません。キーを保存してから分析を実行してください。</div>';
+            return;
+        }
+
+        aiLoadingDiv.style.display = 'flex';
+        
+        chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+        
+        try {
+            const payload = { contents: chatHistory };
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${userApiKey}`;
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error.message || 'APIリクエストに失敗しました。');
+            }
+
+            const result = await response.json();
+            
+            if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0]) {
+                const aiResponse = result.candidates[0].content.parts[0].text;
+                chatHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+                appendMessage(aiResponse, 'ai');
+            } else {
+                throw new Error('AIからの有効な応答がありませんでした。');
+            }
+        } catch (error) {
+            appendMessage(`分析中にエラーが発生しました：${error.message}`, 'ai', true);
+        } finally {
+            aiLoadingDiv.style.display = 'none';
+            aiChatContainer.scrollTop = aiChatContainer.scrollHeight;
+        }
+    }
+
+    function appendMessage(text, sender, isError = false) {
+        const messageDiv = document.createElement('div');
+        if (sender === 'user') {
+            messageDiv.className = 'user-message';
+            messageDiv.innerHTML = `<p class="font-bold">あなた:</p><p>${text}</p>`;
+        } else {
+            messageDiv.className = 'ai-message';
+            if(isError) {
+                 messageDiv.innerHTML = `<p class="font-bold text-red-600">AIエラー:</p><p class="text-red-600">${text}</p>`;
+            } else {
+                 messageDiv.innerHTML = `<p class="font-bold">AI分析:</p><p>${text}</p>`;
+            }
+        }
+        aiChatContainer.appendChild(messageDiv);
+    }
+
+    if (runAnalysisButton) {
+        runAnalysisButton.addEventListener('click', () => {
+            aiPlaceholder.style.display = 'none';
+            aiChatContainer.innerHTML = ''; // Clear previous results
+            chatHistory = []; // Reset history for new analysis
+            
+            let reportData = "";
+            document.querySelectorAll('.content-section').forEach(section => {
+                 if(section.id !== 'ai-analysis') {
+                    reportData += section.innerText + "\n\n---\n\n";
+                 }
+            });
+            const initialPrompt = `以下の日米関税交渉に関するレポート全文を基に、プロの経済アナリストとして、交渉の現状と今後の見通しについて詳細な分析を行ってください。特に、交渉が妥結する可能性、決裂する可能性、それぞれの要因、そして日本経済に与える短期・中期的な影響について、専門的かつ客観的な視点から論じてください。文体は「である」調で記述すること。\n\n---レポートデータ---\n${reportData}`;
+            callGenerativeAI(initialPrompt);
+        });
+    }
+
+    if (askFollowUpButton) {
+        askFollowUpButton.addEventListener('click', () => {
+            const question = followUpInput.value.trim();
+            if (question) {
+                appendMessage(question, 'user');
+                callGenerativeAI(question);
+                followUpInput.value = '';
+            }
+        });
+    }
+    
+    if (followUpInput) {
+        followUpInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                askFollowUpButton.click();
+            }
+        });
+    }
+
+
     // --- CHART.JS CONFIGURATION & CREATION ---
 
     // Global Chart.js defaults for consistent styling
@@ -1102,7 +1286,7 @@
                     borderWidth: 1
                 }]
             },
-            options: { ...commonChartOptionsSPA, plugins: { ...commonChartOptionsSPA.plugins, legend: { display: false }, title: { display: true, text: '主要な対日関税率（2025年6月30日現在）', font: {size: 16}, color: '#1e40af' } } }
+            options: { ...commonChartOptionsSPA, plugins: { ...commonChartOptionsSPA.plugins, legend: { display: false }, title: { display: true, text: '主要な対日関税率（2025年7月8日現在）', font: {size: 16}, color: '#1e40af' } } }
         });
     }
 
@@ -1130,7 +1314,7 @@
             data: {
                 labels: ['失敗または膠着状態', '限定的な成功'],
                 datasets: [{
-                    label: '可能性 (%)', data: [65, 35], 
+                    label: '可能性 (%)', data: [75, 25], 
                     backgroundColor: ['rgba(239, 68, 68, 0.8)','rgba(20, 184, 166, 0.8)'],
                     borderColor: ['rgba(239, 68, 68, 1)','rgba(20, 184, 166, 1)'],
                     borderWidth: 1, hoverOffset: 4
@@ -1262,7 +1446,7 @@
                     borderColor: ['#118AB2', '#FF6B6B', '#FF6B6B', '#46D9F0'], borderWidth: 1
                 }]
             },
-            options: { ...infographicChartOptions, plugins: { ...infographicChartOptions.plugins, legend: { display: false }, title: { display: true, text: '主要対日関税率 (6/30現在)', color: '#073B4C', font: {size: 14} } } }
+            options: { ...infographicChartOptions, plugins: { ...infographicChartOptions.plugins, legend: { display: false }, title: { display: true, text: '主要対日関税率 (7/8現在)', color: '#073B4C', font: {size: 14} } } }
         });
     }
 
@@ -1288,8 +1472,8 @@
         new Chart(probabilityCtxInfographic, {
             type: 'doughnut',
             data: {
-                labels: ['失敗/膠着 (65%)', '限定的成功 (35%)'],
-                datasets: [{ data: [65, 35], backgroundColor: ['#FF6B6BCC', '#06D6A0CC'], borderColor: ['#FF6B6B', '#06D6A0'], borderWidth: 1, hoverOffset: 8 }]
+                labels: ['失敗/膠着 (75%)', '限定的成功 (25%)'],
+                datasets: [{ data: [75, 25], backgroundColor: ['#FF6B6BCC', '#06D6A0CC'], borderColor: ['#FF6B6B', '#06D6A0'], borderWidth: 1, hoverOffset: 8 }]
             },
             options: { ...infographicChartOptions, cutout: '60%', plugins: { ...infographicChartOptions.plugins, title: { display: false }, legend: { ...infographicChartOptions.plugins.legend, labels: { ...infographicChartOptions.plugins.legend.labels, font: {size:9}, boxWidth:10, padding:10 } } } }
         });
