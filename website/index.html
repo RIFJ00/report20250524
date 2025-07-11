@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: "Warm Neutral" - 背景に温かみのある白(f8f7f4)、主要テキストに濃いグレー(333)、アクセントに落ち着いた緑(4a7c59)とオレンジ(d48a60)を使用し、信頼感と視認性を両立。 -->
-    <!-- Application Structure Plan: ユーザーが情報を多角的に探求できるよう、タブ切り替え型のダッシュボード形式を採用。1) 概要ビュー：本サイトの目的と構成を説明。2) 政党比較ビュー：全政党の総合評価を一覧できる横棒グラフと詳細なデータテーブルを表示。3) 詳細評価ビュー：各政党のカードで個別の評価内訳（レーダーチャート）と総評テキストを表示。4) 総括ビュー：レポートの要点を掲載。5) 詳細レポートビュー：レポート全文を整形して掲載。6) 音声概要ビュー：音声でレポート概要を提供。7) LPビュー：インフォグラフィック形式のLPを内包。この構造は、各セクションのコンテンツに集中しやすく、アプリケーションとしての操作性を高めるために選択した。 -->
-    <!-- Visualization & Content Choices: 1. 全体比較（Goal:比較）：全12政党のスコアを明瞭に比較するため、Chart.jsによる横棒グラフとHTMLテーブルを選択。ランキング形式で優劣が視覚的にわかりやすい。インタラクション：ドロップダウンで評価項目を動的に切り替え。2. 党別詳細（Goal:深掘り）：各党の5つの評価項目のバランスを示すため、Chart.jsのレーダーチャートが最適と判断。強みと弱みが一目でわかる。3. テキスト情報（Goal:理解）：レポートの総評や各党の解説文は、カード形式や専用セクションで整理し、チャートと連携させ深い理解を促進。ライブラリはChart.jsのみ使用。 -->
+    <!-- Application Structure Plan: ユーザーが情報を多角的に探求できるよう、タブ切り替え型のダッシュボード形式を採用。1) 概要ビュー：本サイトの目的と構成を説明。2) 政党比較ビュー：全政党の総合評価を一覧できる横棒グラフと詳細なデータテーブルを表示。3) 詳細評価ビュー：各政党のカードで個別の評価内訳（レーダーチャート）と総評テキストを表示。4) 総括ビュー：レポートの要点を掲載。5) 詳細レポートビュー：レポート全文を整形して掲載。6) 音声概要ビュー：音声でレポート概要を提供。7) LPビュー：インフォグラフィック形式のLPを内包。8) AI分析ビュー：ユーザーがAPIキーを設定し、自由な質問でAIによるデータ分析を行える。この構造は、各セクションのコンテンツに集中しやすく、アプリケーションとしての操作性を高めるために選択した。 -->
+    <!-- Visualization & Content Choices: 1. 全体比較（Goal:比較）：全12政党のスコアを明瞭に比較するため、Chart.jsによる横棒グラフとHTMLテーブルを選択。ランキング形式で優劣が視覚的にわかりやすい。インタラクション：ドロップダウンで評価項目を動的に切り替え。2. 党別詳細（Goal:深掘り）：各党の5つの評価項目のバランスを示すため、Chart.jsのレーダーチャートが最適と判断。強みと弱みが一目でわかる。3. AI分析(Goal:探索): Gemini APIを利用し、サイト内データをコンテキストとしてユーザーの質問に回答。4. テキスト情報（Goal:理解）：レポートの総評や各党の解説文は、カード形式や専用セクションで整理し、チャートと連携させ深い理解を促進。ライブラリはChart.jsのみ使用。 -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body { font-family: 'Noto Sans JP', sans-serif; background-color: #f8f7f4; color: #333333; }
@@ -47,6 +47,7 @@
                     <a href="#full-report" class="nav-link text-gray-600 hover:text-[#d48a60] py-5 transition-colors duration-300">詳細レポート</a>
                     <a href="#audio-summary" class="nav-link text-gray-600 hover:text-[#d48a60] py-5 transition-colors duration-300">音声概要</a>
                     <a href="#lp-page" class="nav-link text-gray-600 hover:text-[#d48a60] py-5 transition-colors duration-300">LP</a>
+                    <a href="#ai-analysis" class="nav-link text-gray-600 hover:text-[#d48a60] py-5 transition-colors duration-300">AI分析</a>
                 </div>
             </div>
         </nav>
@@ -67,6 +68,7 @@
                         <li><strong>詳細レポート:</strong> 本分析の基となった評価レポートの全文を閲覧できる。</li>
                         <li><strong>音声概要:</strong> レポートの要点をまとめた音声解説を聞くことができる。</li>
                         <li><strong>LP:</strong> 全ての情報を一枚にまとめたインフォグラフィック形式のランディングページを閲覧できる。</li>
+                        <li><strong>AI分析:</strong> サイト内データを基に、AIに対して自由な質問を投げかけ、独自の分析を得ることができる。</li>
                     </ul>
                     <hr class="my-6">
                     <h3 class="text-xl font-bold text-center text-[#4a7c59]">LPページの構成</h3>
@@ -262,6 +264,53 @@
                 </section>
             </div>
         </section>
+        
+        <section id="ai-analysis" class="page-section mb-12 hidden">
+            <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                <h2 class="text-2xl md:text-3xl font-bold text-center mb-4 text-[#4a7c59]">AIによるサイトデータ分析</h2>
+                <div class="prose max-w-none mx-auto text-gray-700">
+                    <p>このサイトに掲載されている全政党の評価データを基に、AIがあなたの質問に回答する。より深い洞察や、特定の視点からの分析を得ることが可能である。</p>
+                    
+                    <div class="mt-6">
+                        <label for="api-key-input" class="block text-sm font-medium text-gray-700">Google AI Studio APIキー</label>
+                        <div class="mt-1 flex rounded-md shadow-sm">
+                            <input type="password" id="api-key-input" class="focus:ring-[#d48a60] focus:border-[#d48a60] block w-full rounded-none rounded-l-md sm:text-sm border-gray-300" placeholder="APIキーを入力">
+                            <button id="save-api-key-btn" class="inline-flex items-center px-3 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">保存</button>
+                        </div>
+                         <p id="api-key-status" class="mt-2 text-sm text-green-600 hidden">APIキーをこのセッションで保存しました。</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <label for="ai-question-input" class="block text-sm font-medium text-gray-700">質問</label>
+                        <textarea id="ai-question-input" rows="3" class="shadow-sm focus:ring-[#d48a60] focus:border-[#d48a60] mt-1 block w-full sm:text-sm border border-gray-300 rounded-md" placeholder="例：発信力が高い政党の共通点は何ですか？"></textarea>
+                    </div>
+
+                    <div class="mt-4 flex items-center space-x-4">
+                        <button id="ai-analysis-btn" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-[#4a7c59] hover:bg-[#3b6347]">分析実行</button>
+                        <button id="ai-reset-btn" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">分析をリセット</button>
+                        <div id="ai-loading" class="hidden">
+                            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-[#4a7c59]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div id="ai-response-container" class="mt-6 space-y-4"></div>
+                    
+                    <div id="api-key-info" class="mt-8 border-t pt-6 text-sm text-gray-600">
+                        <h4 class="font-bold text-base text-gray-800">無料のAPIキーを取得する方法</h4>
+                        <ol class="list-decimal list-inside mt-2 space-y-1">
+                            <li><a href="https://aistudio.google.com/" target="_blank" class="text-blue-600 hover:underline">Google AI Studio</a> にアクセスし、Googleアカウントでログインする。</li>
+                            <li>「Get API key」または「APIキーを取得」をクリックする。</li>
+                            <li>「Create API key in new project」または「新しいプロジェクトでAPIキーを作成」を選択する。</li>
+                            <li>生成されたAPIキーをコピーし、上の入力欄に貼り付けて保存する。</li>
+                        </ol>
+                        <p class="mt-2">※この機能はGoogleの生成AIモデル「Gemini」を利用しています。APIキーはブラウザ内にのみ保存され、外部には送信されません。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
     </main>
 
@@ -345,6 +394,8 @@
             let summaryRendered = false;
             let fullReportRendered = false;
             let lpRendered = false;
+            let geminiApiKey = '';
+            let chatHistory = [];
 
             const renderMainChart = (criteria = 'total') => {
                 const ctx = document.getElementById('main-chart').getContext('2d');
@@ -764,7 +815,7 @@
 
                 lpRendered = true;
             };
-
+            
             const navLinks = document.querySelectorAll('.nav-link');
             const pageSections = document.querySelectorAll('.page-section');
 
@@ -796,6 +847,8 @@
                     renderFullReport();
                 } else if (targetId === '#lp-page') {
                     renderLpPage();
+                } else if (targetId === '#ai-analysis') {
+                    // AI tab logic
                 }
             };
 
@@ -810,6 +863,122 @@
             document.getElementById('criteria-selector').addEventListener('change', (e) => {
                 renderMainChart(e.target.value);
             });
+            
+            const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+            const apiKeyInput = document.getElementById('api-key-input');
+            const apiKeyStatus = document.getElementById('api-key-status');
+            
+            saveApiKeyBtn.addEventListener('click', () => {
+                geminiApiKey = apiKeyInput.value;
+                if(geminiApiKey) {
+                    apiKeyStatus.classList.remove('hidden');
+                } else {
+                    apiKeyStatus.classList.add('hidden');
+                }
+            });
+
+            const aiAnalysisBtn = document.getElementById('ai-analysis-btn');
+            const aiResetBtn = document.getElementById('ai-reset-btn');
+            const aiQuestionInput = document.getElementById('ai-question-input');
+            const aiResponseContainer = document.getElementById('ai-response-container');
+            const aiLoading = document.getElementById('ai-loading');
+
+            aiAnalysisBtn.addEventListener('click', getAiResponse);
+            aiResetBtn.addEventListener('click', () => {
+                chatHistory = [];
+                aiResponseContainer.innerHTML = '';
+                aiResponseContainer.classList.add('hidden');
+                aiQuestionInput.value = '';
+            });
+
+            async function getAiResponse() {
+                if (!geminiApiKey) {
+                    aiResponseContainer.innerHTML = '<p class="text-red-600">APIキーが設定されていません。APIキーを入力し、保存してください。</p>';
+                    aiResponseContainer.classList.remove('hidden');
+                    return;
+                }
+
+                let userQuestion;
+                if (chatHistory.length === 0) {
+                    userQuestion = "このサイトのデータを基に、日本の主要政党のデジタル戦略について総合的に分析する";
+                } else {
+                    userQuestion = aiQuestionInput.value;
+                }
+
+                if (!userQuestion) {
+                    aiResponseContainer.innerHTML = '<p class="text-red-600">質問を入力してください。</p>';
+                    aiResponseContainer.classList.remove('hidden');
+                    return;
+                }
+
+                aiLoading.classList.remove('hidden');
+                aiAnalysisBtn.disabled = true;
+                aiResetBtn.disabled = true;
+
+                const contextData = JSON.stringify(partyData, null, 2);
+                const systemPrompt = `あなたは日本の政治に詳しいデータアナリストです。提供された政党評価データを基に、ユーザーの質問に対して、客観的かつ洞察に富んだ分析を日本語の「である」調で提供してください。`;
+                
+                // Build conversation history for the API
+                let apiContents = [];
+                if (chatHistory.length === 0) {
+                     apiContents.push({ role: "user", parts: [{ text: `システムプロンプト: ${systemPrompt}\n\nデータ:\n${contextData}\n\n質問:\n${userQuestion}` }] });
+                } else {
+                    apiContents = [...chatHistory, { role: "user", parts: [{ text: userQuestion }] }];
+                }
+                
+                chatHistory.push({ role: "user", parts: [{ text: userQuestion }] });
+                
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            contents: apiContents,
+                            "system_instruction": { "parts": [{ "text": systemPrompt }] }
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(`APIリクエストに失敗しました。ステータス: ${response.status}. 詳細: ${errorData.error.message}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                        const responseText = result.candidates[0].content.parts[0].text;
+                        chatHistory.push({ role: "model", parts: [{ text: responseText }] });
+                        
+                        // Display conversation
+                        let conversationHTML = '';
+                        chatHistory.forEach(turn => {
+                            if (turn.role === 'user') {
+                                conversationHTML += `<div class="p-2 my-2"><p class="font-bold">あなた:</p><p>${turn.parts[0].text}</p></div>`;
+                            } else if (turn.role === 'model') {
+                                conversationHTML += `<div class="p-4 my-2 bg-gray-100 rounded-lg"><p class="font-bold text-[#4a7c59]">AIアナリスト:</p><p>${turn.parts[0].text.replace(/\n/g, '<br>')}</p></div>`;
+                            }
+                        });
+                        aiResponseContainer.innerHTML = conversationHTML;
+                        aiQuestionInput.value = '';
+
+                    } else {
+                         aiResponseContainer.innerHTML += '<p class="text-red-600">AIからの有効な回答が得られませんでした。</p>';
+                         chatHistory.pop(); // remove the failed user question
+                    }
+                } catch (error) {
+                    aiResponseContainer.innerHTML += `<p class="text-red-600">分析中にエラーが発生しました: ${error.message}</p>`;
+                    chatHistory.pop(); // remove the failed user question
+                } finally {
+                    aiLoading.classList.add('hidden');
+                    aiResponseContainer.classList.remove('hidden');
+                    aiAnalysisBtn.disabled = false;
+                    aiResetBtn.disabled = false;
+                }
+            }
 
             showPage('#overview');
         });
