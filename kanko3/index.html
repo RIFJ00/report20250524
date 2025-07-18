@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025年上半期 日本観光市場ダッシュボード</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles for Inter font and light background */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            scroll-behavior: smooth;
+        }
+        .container {
+            max-width: 1000px;
+        }
+        h1, h2, h3 {
+            color: #1a202c;
+        }
+        /* Section title styling with left border */
+        .section-title {
+            border-left: 6px solid #4299e1;
+            padding-left: 1rem;
+        }
+        /* Card styling for sections and components */
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+        /* Chart specific styles for custom bar charts */
+        .chart-container {
+            display: flex;
+            align-items: flex-end;
+            height: 250px;
+            border-left: 1px solid #cbd5e0;
+            border-bottom: 1px solid #cbd5e0;
+            padding-bottom: 1rem;
+            position: relative;
+            overflow-x: auto;
+        }
+        .chart-bar-wrapper {
+            display: flex;
+            align-items: flex-end;
+            height: 100%;
+            min-width: 300px;
+            padding: 0 1rem;
+            flex-grow: 1; /* Allow wrapper to take available space */
+        }
+        .chart-bar {
+            flex-grow: 1; /* Bars should grow to fill space */
+            background-color: #63b3ed;
+            margin: 0 0.25rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            transition: height 0.3s ease-in-out;
+        }
+        .chart-bar-label {
+            position: absolute;
+            bottom: -1.5rem;
+            font-size: 0.75rem;
+            color: #4a5568;
+            white-space: nowrap;
+        }
+        .chart-value {
+            position: absolute;
+            top: -1.5rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #2d3748;
+            white-space: nowrap;
+            opacity: 0; /* Hidden by default */
+            transition: opacity 0.3s ease-in-out;
+        }
+        .chart-bar:hover .chart-value {
+            opacity: 1; /* Show on hover */
+        }
+        .chart-y-axis-label {
+            position: absolute;
+            left: -3rem;
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            font-size: 0.875rem;
+            color: #4a5568;
+            white-space: nowrap;
+        }
+        .chart-y-axis-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            border-top: 1px dashed #e2e8f0;
+            font-size: 0.75rem;
+            color: #718096;
+            padding-left: 0.5rem;
+        }
+        /* SVG icon styling (Lucide-React equivalents) */
+        .icon-users { width: 32px; height: 32px; color: #2563eb; }
+        .icon-dollarsign { width: 32px; height: 32px; color: #2563eb; }
+        .icon-globe { width: 32px; height: 32px; color: #2563eb; }
+        .icon-mappin { width: 32px; height: 32px; color: #2563eb; }
+        .icon-trending-up { width: 20px; height: 20px; display: inline-block; vertical-align: middle; }
+        .icon-alert-triangle { width: 20px; height: 20px; display: inline-block; vertical-align: middle; }
+        .icon-check { width: 20px; height: 20px; display: inline-block; vertical-align: middle; }
+        .icon-exclamation { width: 20px; height: 20px; display: inline-block; vertical-align: middle; }
+        .icon-arrow-right { width: 20px; height: 20px; display: inline-block; vertical-align: middle; }
+    </style>
+</head>
+<body class="antialiased text-gray-800">
+    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <header class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-gray-900 mb-2">
+                    2025年上半期 日本観光市場ダッシュボード
+                </h1>
+                <p class="text-lg text-gray-600">
+                    訪日外国人旅行者数が半年で2,000万人を突破
+                </p>
+            </header>
+
+            <!-- Navigation -->
+            <nav class="flex flex-wrap justify-center gap-4 mb-8">
+                <button id="nav-overview" class="px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-blue-600 text-white shadow-md">
+                    概要
+                </button>
+                <button id="nav-trends" class="px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-gray-100 text-gray-700 hover:bg-gray-200">
+                    推移分析
+                </button>
+                <button id="nav-markets" class="px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-gray-100 text-gray-700 hover:bg-gray-200">
+                    市場別分析
+                </button>
+                <button id="nav-challenges" class="px-4 py-2 rounded-lg font-medium transition-all duration-200 bg-gray-100 text-gray-700 hover:bg-gray-200">
+                    課題とリスク
+                </button>
+            </nav>
+
+            <!-- Sections -->
+            <div id="overview-section" class="space-y-8">
+                <!-- Key Metrics -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <svg class="icon-users mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h-5v-2a3 3 0 013-3h2.5M15 13a3 3 0 100-6 3 3 0 000 6zm-8 4a2 2 0 100-4 2 2 0 000 4zm0 0V4a2 2 0 012-2h4a2 2 0 012 2v12m-4 4h4"></path></svg>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">上半期訪日客数</h3>
+                                    <p class="text-2xl font-bold text-gray-900">2,152万人</p>
+                                    <p class="text-sm text-gray-600">過去最速で2,000万人突破</p>
+                                </div>
+                            </div>
+                            <div class="text-right text-green-600">
+                                <svg class="icon-trending-up" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8L11 17"></path></svg>
+                                <span class="font-semibold">+21.0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <svg class="icon-dollarsign mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8V4m0 8v4m-6 1h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">Q2消費額</h3>
+                                    <p class="text-2xl font-bold text-gray-900">2.53兆円</p>
+                                    <p class="text-sm text-gray-600">四半期ベース過去最大</p>
+                                </div>
+                            </div>
+                            <div class="text-right text-green-600">
+                                <svg class="icon-trending-up" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8L11 17"></path></svg>
+                                <span class="font-semibold">+18.0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <svg class="icon-globe mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m0 0l-7 7m7-7v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">主要市場</h3>
+                                    <p class="text-2xl font-bold text-gray-900">15/23市場</p>
+                                    <p class="text-sm text-gray-600">6月過去最高更新</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <svg class="icon-mappin mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-800">予測年間客数</h3>
+                                    <p class="text-2xl font-bold text-gray-900">4,000万人+</p>
+                                    <p class="text-sm text-gray-600">2019年大幅超え見込み</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Executive Summary -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">エグゼクティブサマリー</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-lg font-semibold text-blue-600 mb-2">主要成果</h3>
+                            <ul class="space-y-2 text-gray-700">
+                                <li class="flex items-start">
+                                    <svg class="icon-check text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    上半期累計2,152万人（前年比+21.0%）
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="icon-check text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    全月で史上最多記録を更新
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="icon-check text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    中国市場53.5%増と大幅回復
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="icon-check text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    米国市場26.7%増で単月最高更新
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-orange-600 mb-2">主要課題</h3>
+                            <ul class="space-y-2 text-gray-700">
+                                <li class="flex items-start">
+                                    <svg class="icon-exclamation text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    観光産業の深刻な人手不足
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="icon-exclamation text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    オーバーツーリズムの再燃
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="icon-exclamation text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    日本人国内旅行需要の鈍化
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="icon-exclamation text-orange-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    一人当たり消費額の伸び悩み
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="trends-section" class="space-y-8 hidden">
+                <!-- Monthly Trends -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">月別推移</h2>
+                    <div class="bg-gray-100 p-4 rounded-lg text-center text-gray-500 italic mb-8">
+                        <h4 class="text-xl font-semibold mb-4 text-gray-800">図: 訪日外国人観光客の月次推移（2025年1月～6月）</h4>
+                        <div class="chart-container" id="monthly-visitors-chart">
+                            <!-- Y-axis labels -->
+                            <div class="absolute left-0 top-0 bottom-0 flex flex-col justify-between h-full -ml-12 text-xs text-gray-600">
+                                <span class="absolute top-0 -translate-y-1/2">400万人</span>
+                                <span class="absolute top-1/4 -translate-y-1/2">300万人</span>
+                                <span class="absolute top-1/2 -translate-y-1/2">200万人</span>
+                                <span class="absolute top-3/4 -translate-y-1/2">100万人</span>
+                                <span class="absolute bottom-0 -translate-y-1/2">0</span>
+                            </div>
+                            <!-- Y-axis grid lines -->
+                            <div class="absolute left-0 top-0 right-0 h-full flex flex-col justify-between">
+                                <div class="w-full border-t border-dashed border-gray-200" style="top: 0%;"></div>
+                                <div class="w-full border-t border-dashed border-gray-200" style="top: 25%;"></div>
+                                <div class="w-full border-t border-dashed border-gray-200" style="top: 50%;"></div>
+                                <div class="w-full border-t border-dashed border-gray-200" style="top: 75%;"></div>
+                                <div class="w-full border-t border-dashed border-gray-200" style="top: 100%;"></div>
+                            </div>
+                            <div class="chart-bar-wrapper">
+                                <!-- Bars will be dynamically generated by JavaScript -->
+                            </div>
+                        </div>
+                        <p class="text-sm mt-8">各月とも概ね300万人台後半の高水準で推移しており、月次ベースで300万人超は2024年10月以降9か月連続である。特に桜シーズンの4月と大型連休を含む5月は訪日需要が旺盛で、2025年はいずれも過去最高値を記録した。また6月は一般的に旅行閑散期にあたるが、<strong class="text-blue-600">学校休暇（スクールホリデー）</strong>を利用した訪日が各国で見られ、6月として初めて多くの市場で記録的な集客となった点が注目される。6月に伸び率が鈍化した要因としては、前年6月に中国や東南アジアからの訪日が急増していた反動や、後述する香港市場の落ち込みなど一時的な特殊要因があり、全体的な需要の勢いは依然強いと見られる。</p>
+                    </div>
+                </div>
+
+                <!-- Consumption Trends -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">消費額推移</h2>
+                    <div class="bg-gray-100 p-4 rounded-lg text-center text-gray-500 italic mb-8">
+                        <h4 class="text-xl font-semibold mb-4 text-gray-800">図: 2025年4-6月期 訪日外国人旅行消費額（前年同期比）</h4>
+                        <div class="chart-container" id="consumption-chart">
+                            <!-- Y-axis labels -->
+                            <div class="absolute left-0 top-0 bottom-0 flex flex-col justify-between h-full -ml-16 text-xs text-gray-600">
+                                <span class="absolute top-0 -translate-y-1/2">2.5兆円</span>
+                                <span class="absolute top-1/2 -translate-y-1/2">1.25兆円</span>
+                                <span class="absolute bottom-0 -translate-y-1/2">0</span>
+                            </div>
+                            <!-- Y-axis grid lines -->
+                            <div class="absolute left-0 top-0 right-0 h-full flex flex-col justify-between">
+                                <div class="w-full border-t border-dashed border-gray-200"></div>
+                                <div class="w-full border-t border-dashed border-gray-200"></div>
+                                <div class="w-full border-t border-dashed border-gray-200"></div>
+                            </div>
+                            <div class="chart-bar-wrapper justify-center">
+                                <!-- Bars will be dynamically generated by JavaScript -->
+                            </div>
+                        </div>
+                        <p class="text-sm mt-8">2025年4-6月期の訪日外国人消費額は過去最大級を記録した。</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="markets-section" class="space-y-8 hidden">
+                <!-- Country Rankings -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">主要市場別訪日客数</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="country-cards-container">
+                        <!-- Country cards will be dynamically generated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Market Share Pie Chart -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">市場シェア（上半期）</h2>
+                    <div class="bg-gray-100 p-4 rounded-lg text-center text-gray-500 italic mb-8">
+                        <h4 class="text-xl font-semibold mb-4 text-gray-800">図: 主要市場別訪日客数シェア（2025年上半期）</h4>
+                        <div class="flex justify-center items-center h-80">
+                            <svg id="pie-chart-svg" width="100%" height="100%" viewBox="0 0 200 200"></svg>
+                        </div>
+                        <p class="text-sm mt-8">主要市場が訪日客全体の約70%を占める。</p>
+                    </div>
+                </div>
+
+                <!-- Market Analysis -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">好調市場</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-700">中国</span>
+                                <span class="text-green-600 font-semibold">+53.5%</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-700">米国</span>
+                                <span class="text-green-600 font-semibold">+26.7%</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-700">台湾</span>
+                                <span class="text-green-600 font-semibold">+10.3%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">注目トレンド</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-start">
+                                <div class="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3"></div>
+                                <p class="text-gray-700 text-sm">中国団体旅行の本格復帰</p>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3"></div>
+                                <p class="text-gray-700 text-sm">欧米市場の長期滞在志向</p>
+                            </div>
+                            <div class="flex items-start">
+                                <div class="w-2 h-2 bg-purple-500 rounded-full mt-2 mr-3"></div>
+                                <p class="text-gray-700 text-sm">東南アジアの新興市場成長</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="challenges-section" class="space-y-8 hidden">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6">課題とリスク分析</h2>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-lg font-semibold text-red-600 mb-4">深刻な課題</h3>
+                            <div class="p-4 rounded-lg mb-4 bg-red-50 border border-red-200">
+                                <div class="flex items-start">
+                                    <svg class="icon-alert-triangle text-red-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    <div>
+                                        <h4 class="font-semibold text-red-800">観光産業の人手不足</h4>
+                                        <p class="text-sm text-red-700">インバウンド激増にサービス提供が追いつかず、客室稼働制限やツアー受け入れ停止が発生している。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 rounded-lg mb-4 bg-red-50 border border-red-200">
+                                <div class="flex items-start">
+                                    <svg class="icon-alert-triangle text-red-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    <div>
+                                        <h4 class="font-semibold text-red-800">オーバーツーリズムの再燃</h4>
+                                        <p class="text-sm text-red-700">京都や鎌倉などで生活環境への悪影響を懸念する声が増加している。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-lg font-semibold text-yellow-600 mb-4">注意すべきリスク</h3>
+                            <div class="p-4 rounded-lg mb-4 bg-yellow-50 border border-yellow-200">
+                                <div class="flex items-start">
+                                    <svg class="icon-alert-triangle text-yellow-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    <div>
+                                        <h4 class="font-semibold text-yellow-800">為替・経済リスク</h4>
+                                        <p class="text-sm text-yellow-700">円高進行や世界経済後退による訪日需要減退の可能性がある。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 rounded-lg mb-4 bg-yellow-50 border border-yellow-200">
+                                <div class="flex items-start">
+                                    <svg class="icon-alert-triangle text-yellow-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    <div>
+                                        <h4 class="font-semibold text-yellow-800">地政学リスク</h4>
+                                        <p class="text-sm text-yellow-700">アジア太平洋情勢の不安定化や日中・日韓関係悪化による影響がある。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 rounded-lg mb-4 bg-yellow-50 border border-yellow-200">
+                                <div class="flex items-start">
+                                    <svg class="icon-alert-triangle text-yellow-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    <div>
+                                        <h4 class="font-semibold text-yellow-800">インフラ制約</h4>
+                                        <p class="text-sm text-yellow-700">宿泊施設や交通インフラの受け入れキャパシティに限界が見られる。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Solutions -->
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">対応策と今後の展望</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-lg font-semibold text-blue-600 mb-3">短期対応</h3>
+                            <ul class="space-y-2 text-gray-700">
+                                <li class="flex items-start">
+                                    <svg class="icon-arrow-right text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                                    観光業界の労働条件改善
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="icon-arrow-right text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                                    地方分散誘導政策
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="icon-arrow-right text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                                    観光税活用による環境整備
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-green-600 mb-3">中長期戦略</h3>
+                            <ul class="space-y-2 text-gray-700">
+                                <li class="flex items-start">
+                                    <svg class="icon-arrow-right text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                                    持続可能な観光モデル構築
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="icon-arrow-right text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                                    市場多角化による安定化
+                                </li>
+                                <li class="flex items-start">
+                                    <svg class="icon-arrow-right text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path></svg>
+                                    富裕層誘致による単価向上
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Footer Section -->
+        <footer class="text-center text-gray-500 text-sm mt-12 p-4 border-t border-gray-200">
+            <p>データ出典: 日本政府観光局(JNTO)・観光庁 報道発表資料 (2025年7月16日)</p>
+            <p>&copy; 一般社団法人日本みらい研 2025</p>
+        </footer>
+    </div>
+
+    <script>
+        // Data for charts and cards
+        const monthlyData = [
+            { month: '1月', visitors: 378.2 }, // 単位を万人に変更
+            { month: '2月', visitors: 325.8 },
+            { month: '3月', visitors: 349.8 },
+            { month: '4月', visitors: 390.9 },
+            { month: '5月', visitors: 369.3 },
+            { month: '6月', visitors: 337.8 }
+        ];
+
+        const countryData = [
+            { country: '韓国', visitors: 478.4, growth: 7.7, color: '#FF6B6B' }, // 単位を万人に変更
+            { country: '中国', visitors: 471.8, growth: 53.5, color: '#4ECDC4' },
+            { country: '台湾', visitors: 328.5, growth: 10.3, color: '#45B7D1' },
+            { country: '米国', visitors: 170.1, growth: 26.7, color: '#96CEB4' },
+            { country: '香港', visitors: 127.1, growth: -0.4, color: '#FFEAA7' }
+        ];
+
+        const consumptionData = [
+            { quarter: 'Q1', amount: 2.1 },
+            { quarter: 'Q2', amount: 2.53 }
+        ];
+
+        // Function to render monthly visitors bar chart
+        function renderMonthlyVisitorsChart() {
+            const chartWrapper = document.querySelector('#monthly-visitors-chart .chart-bar-wrapper');
+            chartWrapper.innerHTML = ''; // Clear previous bars
+
+            const maxVisitors = Math.max(...monthlyData.map(d => d.visitors));
+
+            monthlyData.forEach(data => {
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar group';
+                bar.style.height = `${(data.visitors / maxVisitors) * 100}%`;
+                bar.style.width = `calc(100% / ${monthlyData.length} - 0.5rem)`; // Distribute width evenly
+
+                bar.innerHTML = `
+                    <span class="chart-value">${data.visitors.toFixed(1)}万人</span>
+                    <span class="chart-bar-label">${data.month}</span>
+                `;
+                chartWrapper.appendChild(bar);
+            });
+        }
+
+        // Function to render consumption bar chart
+        function renderConsumptionChart() {
+            const chartWrapper = document.querySelector('#consumption-chart .chart-bar-wrapper');
+            chartWrapper.innerHTML = ''; // Clear previous bars
+
+            const maxAmount = Math.max(...consumptionData.map(d => d.amount));
+
+            consumptionData.forEach(data => {
+                const bar = document.createElement('div');
+                bar.className = 'chart-bar group';
+                bar.style.height = `${(data.amount / maxAmount) * 100}%`;
+                bar.style.width = `calc(100% / ${consumptionData.length} - 0.5rem)`; // Distribute width evenly
+                bar.style.backgroundColor = '#10B981'; // Green for consumption
+
+                bar.innerHTML = `
+                    <span class="chart-value">${data.amount.toFixed(2)}兆円</span>
+                    <span class="chart-bar-label">${data.quarter}</span>
+                `;
+                chartWrapper.appendChild(bar);
+            });
+        }
+
+        // Function to render country cards
+        function renderCountryCards() {
+            const container = document.getElementById('country-cards-container');
+            container.innerHTML = ''; // Clear previous cards
+
+            countryData.forEach(country => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-all duration-300';
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="text-lg font-semibold text-gray-800">${country.country}</h4>
+                        <div class="px-3 py-1 rounded-full text-sm font-medium ${country.growth > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                            ${country.growth > 0 ? '+' : ''}${country.growth}%
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 rounded-full mr-3" style="background-color: ${country.color}"></div>
+                        <span class="text-2xl font-bold text-gray-900">${country.visitors.toFixed(1)}万人</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Function to render pie chart using SVG
+        function renderPieChart() {
+            const svg = document.getElementById('pie-chart-svg');
+            svg.innerHTML = ''; // Clear previous slices
+
+            const centerX = 100;
+            const centerY = 100;
+            const radius = 80;
+
+            let totalVisitors = countryData.reduce((sum, d) => sum + d.visitors, 0);
+            let currentAngle = 0;
+
+            countryData.forEach(data => {
+                const sliceAngle = (data.visitors / totalVisitors) * 360;
+                const startAngleRad = (currentAngle - 90) * Math.PI / 180; // -90 to start from top
+                const endAngleRad = (currentAngle + sliceAngle - 90) * Math.PI / 180;
+
+                const startX = centerX + radius * Math.cos(startAngleRad);
+                const startY = centerY + radius * Math.sin(startAngleRad);
+                const endX = centerX + radius * Math.cos(endAngleRad);
+                const endY = centerY + radius * Math.sin(endAngleRad);
+
+                const largeArcFlag = sliceAngle > 180 ? 1 : 0;
+
+                const pathData = [
+                    `M ${centerX},${centerY}`,
+                    `L ${startX},${startY}`,
+                    `A ${radius},${radius} 0 ${largeArcFlag} 1 ${endX},${endY}`,
+                    `Z`
+                ].join(' ');
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', pathData);
+                path.setAttribute('fill', data.color);
+                path.setAttribute('stroke', 'white');
+                path.setAttribute('stroke-width', '1');
+                svg.appendChild(path);
+
+                // Add text labels
+                const textAngle = currentAngle + sliceAngle / 2;
+                const textX = centerX + (radius + 20) * Math.cos((textAngle - 90) * Math.PI / 180);
+                const textY = centerY + (radius + 20) * Math.sin((textAngle - 90) * Math.PI / 180);
+
+                const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                text.setAttribute('x', textX);
+                text.setAttribute('y', textY);
+                text.setAttribute('text-anchor', 'middle');
+                text.setAttribute('font-size', '8');
+                text.setAttribute('fill', '#4a5568');
+                text.textContent = `${data.country}: ${data.visitors.toFixed(1)}万人`; // 単位を万人に変更
+                svg.appendChild(text);
+
+                currentAngle += sliceAngle;
+            });
+        }
+
+        // Function to show a specific section and hide others
+        function showSection(sectionId) {
+            const sections = ['overview-section', 'trends-section', 'markets-section', 'challenges-section'];
+            sections.forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(sectionId).classList.remove('hidden');
+
+            // Update active navigation button styling
+            const navButtons = document.querySelectorAll('nav button');
+            navButtons.forEach(button => {
+                if (button.id === `nav-${sectionId.replace('-section', '')}`) {
+                    button.classList.add('bg-blue-600', 'text-white', 'shadow-md');
+                    button.classList.remove('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+                } else {
+                    button.classList.remove('bg-blue-600', 'text-white', 'shadow-md');
+                    button.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-gray-200');
+                }
+            });
+
+            // Render charts when their respective sections are shown
+            if (sectionId === 'trends-section') {
+                renderMonthlyVisitorsChart();
+                renderConsumptionChart();
+            } else if (sectionId === 'markets-section') {
+                renderCountryCards();
+                renderPieChart();
+            }
+        }
+
+        // Add event listeners to navigation buttons
+        document.getElementById('nav-overview').addEventListener('click', () => showSection('overview-section'));
+        document.getElementById('nav-trends').addEventListener('click', () => showSection('trends-section'));
+        document.getElementById('nav-markets').addEventListener('click', () => showSection('markets-section'));
+        document.getElementById('nav-challenges').addEventListener('click', () => showSection('challenges-section'));
+
+        // Show the overview section by default on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            showSection('overview-section');
+        });
+    </script>
+</body>
+</html>
