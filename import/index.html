@@ -27,6 +27,10 @@
             color: #3b82f6; /* Tailwindのblue-500の色 */
             animation: pulse 1.2s infinite;
         }
+        /* 一時停止中のアイコンの色を定義 */
+        .paused i {
+            color: #3b82f6; /* Tailwindのblue-500の色 */
+        }
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.25); }
@@ -66,8 +70,8 @@
             <header class="text-center mb-8 flex-shrink-0">
                 <h1 class="text-3xl md:text-4xl font-bold text-gray-900 inline-flex items-center justify-center">
                     政策リサーチ政策関連情報一覧
-                    <span id="mainTitleAudioIcon" class="audio-icon text-blue-500 hover:text-blue-700 text-2xl md:text-3xl ml-3" title="クリック効果音">
-                        <i class="fas fa-volume-up"></i>
+                    <span id="main-audio-control" class="audio-icon text-blue-500 hover:text-blue-700 text-2xl md:text-3xl ml-3" title="音声コントロール">
+                        <i id="main-audio-icon-i" class="fas fa-volume-up"></i>
                     </span>
                 </h1>
                 <p class="text-base md:text-lg text-gray-600 mt-2">政策リサーチに関する記事や音声解説の一覧です。</p>
@@ -151,7 +155,8 @@
         const uploadError = document.getElementById('upload-error');
         const searchInput = document.getElementById('searchInput');
         const clearSearchButton = document.getElementById('clearSearchButton');
-        const mainTitleAudioIcon = document.getElementById('mainTitleAudioIcon');
+        const mainAudioControl = document.getElementById('main-audio-control');
+        const mainAudioIconI = document.getElementById('main-audio-icon-i');
         const tableBody = document.getElementById('data-table-body');
         const tableHeader = document.getElementById('table-header');
         const loadingIndicator = document.getElementById('loading');
@@ -186,6 +191,32 @@
         }
 
         /**
+         * ヘッダーのメイン音声コントロールアイコンの状態を更新します。
+         * @param {'playing' | 'paused' | 'stopped'} state - 現在の音声状態
+         */
+        function updateMainAudioIcon(state) {
+            mainAudioIconI.classList.remove('fa-volume-up', 'fa-play', 'fa-pause');
+            mainAudioControl.classList.remove('playing');
+
+            switch (state) {
+                case 'playing':
+                    mainAudioIconI.classList.add('fa-pause');
+                    mainAudioControl.classList.add('playing');
+                    mainAudioControl.title = "一時停止";
+                    break;
+                case 'paused':
+                    mainAudioIconI.classList.add('fa-play');
+                    mainAudioControl.title = "再生";
+                    break;
+                case 'stopped':
+                default:
+                    mainAudioIconI.classList.add('fa-volume-up');
+                    mainAudioControl.title = "音声コントロール";
+                    break;
+            }
+        }
+        
+        /**
          * 指定されたアイコンの音声再生を開始します。
          * @param {HTMLElement} icon - 再生を開始するアイコン要素
          */
@@ -195,12 +226,11 @@
             if (!audioSrc) return;
 
             if (currentlyPlayingIcon) {
-                currentlyPlayingIcon.classList.remove('playing');
+                currentlyPlayingIcon.classList.remove('playing', 'paused');
             }
             audioPlayer.src = audioSrc;
             audioPlayer.play().catch(e => console.error("Audio play failed:", e));
             currentlyPlayingIcon = icon;
-            icon.classList.add('playing');
         }
 
         /**
@@ -208,8 +238,12 @@
          */
         function toggleAudioPlayback(clickedIcon) {
             playCrackSound();
-            if (currentlyPlayingIcon === clickedIcon && !audioPlayer.paused) {
-                audioPlayer.pause();
+            if (currentlyPlayingIcon === clickedIcon) {
+                if (audioPlayer.paused) {
+                    audioPlayer.play();
+                } else {
+                    audioPlayer.pause();
+                }
             } else {
                 startPlaybackForIcon(clickedIcon);
             }
@@ -276,38 +310,23 @@
 
                 if (key === 'default') {
                     // デフォルトの複数レベルソート
-                    // 1. 日付 (降順)
                     const dateA = a['日付'] ? new Date(a['日付']) : null;
                     const dateB = b['日付'] ? new Date(b['日付']) : null;
-                    if (dateA && dateB && dateA.getTime() !== dateB.getTime()) {
-                        return dateB - dateA;
-                    }
-
-                    // 2. 会議日 (降順)
+                    if (dateA && dateB && dateA.getTime() !== dateB.getTime()) return dateB - dateA;
                     const meetingDateA = a['開催日'] ? new Date(a['開催日']) : null;
                     const meetingDateB = b['開催日'] ? new Date(b['開催日']) : null;
-                    if (meetingDateA && meetingDateB && meetingDateA.getTime() !== meetingDateB.getTime()) {
-                        return meetingDateB - meetingDateA;
-                    }
-
-                    // 3. 政策関連情報概要 (昇順)
-                    const titleA = a['タイトル名'] || '';
-                    const titleB = b['タイトル名'] || '';
-                    return titleA.localeCompare(titleB, 'ja');
+                    if (meetingDateA && meetingDateB && meetingDateA.getTime() !== meetingDateB.getTime()) return meetingDateB - meetingDateA;
+                    return (a['タイトル名'] || '').localeCompare(b['タイトル名'] || '', 'ja');
                 } else {
                     // ヘッダークリックによる単一レベルソート
                     const modifier = direction === 'asc' ? 1 : -1;
                     const isDateKey = key === '日付' || key === '開催日';
-
                     const valA = a[key] || '';
                     const valB = b[key] || '';
-                    
                     if (isDateKey) {
                         const dateA = valA ? new Date(valA) : null;
                         const dateB = valB ? new Date(valB) : null;
-                        if (!dateA && !dateB) return 0;
-                        if (!dateA) return 1;
-                        if (!dateB) return -1;
+                        if (!dateA && !dateB) return 0; if (!dateA) return 1; if (!dateB) return -1;
                         return (dateA - dateB) * modifier;
                     } else {
                         return valA.localeCompare(valB, 'ja') * modifier;
@@ -415,14 +434,15 @@
             
             const exportedAppLogic = function(APP_DATA) {
                 let audioContext, currentlyPlayingIcon = null, currentData = [...APP_DATA.tableData], sortState = { ...APP_DATA.initialSortState };
-                const audioPlayer = document.getElementById('audioPlayer'), tableBody = document.getElementById('data-table-body'), loadingIndicator = document.getElementById('loading'), dataCountDisplay = document.getElementById('dataCountDisplay'), searchInput = document.getElementById('searchInput'), clearSearchButton = document.getElementById('clearSearchButton'), tableHeader = document.getElementById('table-header');
+                const audioPlayer = document.getElementById('audioPlayer'), tableBody = document.getElementById('data-table-body'), loadingIndicator = document.getElementById('loading'), dataCountDisplay = document.getElementById('dataCountDisplay'), searchInput = document.getElementById('searchInput'), clearSearchButton = document.getElementById('clearSearchButton'), tableHeader = document.getElementById('table-header'), mainAudioControl = document.getElementById('main-audio-control'), mainAudioIconI = document.getElementById('main-audio-icon-i');
                 const ABBREVIATIONS = APP_DATA.abbreviations;
 
                 function playCrackSound() { if (!audioContext) { try { audioContext = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { console.error('AudioContext not supported', e); return; } } if (audioContext.state === 'suspended') { audioContext.resume(); } const bufferSize = audioContext.sampleRate * 0.1; const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate); const output = buffer.getChannelData(0); for (let i = 0; i < bufferSize; i++) { output[i] = (Math.random() * 2 - 1) * 0.5; } const source = audioContext.createBufferSource(); source.buffer = buffer; const gainNode = audioContext.createGain(); gainNode.gain.setValueAtTime(0.5, audioContext.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.08); source.connect(gainNode); gainNode.connect(audioContext.destination); source.start(0); }
-                function startPlaybackForIcon(icon) { if (!icon) return; const audioSrc = icon.dataset.src; if (!audioSrc) return; if (currentlyPlayingIcon) { currentlyPlayingIcon.classList.remove('playing'); } audioPlayer.src = audioSrc; audioPlayer.play().catch(e => console.error("Audio play failed:", e)); currentlyPlayingIcon = icon; icon.classList.add('playing'); }
-                function toggleAudioPlayback(clickedIcon) { playCrackSound(); if (currentlyPlayingIcon === clickedIcon && !audioPlayer.paused) { audioPlayer.pause(); } else { startPlaybackForIcon(clickedIcon); } }
+                function updateMainAudioIcon(state) { mainAudioIconI.classList.remove('fa-volume-up', 'fa-play', 'fa-pause'); mainAudioControl.classList.remove('playing'); switch (state) { case 'playing': mainAudioIconI.classList.add('fa-pause'); mainAudioControl.classList.add('playing'); mainAudioControl.title = "一時停止"; break; case 'paused': mainAudioIconI.classList.add('fa-play'); mainAudioControl.title = "再生"; break; case 'stopped': default: mainAudioIconI.classList.add('fa-volume-up'); mainAudioControl.title = "音声コントロール"; break; } }
+                function startPlaybackForIcon(icon) { if (!icon) return; const audioSrc = icon.dataset.src; if (!audioSrc) return; if (currentlyPlayingIcon) { currentlyPlayingIcon.classList.remove('playing', 'paused'); } audioPlayer.src = audioSrc; audioPlayer.play().catch(e => console.error("Audio play failed:", e)); currentlyPlayingIcon = icon; }
+                function toggleAudioPlayback(clickedIcon) { playCrackSound(); if (currentlyPlayingIcon === clickedIcon) { if (audioPlayer.paused) { audioPlayer.play(); } else { audioPlayer.pause(); } } else { startPlaybackForIcon(clickedIcon); } }
                 function filterData(data, searchQuery) { if (!searchQuery) return data; const lowerCaseSearchQuery = searchQuery.toLowerCase().trim(); const searchTerms = new Set([lowerCaseSearchQuery]); const abbreviation = ABBREVIATIONS[searchQuery.trim()]; if (abbreviation) { searchTerms.add(abbreviation.toLowerCase()); } for (const [full, abbr] of Object.entries(ABBREVIATIONS)) { if (abbr.toLowerCase() === lowerCaseSearchQuery) { searchTerms.add(full.toLowerCase()); } } return data.filter(item => { const title = item['タイトル名'] || ''; const bikou = item['備考'] || ''; const date = item['日付'] || ''; const kaigiDate = item['開催日'] || ''; const contentToSearch = `${title} ${bikou} ${date} ${kaigiDate}`.toLowerCase(); return Array.from(searchTerms).some(term => contentToSearch.includes(term)); }); }
-                function sortData(data) { const { key, direction } = sortState; data.sort((a, b) => { if (a.isBookmarked !== b.isBookmarked) return b.isBookmarked - a.isBookmarked; if (key === 'default') { const dateA = a['日付'] ? new Date(a['日付']) : null; const dateB = b['日付'] ? new Date(b['日付']) : null; if (dateA && dateB && dateA.getTime() !== dateB.getTime()) { return dateB - dateA; } const meetingDateA = a['開催日'] ? new Date(a['開催日']) : null; const meetingDateB = b['開催日'] ? new Date(b['開催日']) : null; if (meetingDateA && meetingDateB && meetingDateA.getTime() !== meetingDateB.getTime()) { return meetingDateB - meetingDateA; } const titleA = a['タイトル名'] || ''; const titleB = b['タイトル名'] || ''; return titleA.localeCompare(titleB, 'ja'); } else { const modifier = direction === 'asc' ? 1 : -1; const isDateKey = key === '日付' || key === '開催日'; const valA = a[key] || ''; const valB = b[key] || ''; if (isDateKey) { const dateA = valA ? new Date(valA) : null; const dateB = valB ? new Date(valB) : null; if (!dateA && !dateB) return 0; if (!dateA) return 1; if (!dateB) return -1; return (dateA - dateB) * modifier; } else { return valA.localeCompare(valB, 'ja') * modifier; } } }); }
+                function sortData(data) { const { key, direction } = sortState; data.sort((a, b) => { if (a.isBookmarked !== b.isBookmarked) return b.isBookmarked - a.isBookmarked; if (key === 'default') { const dateA = a['日付'] ? new Date(a['日付']) : null; const dateB = b['日付'] ? new Date(b['日付']) : null; if (dateA && dateB && dateA.getTime() !== dateB.getTime()) { return dateB - dateA; } const meetingDateA = a['開催日'] ? new Date(a['開催日']) : null; const meetingDateB = b['開催日'] ? new Date(b['開催日']) : null; if (meetingDateA && meetingDateB && meetingDateA.getTime() !== meetingDateB.getTime()) { return meetingDateB - meetingDateA; } return (a['タイトル名'] || '').localeCompare(b['タイトル名'] || '', 'ja'); } else { const modifier = direction === 'asc' ? 1 : -1; const isDateKey = key === '日付' || key === '開催日'; const valA = a[key] || ''; const valB = b[key] || ''; if (isDateKey) { const dateA = valA ? new Date(valA) : null; const dateB = valB ? new Date(valB) : null; if (!dateA && !dateB) return 0; if (!dateA) return 1; if (!dateB) return -1; return (dateA - dateB) * modifier; } else { return valA.localeCompare(valB, 'ja') * modifier; } } }); }
                 function updateSortIcons() { document.querySelectorAll('.sortable-header').forEach(header => { header.classList.remove('asc', 'desc'); if (header.dataset.sortKey === sortState.key) { header.classList.add(sortState.direction); } }); }
                 function createTableRow(item) { const date = item['日付'] || ''; const kaigiDate = item['開催日'] || ''; const originalTitle = item['タイトル名'] || 'タイトルなし'; let displayTitle = originalTitle; const url2 = String(item['URL2'] || ''); let bikou = item['備考'] || ''; if (bikou.includes('（更新）')) { bikou = bikou.replace(/（更新）/g, '<span class="text-red-500 font-bold">（更新）</span>'); } if (displayTitle.includes('（更新）')) { displayTitle = displayTitle.replace(/（更新）/g, '<span class="text-red-500 font-bold">（更新）</span>'); } const today = new Date().toLocaleDateString('ja-JP', {year: 'numeric', month: '2-digit', day: '2-digit'}); const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('ja-JP', {year: 'numeric', month: '2-digit', day: '2-digit'}); let dateClass = 'text-gray-900'; if (date === today) dateClass = 'text-red-500 font-bold'; else if (date === yesterday) dateClass = 'text-red-500'; let titlePrefixHtml = ''; if (item['会議'] === '会議') { titlePrefixHtml = '<span class="inline-block bg-purple-100 text-purple-800 text-xs font-bold mr-3 px-2.5 py-1 rounded-full flex-shrink-0">会議</span>'; } else if (url2) { titlePrefixHtml = url2.toLowerCase().includes('.pdf') ? '<span class="inline-block bg-red-100 text-red-800 text-xs font-bold mr-3 px-2.5 py-1 rounded-full flex-shrink-0">PDF</span>' : '<span class="inline-block bg-blue-100 text-blue-800 text-xs font-bold mr-3 px-2.5 py-1 rounded-full flex-shrink-0">WEB</span>'; } const audioIconHtml = item['URL1'] ? `<span data-src="${item['URL1']}" title="音声を再生" aria-label="音声を再生" class="audio-icon text-gray-600 hover:text-blue-600 text-lg"><i class="fas fa-volume-up"></i></span>` : ''; const row = document.createElement('tr'); row.className = 'hover:bg-gray-50 transition-colors duration-200'; row.innerHTML = `<td class="w-12 sm:w-16 px-2 py-3 text-sm text-center"><input type="checkbox" class="bookmark-checkbox form-checkbox h-4 w-4 text-blue-600 rounded cursor-pointer" data-index="${item._originalIndex}" ${item.isBookmarked ? 'checked' : ''} aria-label="ブックマーク"></td><td class="w-24 sm:w-28 px-2 py-3 text-sm"><p class="whitespace-nowrap ${dateClass}">${date}</p></td><td class="kaigi-date-col w-24 sm:w-28 px-2 py-3 text-sm"><p class="whitespace-nowrap text-gray-900">${kaigiDate}</p></td><td class="px-2 py-3 text-sm min-w-0"><div><div class="flex items-center">${titlePrefixHtml}<a href="${url2 || '#'}" target="_blank" rel="noopener noreferrer" class="text-blue-600 font-bold hover:underline" title="${originalTitle}">${displayTitle}</a></div><p class="text-xs text-gray-500 mt-1">${bikou}</p></div></td><td class="w-12 sm:w-16 px-2 py-3 text-sm text-center">${audioIconHtml}</td>`; return row; }
                 function renderTable() { const searchQuery = searchInput.value; let dataToRender = [...currentData]; dataToRender = filterData(dataToRender, searchQuery); sortData(dataToRender); updateSortIcons(); tableBody.innerHTML = ''; loadingIndicator.style.display = 'none'; dataCountDisplay.innerHTML = `${dataToRender.length}件 (${APP_DATA.lastUpdate} 更新)`; if (dataToRender.length === 0) { loadingIndicator.textContent = '該当データがありません。'; loadingIndicator.style.display = 'block'; } else { const fragment = document.createDocumentFragment(); dataToRender.forEach(item => fragment.appendChild(createTableRow(item))); tableBody.appendChild(fragment); } }
@@ -431,18 +451,19 @@
                     let searchTimeout;
                     searchInput.addEventListener('keyup', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => renderTable(), 300); });
                     clearSearchButton.addEventListener('click', () => { searchInput.value = ''; renderTable(); });
+                    mainAudioControl.addEventListener('click', () => { playCrackSound(); if (!audioPlayer.src || audioPlayer.ended) return; if (audioPlayer.paused) { audioPlayer.play(); } else { audioPlayer.pause(); } });
                     tableHeader.addEventListener('click', e => { const header = e.target.closest('.sortable-header'); if (!header) return; const key = header.dataset.sortKey; if (sortState.key === key) { sortState.direction = sortState.direction === 'asc' ? 'desc' : 'asc'; } else { sortState.key = key; sortState.direction = (key === '日付' || key === '開催日') ? 'desc' : 'asc'; } renderTable(); });
                     tableBody.addEventListener('click', e => { const target = e.target; if (target.classList.contains('bookmark-checkbox')) { const originalIndex = parseInt(target.dataset.index, 10); const item = currentData.find(d => d._originalIndex === originalIndex); if (item) { item.isBookmarked = target.checked; renderTable(); } } const audioIcon = target.closest('.audio-icon'); if (audioIcon) { toggleAudioPlayback(audioIcon); } });
-                    audioPlayer.addEventListener('play', () => { if (currentlyPlayingIcon) currentlyPlayingIcon.classList.add('playing'); });
-                    audioPlayer.addEventListener('pause', () => { if (currentlyPlayingIcon) currentlyPlayingIcon.classList.remove('playing'); });
-                    audioPlayer.addEventListener('ended', () => { if (!currentlyPlayingIcon) return; const currentRow = currentlyPlayingIcon.closest('tr'); if (!currentRow) return; let nextRow = currentRow.nextElementSibling; let nextAudioIcon = null; while(nextRow) { const icon = nextRow.querySelector('.audio-icon[data-src]'); if (icon) { nextAudioIcon = icon; break; } nextRow = nextRow.nextElementSibling; } if (nextAudioIcon) { startPlaybackForIcon(nextAudioIcon); } else { currentlyPlayingIcon.classList.remove('playing'); currentlyPlayingIcon = null; } });
+                    audioPlayer.addEventListener('play', () => { if (currentlyPlayingIcon) { currentlyPlayingIcon.classList.remove('paused'); currentlyPlayingIcon.classList.add('playing'); } updateMainAudioIcon('playing'); });
+                    audioPlayer.addEventListener('pause', () => { if (currentlyPlayingIcon) { currentlyPlayingIcon.classList.remove('playing'); currentlyPlayingIcon.classList.add('paused'); } updateMainAudioIcon('paused'); });
+                    audioPlayer.addEventListener('ended', () => { if (!currentlyPlayingIcon) return; const currentRow = currentlyPlayingIcon.closest('tr'); if (!currentRow) return; let nextRow = currentRow.nextElementSibling; let nextAudioIcon = null; while(nextRow) { const icon = nextRow.querySelector('.audio-icon[data-src]'); if (icon) { nextAudioIcon = icon; break; } nextRow = nextRow.nextElementSibling; } if (nextAudioIcon) { startPlaybackForIcon(nextAudioIcon); } else { currentlyPlayingIcon.classList.remove('playing', 'paused'); currentlyPlayingIcon = null; updateMainAudioIcon('stopped'); } });
                 });
             };
             
             const dataForExport = { tableData: currentData, abbreviations: ABBREVIATIONS, lastUpdate: lastUploadTimestamp, initialSortState: sortState };
             const exportedScript = `(${exportedAppLogic.toString()})(${JSON.stringify(dataForExport)});`;
 
-            const htmlContent = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>政策リサーチ政策関連情報一覧 - 出力結果</title><script src="https://cdn.tailwindcss.com"><\/script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"><style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap');body { font-family: 'Inter', 'Noto Sans JP', sans-serif; } .audio-icon { cursor: pointer; } .playing i { color: #3b82f6; animation: pulse 1.2s infinite; } @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.25); } 100% { transform: scale(1); } } .hide-kaigi-date .kaigi-date-col { display: none; } .sortable-header { cursor: pointer; user-select: none; } .sortable-header:hover { background-color: #4a5568; } .sort-icon { margin-left: 0.5rem; color: #a0aec0; width: 1em; display: inline-block; } .sortable-header.asc .sort-icon::after { content: '▲'; } .sortable-header.desc .sort-icon::after { content: '▼'; }</style></head><body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen"><div class="container mx-auto px-4 py-8 flex-grow flex flex-col"><header class="text-center mb-8 flex-shrink-0"><h1 class="text-3xl md:text-4xl font-bold text-gray-900">政策リサーチ政策関連情報一覧</h1></header><main class="flex-grow flex flex-col"><header class="flex-shrink-0 flex flex-col sm:flex-row justify-between items-end mb-4 gap-4"><div class="flex flex-col sm:flex-row items-center w-full sm:justify-start gap-2"><input type="text" id="searchInput" placeholder="検索（省庁名は略称でも可）" class="border border-gray-300 p-2 rounded-lg w-full sm:w-80 focus:ring-blue-500 focus:border-blue-500"><button id="clearSearchButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors"><i class="fas fa-times mr-2"></i><span>クリア</span></button></div><div id="dataCountDisplay" class="text-gray-600 text-sm w-full sm:w-auto text-center sm:text-right flex-shrink-0"></div></header><div id="results-table-container" class="bg-white shadow-lg rounded-lg overflow-auto flex-grow"><table class="min-w-full leading-normal table-fixed ${!hasKaigiDateColumn ? 'hide-kaigi-date' : ''}"><thead id="table-header" class="bg-gray-800 text-white sticky top-0 z-10"><tr><th class="w-12 sm:w-16 px-2 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold uppercase tracking-wider" title="ブックマーク"><i class="fas fa-bookmark"></i></th><th class="w-24 sm:w-28 px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider sortable-header" data-sort-key="日付">日付<span class="sort-icon"></span></th><th class="kaigi-date-col w-24 sm:w-28 px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider sortable-header" data-sort-key="開催日">会議日<span class="sort-icon"></span></th><th class="px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider sortable-header" data-sort-key="タイトル名">政策関連情報概要<span class="sort-icon"></span></th><th class="w-12 sm:w-16 px-2 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold uppercase tracking-wider" title="音声"><i class="fas fa-volume-up"></i></th></tr></thead><tbody id="data-table-body" class="divide-y divide-gray-200"></tbody></table><div id="loading" class="text-center p-8 text-gray-500"></div></div></main><footer class="text-center mt-8 text-gray-500 flex-shrink-0"><p>&copy; ${new Date().getFullYear()} 政策リサーチポータル. All rights reserved.</p></footer></div><audio id="audioPlayer" style="display: none;"></audio><script>${exportedScript.replace(/<\/script>/g, '<\\/script>')}<\/script></body></html>`;
+            const htmlContent = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>政策リサーチ政策関連情報一覧 - 出力結果</title><script src="https://cdn.tailwindcss.com"><\/script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"><style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+JP:wght@400;700&display=swap');body { font-family: 'Inter', 'Noto Sans JP', sans-serif; } .audio-icon { cursor: pointer; } .playing i { color: #3b82f6; animation: pulse 1.2s infinite; } .paused i { color: #3b82f6; } @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.25); } 100% { transform: scale(1); } } .hide-kaigi-date .kaigi-date-col { display: none; } .sortable-header { cursor: pointer; user-select: none; } .sortable-header:hover { background-color: #4a5568; } .sort-icon { margin-left: 0.5rem; color: #a0aec0; width: 1em; display: inline-block; } .sortable-header.asc .sort-icon::after { content: '▲'; } .sortable-header.desc .sort-icon::after { content: '▼'; }</style></head><body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen"><div class="container mx-auto px-4 py-8 flex-grow flex flex-col"><header class="text-center mb-8 flex-shrink-0"><h1 class="text-3xl md:text-4xl font-bold text-gray-900 inline-flex items-center justify-center">政策リサーチ政策関連情報一覧<span id="main-audio-control" class="audio-icon text-blue-500 hover:text-blue-700 text-2xl md:text-3xl ml-3" title="音声コントロール"><i id="main-audio-icon-i" class="fas fa-volume-up"></i></span></h1></header><main class="flex-grow flex flex-col"><header class="flex-shrink-0 flex flex-col sm:flex-row justify-between items-end mb-4 gap-4"><div class="flex flex-col sm:flex-row items-center w-full sm:justify-start gap-2"><input type="text" id="searchInput" placeholder="検索（省庁名は略称でも可）" class="border border-gray-300 p-2 rounded-lg w-full sm:w-80 focus:ring-blue-500 focus:border-blue-500"><button id="clearSearchButton" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg inline-flex items-center justify-center transition-colors"><i class="fas fa-times mr-2"></i><span>クリア</span></button></div><div id="dataCountDisplay" class="text-gray-600 text-sm w-full sm:w-auto text-center sm:text-right flex-shrink-0"></div></header><div id="results-table-container" class="bg-white shadow-lg rounded-lg overflow-auto flex-grow"><table class="min-w-full leading-normal table-fixed ${!hasKaigiDateColumn ? 'hide-kaigi-date' : ''}"><thead id="table-header" class="bg-gray-800 text-white sticky top-0 z-10"><tr><th class="w-12 sm:w-16 px-2 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold uppercase tracking-wider" title="ブックマーク"><i class="fas fa-bookmark"></i></th><th class="w-24 sm:w-28 px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider sortable-header" data-sort-key="日付">日付<span class="sort-icon"></span></th><th class="kaigi-date-col w-24 sm:w-28 px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider sortable-header" data-sort-key="開催日">会議日<span class="sort-icon"></span></th><th class="px-2 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold uppercase tracking-wider sortable-header" data-sort-key="タイトル名">政策関連情報概要<span class="sort-icon"></span></th><th class="w-12 sm:w-16 px-2 py-3 border-b-2 border-gray-200 text-center text-xs font-semibold uppercase tracking-wider" title="音声"><i class="fas fa-volume-up"></i></th></tr></thead><tbody id="data-table-body" class="divide-y divide-gray-200"></tbody></table><div id="loading" class="text-center p-8 text-gray-500"></div></div></main><footer class="text-center mt-8 text-gray-500 flex-shrink-0"><p>&copy; ${new Date().getFullYear()} 政策リサーチポータル. All rights reserved.</p></footer></div><audio id="audioPlayer" style="display: none;"></audio><script>${exportedScript.replace(/<\/script>/g, '<\\/script>')}<\/script></body></html>`;
 
             const blob = new Blob([htmlContent.trim()], { type: 'text/html;charset=utf-8' });
             const url = URL.createObjectURL(blob);
@@ -466,7 +487,16 @@
             let searchTimeout;
             searchInput.addEventListener('keyup', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => renderTable(), 300); });
             clearSearchButton.addEventListener('click', () => { searchInput.value = ''; renderTable(); });
-            mainTitleAudioIcon.addEventListener('click', playCrackSound);
+            
+            mainAudioControl.addEventListener('click', () => {
+                playCrackSound();
+                if (!audioPlayer.src || audioPlayer.ended) return;
+                if (audioPlayer.paused) {
+                    audioPlayer.play();
+                } else {
+                    audioPlayer.pause();
+                }
+            });
             
             tableHeader.addEventListener('click', e => {
                 const header = e.target.closest('.sortable-header');
@@ -491,33 +521,40 @@
                 const audioIcon = target.closest('.audio-icon');
                 if (audioIcon) { toggleAudioPlayback(audioIcon); }
             });
-            audioPlayer.addEventListener('play', () => { if (currentlyPlayingIcon) currentlyPlayingIcon.classList.add('playing'); });
-            audioPlayer.addEventListener('pause', () => { if (currentlyPlayingIcon) currentlyPlayingIcon.classList.remove('playing'); });
+            audioPlayer.addEventListener('play', () => {
+                if (currentlyPlayingIcon) {
+                    currentlyPlayingIcon.classList.remove('paused');
+                    currentlyPlayingIcon.classList.add('playing');
+                }
+                updateMainAudioIcon('playing');
+            });
+            audioPlayer.addEventListener('pause', () => {
+                if (currentlyPlayingIcon) {
+                    currentlyPlayingIcon.classList.remove('playing');
+                    currentlyPlayingIcon.classList.add('paused');
+                }
+                updateMainAudioIcon('paused');
+            });
             audioPlayer.addEventListener('ended', () => {
                 if (!currentlyPlayingIcon) return;
                 const currentRow = currentlyPlayingIcon.closest('tr');
                 if (!currentRow) return;
-
                 let nextRow = currentRow.nextElementSibling;
                 let nextAudioIcon = null;
-
                 while(nextRow) {
                     const icon = nextRow.querySelector('.audio-icon[data-src]');
-                    if (icon) {
-                        nextAudioIcon = icon;
-                        break;
-                    }
+                    if (icon) { nextAudioIcon = icon; break; }
                     nextRow = nextRow.nextElementSibling;
                 }
-
                 if (nextAudioIcon) {
                     startPlaybackForIcon(nextAudioIcon);
                 } else {
-                    currentlyPlayingIcon.classList.remove('playing');
+                    currentlyPlayingIcon.classList.remove('playing', 'paused');
                     currentlyPlayingIcon = null;
+                    updateMainAudioIcon('stopped');
                 }
             });
-            audioPlayer.addEventListener('error', () => { if (currentlyPlayingIcon) { currentlyPlayingIcon.classList.remove('playing'); currentlyPlayingIcon = null; } alert('音声ファイルの読み込みに失敗しました。'); });
+            audioPlayer.addEventListener('error', () => { if (currentlyPlayingIcon) { currentlyPlayingIcon.classList.remove('playing', 'paused'); currentlyPlayingIcon = null; } updateMainAudioIcon('stopped'); alert('音声ファイルの読み込みに失敗しました。'); });
         }
 
         // --- 初期化 ---
