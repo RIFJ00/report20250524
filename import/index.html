@@ -456,7 +456,7 @@
                     tableBody.addEventListener('click', e => { const target = e.target; if (target.classList.contains('bookmark-checkbox')) { const originalIndex = parseInt(target.dataset.index, 10); const item = currentData.find(d => d._originalIndex === originalIndex); if (item) { item.isBookmarked = target.checked; renderTable(); } } const audioIcon = target.closest('.audio-icon'); if (audioIcon) { toggleAudioPlayback(audioIcon); } });
                     audioPlayer.addEventListener('play', () => { if (currentlyPlayingIcon) { currentlyPlayingIcon.classList.remove('paused'); currentlyPlayingIcon.classList.add('playing'); } updateMainAudioIcon('playing'); });
                     audioPlayer.addEventListener('pause', () => { if (currentlyPlayingIcon) { currentlyPlayingIcon.classList.remove('playing'); currentlyPlayingIcon.classList.add('paused'); } updateMainAudioIcon('paused'); });
-                    audioPlayer.addEventListener('ended', () => { if (!currentlyPlayingIcon) return; const currentRow = currentlyPlayingIcon.closest('tr'); if (!currentRow) return; let nextRow = currentRow.nextElementSibling; let nextAudioIcon = null; while(nextRow) { const icon = nextRow.querySelector('.audio-icon[data-src]'); if (icon) { nextAudioIcon = icon; break; } nextRow = nextRow.nextElementSibling; } if (nextAudioIcon) { startPlaybackForIcon(nextAudioIcon); } else { currentlyPlayingIcon.classList.remove('playing', 'paused'); currentlyPlayingIcon = null; updateMainAudioIcon('stopped'); } });
+                    audioPlayer.addEventListener('ended', () => { if (!currentlyPlayingIcon) return; const currentRow = currentlyPlayingIcon.closest('tr'); currentlyPlayingIcon.classList.remove('playing', 'paused'); if (!currentRow) { currentlyPlayingIcon = null; updateMainAudioIcon('stopped'); return; } let nextRow = currentRow.nextElementSibling; let nextAudioIcon = null; while(nextRow) { const icon = nextRow.querySelector('.audio-icon[data-src]'); if (icon) { nextAudioIcon = icon; break; } nextRow = nextRow.nextElementSibling; } if (nextAudioIcon) { setTimeout(() => { startPlaybackForIcon(nextAudioIcon); }, 3000); } else { currentlyPlayingIcon = null; updateMainAudioIcon('stopped'); } });
                 });
             };
             
@@ -538,18 +538,30 @@
             audioPlayer.addEventListener('ended', () => {
                 if (!currentlyPlayingIcon) return;
                 const currentRow = currentlyPlayingIcon.closest('tr');
-                if (!currentRow) return;
+                currentlyPlayingIcon.classList.remove('playing', 'paused');
+
+                if (!currentRow) {
+                    currentlyPlayingIcon = null;
+                    updateMainAudioIcon('stopped');
+                    return;
+                }
+                
                 let nextRow = currentRow.nextElementSibling;
                 let nextAudioIcon = null;
                 while(nextRow) {
                     const icon = nextRow.querySelector('.audio-icon[data-src]');
-                    if (icon) { nextAudioIcon = icon; break; }
+                    if (icon) {
+                        nextAudioIcon = icon;
+                        break;
+                    }
                     nextRow = nextRow.nextElementSibling;
                 }
+
                 if (nextAudioIcon) {
-                    startPlaybackForIcon(nextAudioIcon);
+                    setTimeout(() => {
+                        startPlaybackForIcon(nextAudioIcon);
+                    }, 3000); // 3秒の空白
                 } else {
-                    currentlyPlayingIcon.classList.remove('playing', 'paused');
                     currentlyPlayingIcon = null;
                     updateMainAudioIcon('stopped');
                 }
@@ -568,4 +580,3 @@
     </script>
 </body>
 </html>
-
