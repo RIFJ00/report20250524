@@ -77,6 +77,7 @@
                 <button class="tab-button px-4 py-2" data-tab="economic-policies">主要な公約</button>
                 <button class="tab-button px-4 py-2" data-tab="summary">総括と提言</button>
                 <button class="tab-button px-4 py-2" data-tab="ai-analysis">AI分析</button>
+                <button class="tab-button px-4 py-2" data-tab="results-summary">選挙結果総括</button>
             </div>
         </div>
 
@@ -748,6 +749,84 @@
                 </a>
                 <p class="text-xs text-gray-500 mt-4">（felo.ai のページが新しいタブで開きます）</p>
             </div>
+            
+            <!-- 選挙結果総括タブ -->
+            <div id="results-summary" class="tab-content hidden p-4">
+                <h3 class="text-xl font-semibold mb-6 text-gray-700">選挙結果総括とシミュレーション比較</h3>
+
+                <div class="mb-8 overflow-x-auto">
+                    <h4 class="font-medium mb-2 text-gray-700">予測と結果の比較</h4>
+                    <table class="min-w-full bg-white border border-gray-200 text-sm">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="py-2 px-3 border-b text-left font-semibold">政党名</th>
+                                <th class="py-2 px-3 border-b text-center font-semibold">予測 (ベースライン)</th>
+                                <th class="py-2 px-3 border-b text-center font-semibold">予測 (悲観シナリオ)</th>
+                                <th class="py-2 px-3 border-b text-center font-semibold bg-blue-50">実際の結果</th>
+                                <th class="py-2 px-3 border-b text-center font-semibold">差異 (vs ベースライン)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-comparison-table">
+                            </tbody>
+                    </table>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="font-medium text-green-700 mb-2">的中した点</h4>
+                        <ul class="list-disc pl-5 space-y-2 text-sm text-gray-700 bg-green-50 p-4 rounded-lg">
+                            <li>与党（自民・公明）が改選過半数を割り込むという大きな潮流を正確に予測した。</li>
+                            <li>既成政党への不満の受け皿として、国民民主党や参政党といった「第3極」が大きく躍進する構図を捉えることができた。</li>
+                            <li>立憲民主党が与党への批判票の受け皿になりきれず、議席が伸び悩む展開を予測できた。</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-red-700 mb-2">課題となった点</h4>
+                        <ul class="list-disc pl-5 space-y-2 text-sm text-gray-700 bg-red-50 p-4 rounded-lg">
+                            <li>自民党の敗北は想定していたものの、実際の結果（39議席）はベースライン予測（40議席）をも下回る厳しいものであった。</li>
+                            <li>国民民主党（17議席）と参政党（14議席）の躍進は、シミュレーションの想定（それぞれ15議席、12議席）をさらに上回る規模であった。</li>
+                            <li>れいわ新選組の議席を過大評価（予測6議席に対し結果3議席）し、日本維新の会を過小評価（予測6議席に対し結果7議席）するなど、第3極内での力学の読み違いがあった。</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-medium text-blue-800 mb-2">全体の総括</h4>
+                        <div class="text-sm text-gray-800 space-y-3 bg-blue-50 p-4 rounded-lg">
+                            <p>今回のシミュレーションは、「自民党の一強体制が揺らぎ、政治が多極化する」というマクロなトレンドを正確に捉えることができた。特に、選挙前の段階で「悲観シナリオ」として提示した議席予測が、実際の結果に非常に近いものとなった点は、情勢の厳しい見方が現実的であったことを示している。</p>
+                            <p>一方で、個別の政党、特に躍進した第3極の中での議席配分の予測には課題が残った。これは、従来の政党支持の枠組みを超えた、有権者の新しい選択の動きを完全にモデル化することの難しさを示唆している。今後は、無党派層や特定の政策課題に強く反応する層の動向を、より精密に分析モデルに組み込むことが重要となるだろう。</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="mt-12 pt-8 border-t-4 border-dashed border-gray-300">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-700">今後の政治情勢レポート</h3>
+                     <div class="space-y-6 text-sm text-gray-800">
+                        <div>
+                            <h4 class="text-lg font-semibold text-slate-800 mb-2">一強時代の終焉と多極化時代の幕開け</h4>
+                            <p class="mb-3">参議院で自民党が単独過半数を失ったことは、日本の政治における歴史的な転換点となる。これにより、長らく続いた「自民一強」体制は事実上終焉を迎え、複数の勢力が拮抗する「多極化時代」へと本格的に移行する。今後は、国民民主党や参政党、日本維新の会といった第3極の勢力が、法案ごとに賛否を決めるキャスティングボートを握ることになり、国会運営はこれまで以上に複雑化・流動化することが必至である。</p>
+                        </div>
+
+                        <div>
+                            <h4 class="text-lg font-semibold text-slate-800 mb-3">過半数割れした自民党の今後の動向シミュレーション</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="p-4 bg-white rounded-lg shadow">
+                                    <h5 class="font-bold text-center mb-2">A) 国民民主党との連立・閣外協力</h5>
+                                    <p class="text-xs mb-2"><span class="font-semibold">確率:</span> 低</p>
+                                    <p class="text-xs">過半数回復のため、最も現実的な選択肢。国民民主党が掲げる減税や経済対策を受け入れる形で、部分連立や閣外協力を模索する。石破政権は当面維持されるが、政策の主導権の一部を譲渡することになり、党内保守派からの反発も予想される。</p>
+                                </div>
+                                <div class="p-4 bg-white rounded-lg shadow">
+                                    <h5 class="font-bold text-center mb-2">B) 少数与党での政権運営</h5>
+                                    <p class="text-xs mb-2"><span class="font-semibold">確率:</span> 中</p>
+                                    <p class="text-xs">連立協議が不調に終わった場合、少数与党のまま政権運営を続ける。重要法案の成立は極めて困難となり、野党や第3極の協力がなければ予算案の通過すら危ぶまれる。政権は常に行き詰まりのリスクを抱え、早期の衆院解散・総選挙につながる可能性が高い。</p>
+                                </div>
+                                <div class="p-4 bg-white rounded-lg shadow">
+                                    <h5 class="font-bold text-center mb-2">C) 党内抗争と総裁交代</h5>
+                                    <p class="text-xs mb-2"><span class="font-semibold">確率:</span> 高</p>
+                                    <p class="text-xs">選挙敗北の責任を取り、石破総理が退陣に追い込まれるシナリオ。党内は後継総裁を巡る権力闘争に突入し、政治的な空白が生まれる。新総裁の下で人心一新を図るが、党の分裂やさらなる支持率低下のリスクもはらむ。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         </div>
     </div>
@@ -757,7 +836,7 @@
     </footer>
 
     <script>
-        // === DATA DEFINITIONS (UPDATED July 7, 2025) ===
+        // === DATA DEFINITIONS (UPDATED July 21, 2025) ===
         // Reflects the trend of the Tokyo Metropolitan Assembly election results and user feedback.
         const baselineResults = [
             { party: '自由民主党', color: '#58A9F2', singleSeat: 27, proportionalSeat: 13, total: 40 },
@@ -781,6 +860,18 @@
             { party: '日本共産党', color: '#E57373', singleSeat: 2, proportionalSeat: 3, total: 5 },
             { party: 'れいわ新選組', color: '#FF8A65', singleSeat: 5, proportionalSeat: 2, total: 7 },
             { party: 'その他・無所属', color: '#90A4AE', singleSeat: 5, proportionalSeat: 4, total: 9 }, 
+        ];
+        
+        const actualElectionResults = [
+             { party: '自由民主党', seats: 39 },
+             { party: '公明党', seats: 8 },
+             { party: '国民民主党・新緑風会', seats: 17 },
+             { party: '立憲民主・社民・無所属', seats: 22 },
+             { party: '日本維新の会', seats: 7 },
+             { party: '参政党', seats: 14 },
+             { party: '日本共産党', seats: 3 },
+             { party: 'れいわ新選組', seats: 3 },
+             { party: 'その他・無所属', seats: 11 }, // 社民1 + 保守2 + 諸派1 + 無所属8
         ];
 
         // This data represents the CURRENT seats in the House of Councillors before the election.
@@ -888,10 +979,11 @@
 
         const calculatePowerBalance = (projectedData) => {
             const balance = {
-                '与党': { parties: ['自由民主党', '公明党'], seats: 0, nonReElect: 0, color: '#64B5F6' },
-                '第3極': { parties: ['国民民主党・新緑風会', '日本維新の会', '参政党', 'その他・無所属'], seats: 0, nonReElect: 0, color: '#4DB6AC'},
-                '野党': { parties: ['立憲民主・社民・無所属', '日本共産党', 'れいわ新選組'], seats: 0, nonReElect: 0, color: '#EF5350' },
+                '与党': { parties: ['自由民主党', '公明党'], seats: 0, reElectBefore: 0, nonReElect: 0, color: '#64B5F6' },
+                '第3極': { parties: ['国民民主党・新緑風会', '日本維新の会', '参政党', 'その他・無所属'], seats: 0, reElectBefore: 0, nonReElect: 0, color: '#4DB6AC'},
+                '野党': { parties: ['立憲民主・社民・無所属', '日本共産党', 'れいわ新選組'], seats: 0, reElectBefore: 0, nonReElect: 0, color: '#EF5350' },
             };
+            
             projectedData.forEach(p => {
                 for (const group in balance) {
                     if (balance[group].parties.includes(p.party)) {
@@ -902,6 +994,7 @@
              currentSeatsData.forEach(c => {
                 for (const group in balance) {
                     if (balance[group].parties.includes(c.party)) {
+                        balance[group].reElectBefore += c.reElect;
                         balance[group].nonReElect += c.nonReElect;
                     }
                 }
@@ -1293,21 +1386,18 @@
                     title: '与党（自民・公明）',
                     groupKey: '与党',
                     color: 'text-red-600',
-                    reElectBefore: 66,
                     desc: '都議選の結果を反映し、予測は大幅減。単独過半数は絶望的。'
                 },
                 {
                     title: '第3極（国民・維新・他）',
                     groupKey: '第3極',
                     color: 'text-teal-600',
-                    reElectBefore: 19,
                     desc: '選挙の主役となる勢力。選挙後の政局の鍵を握る。'
                 },
                 {
                     title: '野党（立憲・共産・れいわ）',
                     groupKey: '野党',
                     color: 'text-blue-600',
-                    reElectBefore: 32,
                     desc: '自民党への批判を吸収できず、第3極に存在感を奪われる形。'
                 }
             ];
@@ -1322,7 +1412,7 @@
                 <div class="p-4 bg-gray-100 rounded-lg shadow-sm text-center">
                     <h4 class="font-medium mb-3">${d.title}</h4>
                     <div class="text-5xl font-bold ${d.color} mb-2">${baselineContested}議席</div>
-                    <p class="text-sm text-gray-600">改選前: ${d.reElectBefore}議席</p>
+                    <p class="text-sm text-gray-600">改選前: ${baseline.reElectBefore}議席</p>
                     <p class="text-xs text-gray-500 mt-1">(非改選: ${baseline.nonReElect}議席 / 総計: ${baseline.seats}議席)</p>
                     <p class="mt-3 text-sm text-left">${d.desc}</p>
                     
@@ -1455,7 +1545,7 @@
                         else if (tabName === 'politics') { /* No chart rendering needed for this tab */ }
                         else if (tabName === 'summary') renderSummaryCharts();
                         else if (tabName === 'economic-policies') { /* No chart rendering needed for this tab */ }
-                        else if (tabName === 'situation-analysis') { /* No chart rendering needed for this tab */ }
+                        else if (tabName === 'results-summary') renderResultsSummaryTab();
                         else if (tabName === 'ai-analysis') { 
                             // AI Tab Specific Setup
                             const apiKeyInput = document.getElementById('api-key-input');
@@ -1503,6 +1593,38 @@
                     tab.classList.toggle('active', tab.dataset.tab === tabName);
                 });
             };
+            
+            const renderResultsSummaryTab = () => {
+                const tableBody = document.getElementById('results-comparison-table');
+                tableBody.innerHTML = ''; // Clear previous content
+
+                const allParties = [...new Set([
+                    ...baselineResults.map(p => p.party),
+                    ...pessimisticResults.map(p => p.party),
+                    ...actualElectionResults.map(p => p.party)
+                ])];
+                
+                allParties.forEach(partyName => {
+                    const baseline = baselineResults.find(p => p.party === partyName) || { total: '-' };
+                    const pessimistic = pessimisticResults.find(p => p.party === partyName) || { total: '-' };
+                    const actual = actualElectionResults.find(p => p.party === partyName) || { seats: '-' };
+                    const diff = (actual.seats !== '-' && baseline.total !== '-') ? actual.seats - baseline.total : '-';
+
+                    const diffColor = diff > 0 ? 'text-green-600' : (diff < 0 ? 'text-red-600' : 'text-gray-700');
+                    const diffSign = diff > 0 ? '+' : '';
+
+                    const row = `
+                        <tr class="hover:bg-gray-50 border-b">
+                            <td class="py-2 px-3 font-medium text-gray-900">${partyName}</td>
+                            <td class="py-2 px-3 text-center">${baseline.total}</td>
+                            <td class="py-2 px-3 text-center">${pessimistic.total}</td>
+                            <td class="py-2 px-3 text-center font-bold text-blue-700 bg-blue-50">${actual.seats}</td>
+                            <td class="py-2 px-3 text-center font-bold ${diffColor}">${diff !== '-' ? diffSign + diff : '-'}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            };
 
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => switchTab(tab.dataset.tab));
@@ -1511,7 +1633,7 @@
             switchTab('baseline'); // 初期タブ
 
             // Add footer date
-            document.getElementById('update-date').textContent = '2025年7月7日';
+            document.getElementById('update-date').textContent = '2025年7月21日';
         });
     </script>
 </body>
