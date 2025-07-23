@@ -10,6 +10,7 @@
         - Overview: Goal: Provide context Method: Text summaries (Expanded)
         - Current Tariffs: Goal: Inform Method: HTML tables Chartjs bars Library: Chartjs
         - Negotiation Timeline: Goal: Inform chronologically Method: Structured text (Updated)
+        - Negotiation Result (NEW): Goal: Detail the final agreement Method: Structured text
         - Negotiation Scenarios: Goal: Compare/Understand Method: Side-by-side text HTML/CSS timelines Chartjs bar chart Library: Chartjs
         - Probability Analysis: Goal: Explore determinants Method: HTML tables Chartjs pie/doughnut Library: Chartjs
         - Sector-Specific Impact (NEW): Goal: Deep dive into key industries Method: Text analysis, Chartjs radar chart Library: Chartjs
@@ -106,6 +107,7 @@
                     <button data-target="overview" class="nav-button px-3 py-2 rounded-md text-sm font-medium active">概要</button>
                     <button data-target="current-tariffs" class="nav-button px-3 py-2 rounded-md text-sm font-medium">関税の現状</button>
                     <button data-target="timeline" class="nav-button px-3 py-2 rounded-md text-sm font-medium">交渉の経緯</button>
+                    <button data-target="negotiation-result" class="nav-button px-3 py-2 rounded-md text-sm font-medium">交渉結果</button>
                     <button data-target="scenarios" class="nav-button px-3 py-2 rounded-md text-sm font-medium">交渉シナリオ</button>
                     <button data-target="probability" class="nav-button px-3 py-2 rounded-md text-sm font-medium">蓋然性分析</button>
                     <button data-target="sector-impact" class="nav-button px-3 py-2 rounded-md text-sm font-medium">分野別影響</button>
@@ -131,6 +133,7 @@
                 <button data-target="overview" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium active">概要</button>
                 <button data-target="current-tariffs" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium">関税の現状</button>
                 <button data-target="timeline" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium">交渉の経緯</button>
+                <button data-target="negotiation-result" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium">交渉結果</button>
                 <button data-target="scenarios" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium">交渉シナリオ</button>
                 <button data-target="probability" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium">蓋然性分析</button>
                 <button data-target="sector-impact" class="nav-button block w-full text-left px-3 py-2 rounded-md text-base font-medium">分野別影響</button>
@@ -152,31 +155,31 @@
                 <div>
                     <h4 class="text-lg font-semibold mb-2 text-blue-700 border-b-2 border-blue-200 pb-1">はじめに：交渉の背景と目的</h4>
                     <p class="text-sm sm:text-base leading-relaxed">
-                        本レポートは、2025年現在のトランプ政権下で展開される日米関税交渉の複雑な力学を解き明かすことを目的とする。米国の「アメリカ・ファースト」政策に基づき、対日貿易赤字の削減と国内産業の保護を掲げて導入された一連の関税措置は、戦後の自由貿易体制を前提としてきた日本経済に根本的な挑戦を突きつけている。米国が課した「相互関税」、及び通商拡大法232条に基づく鉄鋼・アルミニウム、自動車・同部品への追加関税に対し、日本政府はこれらの措置の見直しを求め、厳しい交渉に臨んでいる。
+                        本レポートは、2025年現在のトランプ政権下で展開される日米関税交渉の複雑な力学を解き明かすことを目的とする。米国の「アメリカ・ファースト」政策に基づき、対日貿易赤字の削減と国内産業の保護を掲げて導入された一連の関税措置は、戦後の自由貿易体制を前提としてきた日本経済に根本的な挑戦を突きつけている。米国が課した「相互関税」、及び通商拡大法232条に基づく鉄鋼・アルミニウム、自動車・同部品への追加関税に対し、日本政府はこれらの措置の見直しを求め、厳しい交渉に臨んでいたが、7月23日に最終合意に至った。
                     </p>
                 </div>
 
                 <div>
-                    <h4 class="text-lg font-semibold mb-2 text-blue-700 border-b-2 border-blue-200 pb-1">分析の核心：成功と失敗のシナリオ</h4>
+                    <h4 class="text-lg font-semibold mb-2 text-blue-700 border-b-2 border-blue-200 pb-1">分析の核心：交渉の帰結</h4>
                     <p class="text-sm sm:text-base leading-relaxed mb-4">
-                        本分析の中核は、交渉が取りうる二つの対極的な帰結、すなわち「成功」と「失敗・膠着」シナリオのシミュレーションにある。ここで定義する「成功」とは、関税導入以前の状態への完全な回帰ではなく、日本の損害を最小限に抑える「限定的な成功」を指す。一方、「失敗」は、発表された全ての関税が適用され、日本経済、とりわけ核心的産業が深刻な打撃を受ける事態を想定している。
+                        本分析の中核は、交渉が取りうる二つの対極的な帰結、すなわち「成功」と「失敗・膠着」シナリオのシミュレーションにあった。最終的に、交渉は「日本の大幅な譲歩を伴う限定的な成功」という形で決着した。これは、最悪の事態である全面的な関税発動は回避されたものの、特に農業分野において日本が大きな譲歩を強いられた結果である。
                     </p>
                     <div class="grid md:grid-cols-2 gap-4">
                         <div class="bg-white p-4 rounded-lg shadow">
-                            <h3 class="text-md font-semibold mb-2 text-green-600">交渉成功シナリオのポイント</h3>
-                            <p class="text-xs leading-relaxed">米国側の経済・政治的圧力の高まりや、日本の戦略的な譲歩、同盟関係の重視などを背景に、少なくとも相互関税の上乗せ部分の撤廃や、鉄鋼・アルミ関税に関する一定の緩和措置が実現する可能性がある。</p>
+                            <h3 class="text-md font-semibold mb-2 text-green-600">交渉妥結のポイント</h3>
+                            <p class="text-xs leading-relaxed">米国による相互関税の上乗せ部分（14%）は撤回され、8月1日から通知されていた25%の新関税も発動が見送られた。しかし、その見返りとして、日本は農産物分野でCPTPPを上回る市場開放を受け入れた。</p>
                         </div>
                         <div class="bg-white p-4 rounded-lg shadow">
-                            <h3 class="text-md font-semibold mb-2 text-red-600">交渉失敗シナリオのポイント</h3>
-                            <p class="text-xs leading-relaxed">米国側の強硬姿勢、特に自動車関税に関する非妥協的な態度や、日本側が受け入れ困難な要求などが要因となり、交渉が決裂または長期的な膠着状態に陥る可能性がある。</p>
+                            <h3 class="text-md font-semibold mb-2 text-red-600">残された課題</h3>
+                            <p class="text-xs leading-relaxed">最大の焦点であった自動車への追加関税は12.5%へ引き下げられたものの、撤廃には至らなかった。鉄鋼・アルミニウムへの高関税も維持され、日本経済にとって厳しい状況は続く。</p>
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <h4 class="text-lg font-semibold mb-2 text-blue-700 border-b-2 border-blue-200 pb-1">主要な争点と直近の動向</h4>
+                    <h4 class="text-lg font-semibold mb-2 text-blue-700 border-b-2 border-blue-200 pb-1">主要な争点と最終合意</h4>
                     <p class="text-sm sm:text-base leading-relaxed">
-                        交渉の最大の争点は、日本の基幹産業である**自動車**への追加関税の扱いである。6月30日にはトランプ大統領自らが日本の対米自動車輸出の「不平等」を非難し、関税を引き下げない姿勢を改めて明言したことで、この問題が交渉の最大のネックであることが一層明確になった。7月8日には大統領から総理への親書で、8月1日から新たな25%関税を課すことが通知され、状況は最終局面を迎えている。これに加え、**鉄鋼・アルミニウム**への高関税も重くのしかかる。**失敗・膠着シナリオのリスクは、本レポートの分析開始以来、最も高いレベルにある。**
+                        交渉の最大の争点は、日本の基幹産業である**自動車**への追加関税の扱いと、米国が求める**農産物**の市場開放であった。最終的に、日本が農産物で大幅に譲歩することで、米国は相互関税の追加発動を見送り、自動車関税を半減させるという政治的決着が図られた。日本は最悪の事態を免れたが、鉄鋼という基幹産業への圧力は残り、今後の経済運営に大きな課題を残す結果となった。
                     </p>
                 </div>
                  <div>
@@ -200,26 +203,25 @@
                     <h3 class="text-xl font-semibold mb-3 text-sky-700">1 相互関税 (Reciprocal Tariffs)</h3>
                     <p class="text-sm mb-2">全輸入品に一律10%の基本関税に加え、対米貿易赤字が大きい国に追加関税を上乗せする。</p>
                     <ul class="list-disc list-inside text-sm space-y-1 pl-4">
-                        <li>日本への適用: 基本10% + 上乗せ14% = <span class="font-bold text-red-600">合計24%</span></li>
-                        <li>備考: 上乗せ14%分は、交渉開始に伴い当初90日間適用停止された。**7月8日の大統領書簡により、8月1日から新たな25%関税が通知された。**</li>
+                        <li>日本への適用: <span class="font-bold text-green-600">基本10%のみ維持</span></li>
+                        <li>備考: 7月23日の合意により、上乗せ14%部分および8月1日から予定されていた新25%関税は発動が見送られた。</li>
                     </ul>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow">
                     <h3 class="text-xl font-semibold mb-3 text-sky-700">2 通商拡大法232条関税（鉄鋼・アルミニウム）</h3>
                     <p class="text-sm mb-2">安全保障上の脅威を理由に、鉄鋼・アルミ輸入品に追加関税を再導入または強化した。</p>
                     <ul class="list-disc list-inside text-sm space-y-1 pl-4">
-                        <li>鉄鋼: <span class="font-bold text-red-600">50%</span> (6月4日より25%から引き上げ済み)</li>
-                        <li>アルミニウム: <span class="font-bold text-red-600">50%</span> (6月4日より25%から引き上げ済み)</li>
-                        <li>備考: 過去の適用除外や関税割当(TRQ)協定は撤回された。</li>
+                        <li>鉄鋼: <span class="font-bold text-red-600">50%（維持）</span></li>
+                        <li>アルミニウム: <span class="font-bold text-red-600">50%（維持）</span></li>
+                        <li>備考: 7月23日の合意でも関税は維持された。ただし、一部品目での関税割当（TRQ）導入に向けた協議が継続される。</li>
                     </ul>
                 </div>
                 <div class="bg-white p-6 rounded-lg shadow">
                     <h3 class="text-xl font-semibold mb-3 text-sky-700">3 通商拡大法232条関税（自動車・同部品）</h3>
                     <p class="text-sm mb-2">同様に安全保障を理由に、自動車・自動車部品に追加関税を課した。</p>
                     <ul class="list-disc list-inside text-sm space-y-1 pl-4">
-                        <li>自動車・部品: <span class="font-bold text-red-600">25%</span></li>
-                        <li>適用開始: 自動車 (4月3日)、部品 (5月3日)</li>
-                        <li>背景: 2024年、米国は日本から555億ドル相当の自動車・部品を輸入した。</li>
+                        <li>自動車・部品: <span class="font-bold text-orange-600">15%</span></li>
+                        <li>備考: 7月23日の合意により、25%から12.5%へ引き下げ。既存の2.5%と合わせて合計15%となる。</li>
                     </ul>
                 </div>
             </div>
@@ -273,6 +275,7 @@
                     <li class="bg-red-50 p-2 rounded-md border-l-4 border-red-400"><strong>6月30日 (JST 午前):</strong> 米政府高官が匿名を条件に、7月9日の期限切れを前に日本が農産物市場開放で具体的な譲歩を示さなければ、相互関税の上乗せ分（14%）を発動する最終準備に入ったと発言したことが報じられる。赤澤大臣は一連の会談後、記者団に対し「状況は極めて厳しい」と述べ、具体的な進展がなかったことを認めた。</li>
                     <li class="bg-red-50 p-2 rounded-md border-l-4 border-red-400"><strong>6月30日 (現地時間):</strong> トランプ大統領、SNSで日本の対米自動車輸出について「長年の不平等」と非難し、「自動車関税を引き下げることはない」と改めて明言。交渉の最大のネックが自動車問題であることが再確認される。</li>
                     <li class="bg-red-50 p-2 rounded-md border-l-4 border-red-400"><strong>7月8日 (JST 午前):</strong> トランプ大統領が石破総理宛の親書をSNSで公開。書簡は「日本の関税や非関税障壁による長期の貿易赤字から脱却する必要がある」と指摘し、8月1日から日本からの輸入品に25%の関税を課すことを通知した。これは現在の相互関税を含む24%を上回る水準である。一方で、9日までの相互関税の適用停止期限は8月1日に延期するとし、日本が市場を開放し障壁を撤廃する場合には「調整を検討する」と、交渉の余地も示唆した。</li>
+                    <li class="bg-green-50 p-2 rounded-md border-l-4 border-green-400"><strong>7月23日 (JST 午前):</strong> 日米両政府が関税交渉で最終合意したと発表。相互関税の上乗せ分（14%）と8月1日から予定されていた25%の新関税は見送られる一方、日本は牛肉、豚肉などの農産物分野でCPTPPを上回る水準の市場開放を受け入れた。自動車関税は25%から12.5%に引き下げられ、既存の2.5%と合わせて15%となることで決着。鉄鋼・アルミ関税は維持される。</li>
                 </ul>
 
                 <h3 class="text-xl font-semibold mt-6 mb-3 text-sky-700">交渉の雰囲気</h3>
@@ -287,6 +290,39 @@
             </div>
         </div>
         
+        <!-- NEW: Negotiation Result Section -->
+        <div id="negotiation-result" class="content-section">
+            <h2 class="text-2xl font-bold mb-6 text-blue-600">交渉結果（2025年7月23日合意）</h2>
+            <p class="mb-6 text-sm sm:text-base leading-relaxed">
+                2025年7月23日、日米両政府は関税交渉の最終合意を発表した。交渉は、日本が農産物分野で大幅な譲歩を行う一方、米国が最も広範な影響を及ぼす相互関税の追加発動を見送り、自動車関税を半減させるという形で決着した。「限定的な成功」とも評価できるが、多くの課題が残る結果となった。
+            </p>
+            <div class="space-y-6">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-3 text-green-700">合意の主要なポイント（米国側の譲歩・見送り）</h3>
+                    <ul class="list-disc list-inside text-sm space-y-2 pl-4">
+                        <li><strong>相互関税の追加措置の見送り:</strong> 交渉開始時に90日間適用が停止されていた14%の上乗せ分、および7月8日の大統領親書で通知された新たな25%関税は、いずれも発動が見送られた。これにより、広範な品目への壊滅的な影響は回避された。</li>
+                        <li><strong>自動車・同部品関税の引き下げ:</strong> 25%の追加関税は12.5%に引き下げられた。これにより、既存の関税2.5%と合わせて、日本から輸出される自動車等への関税は合計15%となる。</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-3 text-red-700">合意の主要なポイント（日本側の譲歩）</h3>
+                    <ul class="list-disc list-inside text-sm space-y-2 pl-4">
+                        <li><strong>農産物市場の追加開放:</strong> 米国産の牛肉、豚肉、乳製品、小麦、オレンジなど主要な農産物について、CPTPP（環太平洋パートナーシップ協定）で合意した水準を上回る市場アクセス（関税率の引き下げ、無関税輸入枠の拡大）を認める。</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-3 text-orange-600">結論が見送られた・維持された主要な関税</h3>
+                    <ul class="list-disc list-inside text-sm space-y-2 pl-4">
+                        <li><strong>鉄鋼・アルミニウムへの50%関税:</strong> この高率関税は合意後も維持される。ただし、米側は日本からの要請に基づき、一部の重要品目について関税割当（TRQ）を設けるための事務レベル協議を開始することには同意した。</li>
+                    </ul>
+                </div>
+                 <div class="mt-4 bg-sky-100 border-l-4 border-sky-500 text-sky-700 p-4 rounded-md">
+                    <p class="font-bold">総括</p>
+                    <p class="text-sm mt-1">今回の合意は、米国が最も重視した農産物分野で日本が譲歩し、その見返りとして米国が最も広範な影響を持つ相互関税の発動を回避し、自動車関税を半減させるという、政治的な取引の側面が強い。日本は最悪の事態を免れたが、鉄鋼という基幹産業への圧力は残り、今後の経済運営に大きな課題を残す結果となった。</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Scenarios Section -->
         <div id="scenarios" class="content-section">
             <h2 class="text-2xl font-bold mb-6 text-blue-600">交渉シナリオ分析</h2>
@@ -444,9 +480,9 @@
 
         <!-- Probability Analysis Section -->
         <div id="probability" class="content-section">
-            <h2 class="text-2xl font-bold mb-6 text-blue-600">蓋然性分析：成功 vs 失敗</h2>
+            <h2 class="text-2xl font-bold mb-6 text-blue-600">蓋然性分析</h2>
             <p class="mb-6 text-sm sm:text-base leading-relaxed">
-                日米関税交渉が成功裏に終わる可能性と、失敗または膠着状態に陥る可能性のどちらが高いかを評価する。<br>推進要因、外部変数、専門家の見解を総合的に考慮し、より可能性の高い結果を導き出す。<br>**7月8日のトランプ大統領からの親書により、交渉は最終的な岐路に立たされた。**
+                このセクションでは、交渉妥結前の時点における、成功と失敗の蓋然性を分析する。7月8日のトランプ大統領からの親書により、交渉は最終的な岐路に立たされていた。
             </p>
             <div class="grid md:grid-cols-2 gap-6 mb-8">
                 <div class="bg-white p-4 rounded-lg shadow">
@@ -472,12 +508,12 @@
             </div>
             
             <div class="bg-white p-6 rounded-lg shadow mb-8">
-                <h3 class="text-xl font-semibold mb-4 text-center text-sky-700">交渉結果の蓋然性評価</h3>
+                <h3 class="text-xl font-semibold mb-4 text-center text-sky-700">交渉結果の蓋然性評価（7月8日時点）</h3>
                 <div class="chart-container mx-auto" style="height: 250px; max-width: 400px;">
                     <canvas id="probabilityChart"></canvas>
                 </div>
                 <p class="text-center mt-3 text-sm">
-                    本レポートの分析では、「失敗または膠着状態」の可能性を <span class="font-bold">75%</span>、<br>「限定的な成功」の可能性を <span class="font-bold">25%</span> と見積もる。<br>**トランプ大統領の親書は、日本が大幅な譲歩を呑まない限り、関税発動が不可避であることを示唆しており、蓋然性は大きく「失敗」側に傾いた。**
+                    7月8日の親書を受け、本レポートでは「失敗または膠着状態」の可能性を <span class="font-bold">75%</span>、<br>「限定的な成功」の可能性を <span class="font-bold">25%</span> と見積もっていた。最終的に後者のシナリオが実現した背景には、日本側の土壇場での大幅な譲歩があったものと分析される。
                 </p>
                 <div class="mt-4 bg-sky-100 border-l-4 border-sky-500 text-sky-700 p-3 rounded-md">
                     <p class="font-bold">重要な留保事項</p>
@@ -918,7 +954,7 @@
                              </div>
                              <div>
                                  <h4 class="text-md font-semibold mb-1 lp-accent-text">企業への提言</h4>
-                                 <ul class="lp-icon-list space-y-1">
+                                 <ul class="list-disc list-inside space-y-1">
                                      <li>シナリオ別影響の定量的評価、**司法判断影響も**。</li>
                                      <li>サプライチェーン多様化・強靭化。</li>
                                      <li>生産拠点の最適化検討。</li>
@@ -985,7 +1021,7 @@
     </main>
 
     <footer class="text-center py-8 text-sm text-slate-600">
-        <p>&copy; 2025 日米関税交渉分析レポート (一般社団法人日本みらい研2025年5月23日作成、2025年7月8日更新)</p>
+        <p>&copy; 2025 日米関税交渉分析レポート (一般社団法人日本みらい研2025年5月23日作成、2025年7月23日更新)</p>
         <p class="mt-1">本内容は提供されたレポートに基づき作成されたものであり、実際の交渉結果を保証するものではありません。</p>
     </footer>
 
@@ -1280,13 +1316,13 @@
                 labels: ['相互関税(日)', '鉄鋼', 'アルミニウム', '自動車・部品'],
                 datasets: [{
                     label: '関税率 (%)',
-                    data: [24, 50, 50, 25], // Updated Steel/Aluminum to 50%
-                    backgroundColor: ['rgba(239, 68, 68, 0.7)','rgba(220, 38, 38, 0.7)','rgba(220, 38, 38, 0.7)','rgba(249, 115, 22, 0.7)'],
-                    borderColor: ['rgba(239, 68, 68, 1)','rgba(220, 38, 38, 1)','rgba(220, 38, 38, 1)','rgba(249, 115, 22, 1)'],
+                    data: [10, 50, 50, 15], // Updated reciprocal and auto tariff
+                    backgroundColor: ['rgba(22, 163, 74, 0.7)','rgba(220, 38, 38, 0.7)','rgba(220, 38, 38, 0.7)','rgba(249, 115, 22, 0.7)'],
+                    borderColor: ['rgba(22, 163, 74, 1)','rgba(220, 38, 38, 1)','rgba(220, 38, 38, 1)','rgba(249, 115, 22, 1)'],
                     borderWidth: 1
                 }]
             },
-            options: { ...commonChartOptionsSPA, plugins: { ...commonChartOptionsSPA.plugins, legend: { display: false }, title: { display: true, text: '主要な対日関税率（2025年7月8日現在）', font: {size: 16}, color: '#1e40af' } } }
+            options: { ...commonChartOptionsSPA, plugins: { ...commonChartOptionsSPA.plugins, legend: { display: false }, title: { display: true, text: '主要な対日関税率（2025年7月23日合意後）', font: {size: 16}, color: '#1e40af' } } }
         });
     }
 
